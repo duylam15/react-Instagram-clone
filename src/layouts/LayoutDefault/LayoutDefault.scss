@@ -4,11 +4,10 @@
 }
 
 .sidebar {
-    width: 300px;
+    width: 98px;
     transition: width 0.3s ease;
 }
 
 .main-content {
-    flex-grow: 1; // Cột này sẽ chiếm phần còn lại của màn hình
-    overflow: auto;
+    width: 100%;
 }

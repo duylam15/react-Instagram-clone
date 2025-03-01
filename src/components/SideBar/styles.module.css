@@ -1,7 +1,7 @@
 /* >= 1920px */
 .sidebar {
     position: relative;
-    width: var(--nav-wide-width);
+    width: 150px;
     height: 100vh;
     box-shadow: 0.29px 0 0 rgb(124, 124, 124);
     padding-left: 25px;
@@ -9,22 +9,26 @@
     flex-direction: column;
     background-color: inherit;
     position: fixed;
+    border-right: 1px solid rgb(238, 238, 238);
+    z-index: 100;
 }
 
 .searchContainer {
     position: absolute;
     top: 0;
-    left: 75px;
+    left: 90px;
     height: 100vh;
-    background: red;
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    background: white;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.15) !important; /* Shadow rõ hơn khi focus */
     transition: transform 0.3s ease;
     transform: translateX(-300%);
-    z-index: 100;
+    border-radius: 10px;
+    z-index: 100 !important;
 }
 
 .searchContainer.slide {
     transform: translateX(0);
+    z-index: 100 !important;
 }
 
 .overlay {
@@ -63,18 +67,19 @@
 
 @media (min-width: 1264px) and (max-width: 1919px) {
     .sidebar {
-        width: var(--nav-medium-width);
+        width: 150px;
     }
 }
 
 @media (min-width: 768px) and (max-width: 1263px) {
     .sidebar {
-        width: var(--nav-narrow-width);
+        width: 150px;
     }
     .show_icon_logo {
         display: block;
     }
     .show_logo {
+        margin: 0 10px 0 4px;
         display: none;
     }
 }
@@ -84,7 +89,7 @@
         position: fixed;
         bottom: 0;
         left: 0;
-        width: 100%;
+        width: 150px;
         flex-direction: row;
         justify-content: space-evenly;
         height: 50px;
@@ -92,6 +97,7 @@
         border-top: 1px solid rgba(219, 219, 219, 1);
     }
     .show_logo {
+        margin: 0 10px 0 4px;
         display: none;
     }
     .hide_icon_more {

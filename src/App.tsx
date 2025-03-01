@@ -1,5 +1,5 @@
 import React from "react";
-import "./assets/css/styles.scss";
+import "./assets/css/styles.css";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 import { ThemeProvider } from "./contexts/ThemeContext";

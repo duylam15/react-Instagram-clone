@@ -48,7 +48,7 @@ export default function SideBar(): JSX.Element {
 	const path = location.pathname.replace("/", "");
 
 	// State kiểm soát giao diện
-	const [sidebarWidth, setSidebarWidth] = useState(location.pathname === "/messages" ? "50px" : "200px");
+	const [sidebarWidth, setSidebarWidth] = useState(location.pathname === "/messages" ? "90px" : "200px");
 	const [showSearch, setShowSearch] = useState(false);
 	const [showNotifications, setShowNotifications] = useState(false);
 	const [showBox, setShowBox] = useState(false);
@@ -62,27 +62,28 @@ export default function SideBar(): JSX.Element {
 
 	// Điều chỉnh sidebar khi vào trang Messages
 	useEffect(() => {
-		setSidebarWidth(location.pathname === "/messages" ? "50px" : "200px");
+		setSidebarWidth(location.pathname === "/messages" ? "90px" : "200px");
 		setShowSearch(false);
 	}, [location.pathname]);
 
 	// Xử lý điều hướng và cập nhật giao diện
 	const handleClickNavigate = (tab: string) => {
 		navigate(`/${tab}`);
-		setSidebarWidth(tab === "messages" ? "50px" : "200px");
+		setSidebarWidth(tab === "messages" ? "90px" : "200px");
 		setShowSearch(false);
 		setShowNotifications(false);
 	};
 
 	// Xử lý mở/đóng Search & Notifications
 	const handleClickModal = (tab: string) => {
-		const toggleState = (state: boolean, setState: Function) => {
+		const toggleState = (state: boolean, setState: Function, setState2: Function) => {
 			setState(!state);
-			setSidebarWidth(!state || location.pathname === "/messages" ? "50px" : "200px");
+			setState2(false)
+			setSidebarWidth(!state || location.pathname === "/messages" ? "90px" : "200px");
 		};
 
-		tab === "search" && toggleState(showSearch, setShowSearch);
-		tab === "notifications" && toggleState(showNotifications, setShowNotifications);
+		tab === "search" && toggleState(showSearch, setShowSearch, setShowNotifications);
+		tab === "notifications" && toggleState(showNotifications, setShowNotifications, setShowSearch);
 	};
 
 	// Xử lý hiển thị CreateBox & SettingBox
@@ -97,18 +98,18 @@ export default function SideBar(): JSX.Element {
 		<div className={styles.sidebar} style={{ width: sidebarWidth, transition: "width 0.3s ease" }}>
 			<div className="logo">
 				<div className={`${styles.show_logo} `}>
-					{sidebarWidth === "50px" ? <IconInstagramLogo color={iconColor} />
+					{sidebarWidth === "90px" ? <IconInstagramLogo color={iconColor} />
 						: <InstagramLogo color={iconColor} />}
 				</div>
 			</div>
 			<div className={`${styles.show_icon_logo} `}>
 				<IconInstagramLogo color={iconColor} />
 			</div>
-			<div className={`${styles.navbar} grow`}>
+			<div className={`${styles.navbar} `}>
 				<NavItem
 					icon={<IconHome color={iconColor} />}
 					activeIcon={<IconHomeActive color={iconColor} />}
-					title={sidebarWidth === "50px" ? "" : t('home')}
+					title={sidebarWidth === "90px" ? "" : t('home')}
 					isActive={path === ""}
 					onClick={() => handleClickNavigate("")}
 				/>
@@ -116,7 +117,7 @@ export default function SideBar(): JSX.Element {
 					<NavItem
 						icon={<IconSearch color={iconColor} />}
 						activeIcon={<IconSearchActive color={iconColor} />}
-						title={sidebarWidth === "50px" ? "" : t('search')}
+						title={sidebarWidth === "90px" ? "" : t('search')}
 						isActive={location.pathname === "/search"}
 						onClick={() => handleClickModal("search")}
 					/>
@@ -125,14 +126,14 @@ export default function SideBar(): JSX.Element {
 					icon={<IconExplore color={iconColor} />}
 					activeIcon={<IconExploreActive color={iconColor} />}
 					isActive={path === "explore"}
-					title={sidebarWidth === "50px" ? "" : t("explore")}
+					title={sidebarWidth === "90px" ? "" : t("explore")}
 					onClick={() => handleClickNavigate("explore")}
 				/>
 				<NavItem
 					icon={<IconMessages color={iconColor} />}
 					activeIcon={<IconMessagesActive color={iconColor} />}
 					isActive={path === "messages"}
-					title={sidebarWidth === "50px" ? "" : t("messages")}
+					title={sidebarWidth === "90px" ? "" : t("messages")}
 					onClick={() => handleClickNavigate("messages")}
 				/>
 
@@ -141,7 +142,7 @@ export default function SideBar(): JSX.Element {
 						icon={<IconNofication color={iconColor} />}
 						activeIcon={<IconNoficationActive color={iconColor} />}
 						isActive={path === "notifications"}
-						title={sidebarWidth === "50px" ? "" : t("notifications")}
+						title={sidebarWidth === "90px" ? "" : t("notifications")}
 						onClick={() => handleClickModal("notifications")}
 					/>
 				</div>
@@ -149,21 +150,21 @@ export default function SideBar(): JSX.Element {
 					icon={<IconCreate color={iconColor} />}
 					activeIcon={<IconCreateActive color={iconColor} />}
 					isActive={path === "creates"}
-					title={sidebarWidth === "50px" ? "" : t('create')}
+					title={sidebarWidth === "90px" ? "" : t('create')}
 					onClick={() => handleClickBox("creates")}
 				/>
 				<NavItem
 					icon={<MenuAvatar url={"https://i.pravatar.cc/300"} isActive={false} />}
 					activeIcon={<MenuAvatar url={"https://i.pravatar.cc/300"} isActive={true} />}
 					isActive={path === "profile"}
-					title={sidebarWidth === "50px" ? "" : t("profile")}
+					title={sidebarWidth === "90px" ? "" : t("profile")}
 					onClick={() => handleClickNavigate("profile")}
 				/>
 				<NavItem
 					icon={<IconMore color={iconColor} />}
 					activeIcon={<IconMore color={iconColor} />}
 					isActive={path === "more"}
-					title={sidebarWidth === "50px" ? "" : t("more")}
+					title={sidebarWidth === "90px" ? "" : t("more")}
 					onClick={() => handleClickBox("more")}
 				/>
 			</div>
