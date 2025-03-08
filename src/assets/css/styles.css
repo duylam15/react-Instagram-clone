@@ -1,73 +1,93 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
-    --bg-color: white;
-    --text-color: black;
-    --nav-medium-width: 244px;
-    --nav-wide-width: 300px;
-    --nav-narrow-width: 72px;
+  --bg-color: white;
+  --text-color: black;
+  --nav-medium-width: 244px;
+  --nav-wide-width: 300px;
+  --nav-narrow-width: 72px;
 }
 
-[data-theme="dark"] {
-    --bg-color: #1a1a1a;
-    --bg-color-hover: rgb(61, 61, 61);
-    --text-color: white;
+[data-theme='dark'] {
+  --bg-color: #1a1a1a;
+  --bg-color-hover: rgb(61, 61, 61);
+  --text-color: white;
 }
 
-[data-theme="light"] {
-    --bg-color: #ffffff;
-    --bg-color-hover: rgb(234, 234, 234);
-    --text-color: black;
+[data-theme='light'] {
+  --bg-color: #ffffff;
+  --bg-color-hover: rgb(234, 234, 234);
+  --text-color: black;
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    transition: all 0.3s ease;
-    padding: 0px;
-    margin: 0px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-        "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
-        "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    user-select: none; /* Ngăn chọn text và hình ảnh */
-    -webkit-user-drag: none; /* Tắt kéo hình ảnh trên Safari */
-    -webkit-tap-highlight-color: transparent; /* Tắt hiệu ứng nhấp trên mobile */
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+  padding: 0px;
+  margin: 0px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none; /* Ngăn chọn text và hình ảnh */
+  -webkit-user-drag: none; /* Tắt kéo hình ảnh trên Safari */
+  -webkit-tap-highlight-color: transparent; /* Tắt hiệu ứng nhấp trên mobile */
 }
 
 button {
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    margin-top: 20px;
-    background: var(--text-color);
-    color: var(--bg-color);
-    border-radius: 5px;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  margin-top: 20px;
+  background: var(--text-color);
+  color: var(--bg-color);
+  border-radius: 5px;
+}
+
+.button-submit {
+  background: rgb(76, 181, 249); /* Màu nền mặc định */
+  color: white;
+  font-weight: 600;
+  padding: 5px;
+  border-radius: 8px;
+  width: 100%;
+  border: none;
+  transition: background 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.button-submit:hover {
+  background: rgb(50, 160, 230); /* Màu nền khi hover */
+}
+
+.button-submit:active {
+  transform: scale(0.95); /* Hiệu ứng nhấn */
 }
 
 .ant-carousel .slick-dots li {
-    width: 5px;
-    height: 5px;
-    background-color: white;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: background-color 0.9s;
+  width: 5px;
+  height: 5px;
+  background-color: white;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.9s;
 }
 
 /* Custom nút mũi tên */
 .ant-carousel .slick-prev,
 .ant-carousel .slick-next {
-    width: 25px;
-    height: 25px;
-    background-color: white;
-    border-radius: 50%; /* Bo tròn */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 25px;
+  height: 25px;
+  background-color: white;
+  border-radius: 50%; /* Bo tròn */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .ant-modal .ant-modal-close {
-    display: none;
+  display: none;
 }
 /* Màu nền thay đổi khi hover */
 .ant-carousel .slick-prev:hover,
@@ -76,107 +96,107 @@ button {
 
 /* Điều chỉnh vị trí */
 .ant-carousel .slick-prev {
-    left: 10px;
+  left: 10px;
 }
 
 .ant-carousel .slick-next {
-    right: 10px;
+  right: 10px;
 }
 
 /* Chỉnh màu icon mũi tên */
 .ant-carousel .slick-prev::before,
 .ant-carousel .slick-next::before {
-    color: white; /* Màu icon */
-    font-size: 18px; /* Cỡ icon */
-    opacity: 1; /* Đảm bảo không bị trong suốt */
-    top: 10px;
+  color: white; /* Màu icon */
+  font-size: 18px; /* Cỡ icon */
+  opacity: 1; /* Đảm bảo không bị trong suốt */
+  top: 10px;
 }
 
 .ant-carousel .slick-prev::after {
-    top: 7px;
-    left: 9px;
-    color: black;
+  top: 7px;
+  left: 9px;
+  color: black;
 }
 
 .ant-carousel .slick-next::after {
-    top: 7px;
-    left: 5px;
-    color: black;
+  top: 7px;
+  left: 5px;
+  color: black;
 }
 
 .ant-modal .ant-modal-content {
-    padding: 0px;
-    height: 100%;
-    width: 100%;
-    height: 90vh !important;
+  padding: 0px;
+  height: 100%;
+  width: 100%;
+  height: 90vh !important;
 }
 
 .ant-input-affix-wrapper {
-    background: #efefef;
-    height: 40px;
-    width: 365px;
+  background: #efefef;
+  height: 40px;
+  width: 365px;
 }
 
 .ant-input-affix-wrapper:hover {
-    background: #efefef;
-    outline: none;
-    border: none;
+  background: #efefef;
+  outline: none;
+  border: none;
 }
 
 .ant-input-affix-wrapper:focus {
-    background: #efefef !important;
-    outline: none !important;
-    border: none !important;
+  background: #efefef !important;
+  outline: none !important;
+  border: none !important;
 }
 .ant-input-affix-wrapper:focus-within {
-    background: #efefef !important;
-    outline: none !important;
-    border: none !important;
+  background: #efefef !important;
+  outline: none !important;
+  border: none !important;
 }
 .ant-input-affix-wrapper:active {
-    background: #efefef !important;
-    outline: none !important;
-    border: none !important;
+  background: #efefef !important;
+  outline: none !important;
+  border: none !important;
 }
 
 .ant-input-outlined {
-    background: #efefef;
-    height: 40px;
-    width: 365px;
+  background: #efefef;
+  height: 40px;
+  width: 365px;
 }
 
 .ant-input-outlined:hover {
-    background: #efefef;
-    outline: none;
-    border: none;
+  background: #efefef;
+  outline: none;
+  border: none;
 }
 
 .ant-input-outlined:focus {
-    background: #efefef !important;
-    outline: none !important;
-    border: none !important;
+  background: #efefef !important;
+  outline: none !important;
+  border: none !important;
 }
 .ant-input-outlined:focus-within {
-    background: #efefef !important;
-    outline: none !important;
-    border: none !important;
+  background: #efefef !important;
+  outline: none !important;
+  border: none !important;
 }
 .ant-input-outlined:active {
-    background: #efefef !important;
-    outline: none !important;
-    border: none !important;
+  background: #efefef !important;
+  outline: none !important;
+  border: none !important;
 }
 /* Ẩn border khi hover, focus, click vào */
 .ant-input-affix-wrapper,
 .ant-input {
-    border: none !important;
-    box-shadow: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* Khi input đang focus */
 .ant-input-affix-wrapper-focused,
 .ant-input-focused {
-    border: none !important;
-    box-shadow: none !important;
-    outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }

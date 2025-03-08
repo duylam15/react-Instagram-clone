@@ -7,6 +7,9 @@ import Error from '../pages/error';
 import MyProfile from '../pages/my_profile';
 import Messages from '../pages/messages';
 import Explore from '../pages/explore';
+import Login from '../pages/login';
+import Register from '../pages/register';
+import ForgotPassword from '../pages/forgotpassword';
 
 export const router = createBrowserRouter([
   {
@@ -31,5 +34,20 @@ export const router = createBrowserRouter([
         element: <Explore />,
       },
     ],
+  },
+
+  {
+    path: '/login',
+    element:<Login/>
+  },
+
+  {
+    path: '/register',
+    element:<Register/>
+  },
+
+  {
+    path: '/forgotpassword',
+    element:<ForgotPassword/>
   },
 ]);
