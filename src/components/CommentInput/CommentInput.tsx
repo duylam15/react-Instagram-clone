@@ -2,11 +2,14 @@ import { useState, useRef } from "react";
 import { FaSmile } from "react-icons/fa";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
+import { useTranslation } from "react-i18next";
 
 const CommentInput = () => {
 	const [comment, setComment] = useState("");
 	const [showPicker, setShowPicker] = useState(false);
 	const inputRef = useRef(null);
+	const { t } = useTranslation();
+
 
 	const handleEmojiSelect = (emoji: { native: string }) => {
 		setComment((prev) => prev + emoji.native); // Thêm emoji vào nội dung input
@@ -24,11 +27,12 @@ const CommentInput = () => {
 			<div className="flex items-center py-2">
 				<input
 					type="text"
-					placeholder="Add a comment..."
+					placeholder={t('Comment')}
 					className="w-full border-none outline-none p-1"
 					value={comment}
 					onChange={(e) => setComment(e.target.value)}
 					ref={inputRef}
+					style={{ color: "var(--text-color)" }}
 				/>
 
 				{/* Nút mở Emoji Picker */}
@@ -42,7 +46,7 @@ const CommentInput = () => {
 						className="ml-4 text-blue-600 font-bold text-lg text-center "
 						onClick={handleSubmit}
 					>
-						Gửi
+						{t('send')}
 					</p>
 				)}
 

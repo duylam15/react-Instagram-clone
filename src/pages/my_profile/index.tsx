@@ -1,6 +1,9 @@
 import { Carousel, Modal } from "antd";
 import React, { useState } from "react";
 import CommentInput from "../../components/CommentInput/CommentInput";
+import { IconDots } from "../../components/icons/ic_dots";
+import { useTheme } from "../../contexts/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 export default function MyProfile() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,6 +25,13 @@ export default function MyProfile() {
 		setIsModalOpen(true);
 	};
 
+	// Lấy giá trị theme từ context
+	const { theme } = useTheme();
+
+	// Lấy hàm dịch `t` từ i18n
+	const { t } = useTranslation();
+	const iconColor = theme === "dark" ? "white" : "black";
+
 	return (
 		<div className=" ml-25 p-4 flex flex-col items-center ">
 			{/* Thông tin người dùng */}
@@ -39,24 +49,25 @@ export default function MyProfile() {
 				<div className="flex flex-col gap-4">
 					<div className="flex items-center gap-4 justify-center">
 						<h2 className="text-xl font-normal">username</h2>
-						<div className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[148px] h-[32px] leading-[100%] flex items-center justify-center text-black-600">
+						<div className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[148px] h-[32px] leading-[100%] flex items-center justify-center text-black-600" style={{ background: "var( --hover-color)" }}>
 							Đang theo dõi
 						</div>
-						<div className="bg-gray-200 px-4 py-1 rounded-md font-medium  text-[14px] text-center w-[100px] h-[32px] leading-[100%] flex items-center justify-center text-black-600">
+						<div className="bg-gray-200 px-4 py-1 rounded-md font-medium  text-[14px] text-center w-[100px] h-[32px] leading-[100%] flex items-center justify-center text-black-600" style={{ background: "var( --hover-color)" }}>
 							Nhắn tin
 						</div>
-						<div className="bg-gray-200 px-4 py-1 rounded-md font-medium  text-[14px] text-center w-[30px] h-[32px] leading-[100%] flex items-center justify-center text-black-600">
+						<div className="bg-gray-200 px-4 py-1 rounded-md font-medium  text-[14px] text-center w-[30px] h-[32px] leading-[100%] flex items-center justify-center text-black-600" style={{ background: "var( --hover-color)" }}>
 							+
 						</div>
 						<div className=" px-4 py-1 rounded-md font-medium  text-[14px] text-center w-[30px] h-[32px] leading-[100%] flex items-center justify-center text-black-600">
-							...
+							<p className="text-gray-600"><IconDots color={iconColor} /></p>
+
 						</div>
 					</div>
 
 					<div className="flex gap-6 mt-2">
-						<span className="font-light"><strong className="font-bold">20</strong> bài viết</span>
-						<span className="font-light"><strong className="font-bold">5.2K</strong> người theo dõi</span>
-						<span className="font-light"><strong className="font-bold">120</strong> đang theo dõi</span>
+						<span className="font-light"><strong className="font-bold">20</strong> {t('post')}</span>
+						<span className="font-light"><strong className="font-bold">5.2K</strong> {t('follower')}</span>
+						<span className="font-light"><strong className="font-bold">120</strong> {t('following')}</span>
 					</div>
 
 					<p className="mt-2 text-sm">Bio của bạn có thể ở đây ✨</p>

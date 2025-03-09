@@ -3,6 +3,9 @@ import { FaHeart, FaRegHeart, FaComment, FaPaperPlane, FaBookmark, FaRegBookmark
 import CommentInput from "../CommentInput/CommentInput";
 import { Modal, Carousel } from 'antd';
 import { calc } from "antd/es/theme/internal";
+import { IconDots } from "../icons/ic_dots";
+import { useTheme } from "../../contexts/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 const contentStyle: React.CSSProperties = {
 	margin: 0,
@@ -12,7 +15,7 @@ const contentStyle: React.CSSProperties = {
 	textAlign: 'center',
 	background: '#364d79',
 };
-const InstagramPost = () => {
+const InstagramPost = ({ first }: { first?: string }) => {
 	const [liked, setLiked] = useState(false);
 	const [saved, setSaved] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,8 +25,15 @@ const InstagramPost = () => {
 		"/public/images/uifaces-popular-image (11).jpg",
 		"/public/images/uifaces-popular-image (11).jpg",
 	];
+	// Lấy giá trị theme từ context
+	const { theme } = useTheme();
+
+	// Lấy hàm dịch `t` từ i18n
+	const { t } = useTranslation();
+	const iconColor = theme === "dark" ? "white" : "black";
+
 	return (
-		<div className="max-w-[470px] h-[900px] bg-white border-t border-gray-300 pt-2">
+		<div className={`max-w-[470px] h-[900px] var(--bg-color) pt-2 ${first ? "" : "border-t border-gray-600"}`}>
 			{/* Header */}
 			<div className="flex items-center justify-between pt-3 pb-3">
 				<div className="flex items-center gap-3">
@@ -32,19 +42,21 @@ const InstagramPost = () => {
 						alt="Avatar"
 						className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 					/>
-					<span className="font-semibold text-gray-800">username</span>
+					<span className="font-semibold text-gray-800" style={{ color: "var(--text-color)" }}>username</span>
+					<span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>9 {t('hour')}</span>
 				</div>
-				<p className="text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-					<path d="M12 13.5C12.8284 13.5 13.5 12.8284 13.5 12C13.5 11.1716 12.8284 10.5 12 10.5C11.1716 10.5 10.5 11.1716 10.5 12C10.5 12.8284 11.1716 13.5 12 13.5Z" fill="#262626" />
-					<path d="M6 13.5C6.82843 13.5 7.5 12.8284 7.5 12C7.5 11.1716 6.82843 10.5 6 10.5C5.17157 10.5 4.5 11.1716 4.5 12C4.5 12.8284 5.17157 13.5 6 13.5Z" fill="#262626" />
-					<path d="M18 13.5C18.8284 13.5 19.5 12.8284 19.5 12C19.5 11.1716 18.8284 10.5 18 10.5C17.1716 10.5 16.5 11.1716 16.5 12C16.5 12.8284 17.1716 13.5 18 13.5Z" fill="#262626" />
-				</svg></p>
+				<p className="text-gray-600"><IconDots color={iconColor} /></p>
 			</div>
 
 			{/* Post Image */}
 			<Carousel
 				infinite={false}
 				arrows className="ant-custom">
+				<img
+					src="/public/images/uifaces-popular-image (11).jpg"
+					alt="Post"
+					className="w-full h-[585px] object-cover rounded-lg"
+				/>
 				<img
 					src="/public/images/uifaces-popular-image (11).jpg"
 					alt="Post"
@@ -77,8 +89,8 @@ const InstagramPost = () => {
 			</div>
 			{/* Likes and Caption */}
 			<div className="pt-3">
-				<p className="font-semibold">1,234 likes</p>
-				<p><span className="font-semibold">username</span> This is a sample caption! #hashtag</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>Xem thêm 100 comments</p>
+				<p className="font-semibold">1,234 {t('likes')}</p>
+				<p><span className="font-semibold">username</span> This is a sample caption! #hashtag</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>{t('view_more')} 100 {t('comment')} </p>
 			</div>
 
 			{/* Comment Input */}
@@ -102,13 +114,18 @@ const InstagramPost = () => {
 					{/* Comments bên phải */}
 					<div className="w-1/2 flex flex-col justify-between">
 						<div className="overflow-y-auto h-[400px]">
-							<div className="flex p-5  items-center gap-3 border-b border-gray-300 pb-3">
-								<img
-									src="/public/images/uifaces-popular-image (11).jpg"
-									alt="Avatar"
-									className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
-								/>
-								<span className="font-semibold text-gray-800">username</span>
+							<div className="flex p-5 justify-between items-center gap-3 border-b  pb-3"
+								style={{ borderColor: "var(--white-to-gray)" }}>
+								<div className="flex items-center justify-center gap-3">
+									<img
+										src="/public/images/uifaces-popular-image (11).jpg"
+										alt="Avatar"
+										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
+									/>
+									<span className="font-semibold" style={{ color: "var(--text-color)" }}>username</span>
+								</div>
+
+								<div className="text-gray-600"><IconDots color={iconColor} /></div>
 							</div>
 							<div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
 								<div className="flex  items-center gap-3">
@@ -118,8 +135,10 @@ const InstagramPost = () => {
 										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 									/>
 									<div className="flex flex-col items-center">
-										<span className="font-semibold text-gray-800">username</span>
-										<span className="font-semibold text-gray-800">username</span>
+										<span className="font-semibold" style={{ color: "var(--text-color)" }}>username</span>
+
+										<span className="font-semibold" style={{ color: "var(--text-color)" }}>username</span>
+
 									</div>
 								</div>
 								<div className="flex  items-center gap-3">
@@ -129,8 +148,10 @@ const InstagramPost = () => {
 										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 									/>
 									<div className="flex flex-col items-center">
-										<span className="font-semibold text-gray-800">username</span>
-										<span className="font-semibold text-gray-800">username</span>
+										<span className="font-semibold" style={{ color: "var(--text-color)" }}>username</span>
+
+										<span className="font-semibold" style={{ color: "var(--text-color)" }}>username</span>
+
 									</div>
 								</div><div className="flex  items-center gap-3">
 									<img
@@ -139,8 +160,10 @@ const InstagramPost = () => {
 										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 									/>
 									<div className="flex flex-col items-center">
-										<span className="font-semibold text-gray-800">username</span>
-										<span className="font-semibold text-gray-800">username</span>
+										<span className="font-semibold" style={{ color: "var(--text-color)" }}>username</span>
+
+										<span className="font-semibold" style={{ color: "var(--text-color)" }}>username</span>
+
 									</div>
 								</div><div className="flex  items-center gap-3">
 									<img
@@ -149,16 +172,35 @@ const InstagramPost = () => {
 										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 									/>
 									<div className="flex flex-col items-center">
-										<span className="font-semibold text-gray-800">username</span>
-										<span className="font-semibold text-gray-800">username</span>
+										<span className="font-semibold" style={{ color: "var(--text-color)" }}>username</span>
+
+										<span className="font-semibold" style={{ color: "var(--text-color)" }}>username</span>
+
 									</div>
 								</div>
 							</div>
 							{/* Thêm comments giả lập */}
 						</div>
-
-						<div className="pl-5 pr-5 border-t border-gray-300"><CommentInput /></div>
-
+						{/* Actions */}
+						<div className="flex justify-between p-4 pb-0 border-t" style={{ borderColor: "var(--white-to-gray)" }}>
+							<div className="flex items-center gap-5">
+								<p onClick={() => setLiked(!liked)} className="text-xl">
+									{liked ? <FaHeart className="text-red-500" /> : <FaRegHeart style={{ color: "var(--text-color)" }} />}
+								</p>
+								<p className="text-xl" style={{ color: "var(--text-color)" }}><FaComment /></p>
+								<p className="text-xl"><FaPaperPlane style={{ color: "var(--text-color)" }} /></p>
+							</div>
+							<p onClick={() => setSaved(!saved)} className="text-xl">
+								{saved ? <FaBookmark style={{ color: "var(--text-color)" }} /> : <FaRegBookmark style={{ color: "var(--text-color)" }} />}
+							</p>
+						</div>
+						<div className="p-4 pt-0">
+							<p className="font-semibold text-[16px]" style={{ color: "var(--text-color)" }}>1,234 {t('likes')}</p>
+							<p className="font-light" style={{ color: "var(--text-color)" }}>20 {t('hour')}</p>
+						</div>
+						<div className="pl-5 pr-5 border-t "
+							style={{ borderColor: "var(--white-to-gray)" }}
+						><CommentInput /></div>
 					</div>
 				</div>
 			</Modal>

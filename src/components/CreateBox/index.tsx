@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import styles from "./CreateBox.module.css";
 
 interface CreateBoxProps {
@@ -5,6 +6,7 @@ interface CreateBoxProps {
 }
 
 export default function CreateBox({ onClose }: CreateBoxProps) {
+	const { t } = useTranslation();
 	return (
 		<div className={styles.overlay} onClick={onClose}>
 			<div className={styles.box} onClick={(e) => e.stopPropagation()}>

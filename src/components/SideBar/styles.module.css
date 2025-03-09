@@ -9,7 +9,7 @@
     flex-direction: column;
     background-color: inherit;
     position: fixed;
-    border-right: 1px solid rgb(238, 238, 238);
+    border-right: 1px solid var(--white-to-gray);
     z-index: 100;
 }
 
@@ -18,7 +18,7 @@
     top: 0;
     left: 90px;
     height: 100vh;
-    background: white;
+    background: var(--bg-color);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.15) !important; /* Shadow rõ hơn khi focus */
     transition: transform 0.3s ease;
     transform: translateX(-300%);
