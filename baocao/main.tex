@@ -1,0 +1,39 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{vietnam}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{graphicx}
+
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+\begin{document}
+
+
+% Trang bìa
+\input{header/title}
+
+\newpage
+
+\section*{MỤC LỤC}
+\begin{itemize}
+		\item \textbf{LỜI CẢM ƠN} \dotfill \pageref{sec:thanks}
+    \item \textbf{GIỚI THIỆU} \dotfill \pageref{sec:introduction}
+    \item \textbf{LÝ DO CHỌN ĐỀ TÀI} \dotfill \pageref{sec:reason}
+    \item \textbf{YÊU CẦU CHỨC NĂNG} \dotfill \pageref{sec:functional-requirements}
+    \item \textbf{YÊU CẦU PHI CHỨC NĂNG} \dotfill \pageref{sec:non-functional-requirements}
+\end{itemize}
+
+\newpage
+
+\input{chapter/thanks}\label{sec:thanks}
+
+\input{chapter/introduction}\label{sec:introduction}
+
+\input{chapter/reason}\label{sec:reason}
+
+\input{chapter/functional_requirements}\label{sec:functional-requirements} 
+
+\input{chapter/non_functional_requirements}\label{sec:non-functional-requirements}
+
+\end{document}

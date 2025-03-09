@@ -181,26 +181,28 @@ const InstagramPost = ({ first }: { first?: string }) => {
 							</div>
 							{/* Thêm comments giả lập */}
 						</div>
-						{/* Actions */}
-						<div className="flex justify-between p-4 pb-0 border-t" style={{ borderColor: "var(--white-to-gray)" }}>
-							<div className="flex items-center gap-5">
-								<p onClick={() => setLiked(!liked)} className="text-xl">
-									{liked ? <FaHeart className="text-red-500" /> : <FaRegHeart style={{ color: "var(--text-color)" }} />}
+						<div>
+
+							<div className="flex justify-between p-4 pb-0 border-t" style={{ borderColor: "var(--white-to-gray)" }}>
+								<div className="flex items-center gap-5">
+									<p onClick={() => setLiked(!liked)} className="text-xl">
+										{liked ? <FaHeart className="text-red-500" /> : <FaRegHeart style={{ color: "var(--text-color)" }} />}
+									</p>
+									<p className="text-xl" style={{ color: "var(--text-color)" }}><FaComment /></p>
+									<p className="text-xl"><FaPaperPlane style={{ color: "var(--text-color)" }} /></p>
+								</div>
+								<p onClick={() => setSaved(!saved)} className="text-xl">
+									{saved ? <FaBookmark style={{ color: "var(--text-color)" }} /> : <FaRegBookmark style={{ color: "var(--text-color)" }} />}
 								</p>
-								<p className="text-xl" style={{ color: "var(--text-color)" }}><FaComment /></p>
-								<p className="text-xl"><FaPaperPlane style={{ color: "var(--text-color)" }} /></p>
 							</div>
-							<p onClick={() => setSaved(!saved)} className="text-xl">
-								{saved ? <FaBookmark style={{ color: "var(--text-color)" }} /> : <FaRegBookmark style={{ color: "var(--text-color)" }} />}
-							</p>
+							<div className="p-4 pt-0">
+								<p className="font-semibold text-[16px] mt-3" style={{ color: "var(--text-color)" }}>1,234 {t('likes')}</p>
+								<p className="font-light" style={{ color: "var(--text-color)" }}>20 {t('hour')}</p>
+							</div>
+							<div className="pl-5 pr-5 border-t "
+								style={{ borderColor: "var(--white-to-gray)" }}
+							><CommentInput /></div>
 						</div>
-						<div className="p-4 pt-0">
-							<p className="font-semibold text-[16px]" style={{ color: "var(--text-color)" }}>1,234 {t('likes')}</p>
-							<p className="font-light" style={{ color: "var(--text-color)" }}>20 {t('hour')}</p>
-						</div>
-						<div className="pl-5 pr-5 border-t "
-							style={{ borderColor: "var(--white-to-gray)" }}
-						><CommentInput /></div>
 					</div>
 				</div>
 			</Modal>
