@@ -1,6 +1,27 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./index.css"
 import InstagramPost from "../InstagramPost/InstagramPost";
+import { getPosts } from "../../services/post";
+
+type PostMedia = {
+	mediaId: number;
+	mediaUrl: string;
+};
+type Post = {
+	postId: number;
+	userId: number;
+	content: string;
+	comments: [];
+	typePost: string;
+	visibility: string;
+	createdAt: string;
+	updatedAt: string;
+	numberComment: number;
+	numberEmotion: number;
+	numberShare: number;
+	postMedia: PostMedia[]; // Mảng chứa các media của bài post
+};
+
 
 const StoryList = () => {
 	const listRef = useRef<HTMLDivElement>(null);
@@ -29,6 +50,24 @@ const StoryList = () => {
 		isDragging.current = false;
 	};
 
+	const [posts, setPosts] = useState<Post[]>([]);
+
+	useEffect(() => {
+		const fetchPosts = async () => {
+			try {
+				const response: any = await getPosts();
+				setPosts(response?.data);
+			} catch (error) {
+				console.error("Không thể lấy bài viết:", error);
+			}
+		};
+
+		fetchPosts();
+	}, []);
+
+
+	console.log("postspostsposts", posts)
+
 	return (
 		<div className="home">
 			<div
@@ -52,10 +91,11 @@ const StoryList = () => {
 				))}
 			</div>
 			<div className="list-post ml-22 mt-[-10px]">
-				<InstagramPost first="first" />
-				<InstagramPost />
-				<InstagramPost />
+				{posts.map((post: Post) => (
+					<InstagramPost post={post} />
+				))}
 			</div>
+
 		</div>
 	);
 };

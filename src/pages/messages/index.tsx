@@ -1,92 +1,148 @@
-import React, { useState } from "react";
-import CommentInput from "../../components/CommentInput/CommentInput";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
+import CommentInput from "../../components/CommentInput/CommentInput";
 
-export default function Messages() {
-	const [selectedChat, setSelectedChat] = useState<number | null>(null);
+const userId = 1; // Giả sử ID user là 1, có thể lấy từ context hoặc props
+// Định nghĩa type Conversation
+interface Conversation {
+	idConversation: number;
+	firstNameReceiver: string;
+	lastNameReceiver: string;
+	firstNameSender: string;
+	lastNameSender: string;
+	img: string; // Ảnh đại diện
+	listMessageDTO: Message[];
+}
+interface Message {
+	idSender: number;
+	messageStatus: string;
+	readAt: string | null;
+	typeMessage: string;
+	content: string;
+}
 
-	const conversations = [
-		{ id: 1, name: "John Doe", message: "Hey! How are you?", img: "https://i.pravatar.cc/150?img=1" },
-		{ id: 2, name: "Jane Smith", message: "Let's meet tomorrow", img: "https://i.pravatar.cc/150?img=2" },
-		{ id: 3, name: "Alex Brown", message: "Check out this pic!", img: "https://i.pravatar.cc/150?img=3" },
-	];
-
+const Messages = () => {
 	const { t } = useTranslation();
+	// Đặt kiểu dữ liệu cho state
+	const [conversations, setConversations] = useState<Conversation[]>([]);
+	const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
+	const [messages, setMessages] = useState<Message[]>([]);
 
+	// Lấy danh sách conversation của user
+	useEffect(() => {
+		const fetchConversations = async () => {
+			try {
+				const response = await axios.get(`http://localhost:9999/api/messages/getAllConversation/${userId}`);
+				setConversations(response.data.data || []);
+			} catch (error) {
+				console.error("Lỗi khi lấy danh sách cuộc trò chuyện:", error);
+			}
+		};
+		fetchConversations();
+	}, []);
+
+	const handleSelectChat = async (chat: Conversation) => {
+		setSelectedChat(chat); // ✅ Set full conversation object
+
+		try {
+			const response = await axios.get(`http://localhost:9999/api/messages/1/1`);
+			setMessages(Array.isArray(response.data.data.listMessageDTO) ? response.data.data.listMessageDTO : []);
+		} catch (error) {
+			console.error("Lỗi khi lấy tin nhắn:", error);
+		}
+	};
+
+
+	console.log("messages", messages)
 
 	return (
 		<div className="flex w-[100%] h-[100vh]" style={{ borderColor: "var(--white-to-gray)" }}>
 			{/* Sidebar danh sách chat */}
-			<div className="w-[550px] border-r" style={{ borderColor: "var(--white-to-gray)" }}>
-				<h2 className="p-4 pt-6 text-2xl font-bold">Usename</h2>
-				<h2 className="p-4 pt-6 font-bold">{t('messages')}</h2>
-				<div className="overflow-y-auto">
-					{conversations.map((chat) => (
+			<div className="w-[550px] border-r overflow-y-auto" style={{ borderColor: "var(--white-to-gray)" }}>
+				<h2 className="p-4 pt-6 text-2xl font-bold">Username</h2>
+				<h2 className="p-4 pt-6 font-bold">{t("messages")}</h2>
+				{conversations.length === 0 ? (
+					<p className="p-4 text-gray-500">Không có cuộc trò chuyện nào.</p>
+				) : (
+					conversations.map((chat) => (
 						<div
-							key={chat.id}
-							className="flex items-center p-3 cursor-pointer hover:bg-gray-100"
+							key={chat.idConversation}
+							className={`flex items-center p-3 cursor-pointer hover:bg-gray-100 ${selectedChat?.idConversation === chat.idConversation ? "bg-gray-300" : ""}`}
 							style={{
 								color: "var(--text-color)",
-								background: selectedChat === chat.id ? "var(--message-bg-color)" : "transparent",
 								borderColor: "var(--white-to-gray)",
 							}}
-							onClick={() => setSelectedChat(chat.id)}
+							onClick={() => handleSelectChat(chat)}
 						>
-							<img src={chat.img} alt={chat.name} className="w-15 h-15 rounded-full mr-3" />
+							<img src={chat.img || "/default-avatar.png"} alt="Avatar" className="w-12 h-12 rounded-full mr-3" />
 							<div>
-								<p className="font-normal" style={{ color: "var(--text-color)" }}>{chat.name}</p>
-								<p className="text-sm" style={{ color: "var(--message-text-color)" }}>{chat.message}</p>
+								<p className="font-normal" style={{ color: "var(--text-color)" }}>
+									{chat.firstNameReceiver} {chat.lastNameReceiver}
+								</p>
+								<p className="text-sm text-gray-500">
+									{chat.listMessageDTO && chat.listMessageDTO.length > 0 ? chat.listMessageDTO[0]?.content : "Chưa có tin nhắn"}
+								</p>
 							</div>
 						</div>
-					))}
-				</div>
+					))
+				)}
 			</div>
 
 			{/* Khung chat bên phải */}
 			<div className="w-[100%] flex flex-col">
 				{selectedChat ? (
 					<div className="flex flex-col h-full">
+						{/* Header khung chat */}
 						<div className="p-4 border-b flex items-center" style={{ borderColor: "var(--white-to-gray)" }}>
 							<img
-								src={conversations.find((chat) => chat.id === selectedChat)?.img}
-								alt=""
+								src={
+									conversations.find((chat) => chat.idConversation === selectedChat?.idConversation)?.img ||
+									"/default-avatar.png"
+								}
+								alt="Avatar"
 								className="w-10 h-10 rounded-full mr-3"
 							/>
-							<p className="font-semibold">{conversations.find((chat) => chat.id === selectedChat)?.name}</p>
-						</div>
-
-						<div className="flex flex-col justify-center items-center mt-6">
-							<img
-								src={conversations.find((chat) => chat.id === selectedChat)?.img}
-								alt=""
-								className="w-25 h-25 rounded-full"
-							/>
-							<p className="text-[20px] font-semibold mt-2">{conversations.find((chat) => chat.id === selectedChat)?.name}</p>
+							<p className="font-semibold">
+								{conversations.find((chat) => chat.idConversation === selectedChat?.idConversation)?.firstNameReceiver}{" "}
+								{conversations.find((chat) => chat.idConversation === selectedChat?.idConversation)?.lastNameReceiver}
+							</p>
 						</div>
 
 						{/* Nội dung tin nhắn */}
 						<div className="flex-1 overflow-y-auto p-4">
-							<p
-								className="p-2 pl-4 rounded-3xl max-w-xs mb-2"
-								style={{ color: "var(--text-color)", background: "var(--message-bg-color)", borderColor: "var(--white-to-gray)" }}
-							>
-								Hello!
-							</p>
-							<p className="bg-blue-400 text-white p-2 pl-4 rounded-3xl max-w-xs mb-2 ml-auto">Hi there! 👋</p>
+							{messages.length === 0 ? (
+								<p className="text-center text-gray-500">Chưa có tin nhắn nào.</p>
+							) : (
+								messages.map((msg, index) => (
+									<p
+										key={index}
+										className={`p-2 pl-4 rounded-3xl max-w-xs mb-2 ${msg.idSender === userId ? "ml-auto bg-blue-400 text-white" : "bg-gray-200"}`}
+										style={{
+											color: msg.idSender === userId ? "white" : "var(--text-color)",
+											background: msg.idSender === userId ? "var(--message-bg-color)" : "gray",
+											borderColor: "var(--white-to-gray)",
+										}}
+									>
+										{msg.content}
+									</p>
+								))
+							)}
 						</div>
 
 						{/* Input gửi tin nhắn */}
-						<div className="flex items-center rounded-full px-4 focus:outline-none ml-4 mr-4 mb-4 border"
-							style={{ borderColor: "var(--white-to-gray)" }}>
+						<div className="flex items-center rounded-full px-4 focus:outline-none ml-4 mr-4 mb-4 border" style={{ borderColor: "var(--white-to-gray)" }}>
 							<CommentInput />
 						</div>
 					</div>
 				) : (
 					<div className="flex items-center justify-center h-full text-gray-500">
-						Select a conversation to start chatting
+						Chọn một cuộc trò chuyện để bắt đầu nhắn tin
 					</div>
 				)}
 			</div>
 		</div>
 	);
-}
+};
+
+export default Messages;
