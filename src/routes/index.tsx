@@ -29,7 +29,7 @@ interface Route {
 }
 
 export const routes: Route[] = [
-  { path: '/', exact: true, name: 'Home', element: <Home /> },
+  { path: '/', exact: true, name: 'Dashboard', element: <Dashboard /> },
   { path: '/dashboard', name: 'Dashboard', element: <Dashboard /> },
   { path: '/user', name: 'User', element: <User /> },
   { path: '/post', name: 'Post', element: <Post /> }, // Now using the lazy-loaded Post
