@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
-import CommentInput from "../../components/CommentInput/CommentInput";
+import MessageInput from "../../components/CommentInput/MessageInput";
 
 const userId = 1; // Giả sử ID user là 1, có thể lấy từ context hoặc props
 // Định nghĩa type Conversation
@@ -44,9 +44,10 @@ const Messages = () => {
 
 	const handleSelectChat = async (chat: Conversation) => {
 		setSelectedChat(chat); // ✅ Set full conversation object
+		console.log(chat)
 
 		try {
-			const response = await axios.get(`http://localhost:9999/api/messages/1/1`);
+			const response = await axios.get(`http://localhost:9999/api/messages/1/${chat.idConversation}`);
 			setMessages(Array.isArray(response.data.data.listMessageDTO) ? response.data.data.listMessageDTO : []);
 		} catch (error) {
 			console.error("Lỗi khi lấy tin nhắn:", error);
@@ -132,7 +133,11 @@ const Messages = () => {
 
 						{/* Input gửi tin nhắn */}
 						<div className="flex items-center rounded-full px-4 focus:outline-none ml-4 mr-4 mb-4 border" style={{ borderColor: "var(--white-to-gray)" }}>
-							<CommentInput />
+						<MessageInput 
+						conversationId={selectedChat.idConversation} 
+						senderId={userId} 
+						onMessageSent={(newMessage) => setMessages([...messages, newMessage])}
+						/>
 						</div>
 					</div>
 				) : (
