@@ -10,7 +10,6 @@
     "close": "Close",
     "dark_mode": "Dark Mode",
     "light_mode": "Light Mode",
-    "hour": "hour",
     "suggested_for_you": "Suggested for you",
     "view_all": "View all",
     "likes": "likes",
@@ -26,6 +25,12 @@
     "follower": "followers",
     "post": "posts",
     "started_following_you": "started following you",
-    "week": "week",
-    "no_results_found": "No results found."
+    "no_results_found": "No results found.",
+    "year": "year ago",
+    "month": "month ago",
+    "week": "week ago",
+    "day": "day ago",
+    "hour": "hour ago",
+    "minute": "minute ago",
+    "just_now": "Just now"
 }

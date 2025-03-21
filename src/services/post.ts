@@ -3,7 +3,7 @@ import axios from "axios";
 const API_BASE_URL = "http://localhost:9999/api/posts";
 
 const BEARER_TOKEN =
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDF4MSIsImlhdCI6MTc0MjIyMDY5MCwiZXhwIjoxNzQyMjIyNDkwfQ.OlxQJkH5qfcBug8d-zMgz91-QNJxEaJK4Cwg2FRII54";
+    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDIyODIxMTgsImV4cCI6MTc0MjI4MzkxOH0.ZEN-pyOMFYJy4ubSZcexF85txxDmszYE1_GPQvvAl-o";
 
 export const getPosts = async () => {
     try {

@@ -5,7 +5,6 @@ import { Modal, Carousel } from 'antd';
 import { IconDots } from "../icons/ic_dots";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
-import { getPosts, getww } from "../../services/post";
 import { formatTimeAgo } from "../../utils/date";
 
 type PostMedia = {
@@ -35,8 +34,6 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 	const [saved, setSaved] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
-
-
 	// Lấy giá trị theme từ context
 	const { theme } = useTheme();
 
@@ -55,7 +52,7 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 						className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 					/>
 					<span className="font-semibold text-gray-800" style={{ color: "var(--text-color)" }}>{post?.userId} </span>
-					<span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>{formatTimeAgo(`${post?.createdAt}`)}  {t('hour')}</span>
+					<span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>{formatTimeAgo(`${post?.createdAt}`, t)}  </span>
 				</div>
 				<p className="text-gray-600"><IconDots color={iconColor} /></p>
 			</div>
@@ -101,23 +98,23 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 			{/* Modal hiển thị hình ảnh + comments */}
 			<Modal open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={"70%"}
 				centered className="model-custom" height={"90%"}>
-				<div className="flex">
+				<div className="flex w-full h-full">
 					{/* Hình ảnh bên trái */}
-					<div className="w-[55%]">
-						<Carousel infinite={false} arrows>
+					<div className="w-[55%] h-[full]">
+						<Carousel infinite={false} arrows className="carousel-custom">
 							{post?.postMedia.map((postMedia: any) => (
 								<img
 									key={postMedia?.postMediaId}
 									src={postMedia?.mediaUrl}
 									alt="Post"
-									className="w-full h-[585px] object-cover rounded-lg"
+									className="w-full h-full object-cover rounded-lg"
 								/>
 							))}
 						</Carousel>
 					</div>
 
 					{/* Comments bên phải */}
-					<div className="w-1/2 flex flex-col justify-between">
+					<div className="w-1/2 flex flex-col justify-between h-full">
 						<div className="overflow-y-auto h-[400px]">
 							<div className="flex p-5 justify-between items-center gap-3 border-b  pb-3"
 								style={{ borderColor: "var(--white-to-gray)" }}>
@@ -164,7 +161,7 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 							</div>
 							<div className="p-4 pt-0">
 								<p className="font-semibold text-[16px] mt-3" style={{ color: "var(--text-color)" }}>{post?.numberEmotion} {t('likes')}</p>
-								<p className="font-light" style={{ color: "var(--text-color)" }}>{formatTimeAgo(`${post?.createdAt} `)} {t('hour')}</p>
+								<p className="font-light" style={{ color: "var(--text-color)" }}>{formatTimeAgo(`${post?.createdAt}`, t)} </p>
 							</div>
 							<div className="pl-5 pr-5 border-t "
 								style={{ borderColor: "var(--white-to-gray)" }}
