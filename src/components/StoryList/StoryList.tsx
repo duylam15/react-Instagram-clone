@@ -91,7 +91,7 @@ const StoryList = () => {
 				))}
 			</div>
 			<div className="list-post ml-22 mt-[-10px]">
-				{posts.map((post: Post) => (
+				{posts?.map((post: Post) => (
 					<InstagramPost post={post} />
 				))}
 			</div>
