@@ -3,7 +3,11 @@ import axios from "axios";
 const API_BASE_URL = "http://localhost:9999/api/posts";
 
 const BEARER_TOKEN =
+<<<<<<< HEAD
     "";
+=======
+    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDIyODIxMTgsImV4cCI6MTc0MjI4MzkxOH0.ZEN-pyOMFYJy4ubSZcexF85txxDmszYE1_GPQvvAl-o";
+>>>>>>> eaf1c23dca1a4d83f31ec2966cc8e46e4db941a1
 
 export const getPosts = async () => {
     try {

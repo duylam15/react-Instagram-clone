@@ -10,7 +10,6 @@
     "close": "Đóng",
     "dark_mode": "Chế độ tối",
     "light_mode": "Chế độ sáng",
-    "hour": "giờ",
     "suggested_for_you": "Gợi ý cho bạn",
     "view_all": "Xem tất cả",
     "likes": "thích",
@@ -26,6 +25,12 @@
     "follower": "người theo dõi",
     "post": "bài viết",
     "started_following_you": "đã bắt đầu theo dõi bạn",
-    "week": "tuần",
-    "no_results_found": "Không tìm thấy kết quả nào."
+    "no_results_found": "Không tìm thấy kết quả nào.",
+    "year": "năm trước",
+    "month": "tháng trước",
+    "week": "tuần trước",
+    "day": "ngày trước",
+    "hour": "giờ trước",
+    "minute": "phút trước",
+    "just_now": "Vừa xong"
 }

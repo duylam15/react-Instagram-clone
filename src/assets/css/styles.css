@@ -147,9 +147,18 @@ button {
     color: black;
 }
 
+.ant-modal-body {
+    height: 100%;
+}
+
+.carousel-custom {
+    width: 100%;
+    height: 100%;
+    background: #000;
+}
+
 .ant-modal .ant-modal-content {
     padding: 0px;
-    height: 100%;
     width: 100%;
     height: 90vh !important;
     background: var(--bg-color);

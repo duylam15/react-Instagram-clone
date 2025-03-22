@@ -1,0 +1,32 @@
+/* CSS chung cho modal */
+.custom-modal .ant-modal-content {
+    padding-bottom: 0 !important;
+    border-radius: 10px;
+}
+
+.custom-modal .ant-modal-body {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Modal kích thước riêng */
+.custom-height-modal .ant-modal-content {
+    height: 40vh !important;
+    width: 65vh;
+}
+
+/* CSS chung cho button trong modal */
+.custom-modal .ant-btn {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* chữ màu cho Tải ảnh lên */
+.custom-modal .upload-btn {
+    color: rgb(0, 149, 246)  !important; 
+}
+
+/* Loại bỏ hover cho button Hủy */
+.custom-modal .no-hover:hover {
+    background-color: transparent !important;
+}
