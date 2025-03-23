@@ -40,7 +40,7 @@ const AppSidebar: React.FC = () => {
       onVisibleChange={(visible: boolean) => {
         dispatch({ type: 'set', sidebarShow: visible })
       }}
-      style={{ width: '21%' }}
+      
     >
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand>
