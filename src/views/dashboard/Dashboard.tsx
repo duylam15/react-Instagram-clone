@@ -51,7 +51,7 @@ const Dashboard = () => {
   const [growthData, setGrowthData] = useState<{ time: string; value: number }[]>([]);
   const [userLoading, setUserLoading] = useState(false);
 
-  // State cho thống kê top 3 bài đăng
+  // State cho thống kê top 5 bài đăng
   const [postTimeFrame, setPostTimeFrame] = useState('monthly');
   const [week, setWeek] = useState<number | null>(null);
   const [month, setMonth] = useState<number | null>(null);
@@ -98,7 +98,7 @@ const Dashboard = () => {
     fetchGrowthData();
   }, [userTimeFrame]);
 
-  // Fetch dữ liệu top 3 bài đăng
+  // Fetch dữ liệu top 5 bài đăng
   useEffect(() => {
     const fetchTopPosts = async () => {
       setPostLoading(true);
@@ -163,7 +163,7 @@ const Dashboard = () => {
     />
   );
 
-  // Biểu đồ cột cho top 3 bài đăng
+  // Biểu đồ cột cho top 5 bài đăng
   const postChart = (
     <CChartBar
       data={{
@@ -247,9 +247,9 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Thống kê top 3 bài đăng */}
+      {/* Thống kê top 5 bài đăng */}
       <div className="stats-container">
-        <h2>Thống kê top 3 bài đăng có lượt tương tác cao nhất</h2>
+        <h2>Thống kê top 5 bài đăng có lượt tương tác cao nhất</h2>
         <div className="filter-container">
           <Select
             value={postTimeFrame}
