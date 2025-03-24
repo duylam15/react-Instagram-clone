@@ -1,7 +1,7 @@
-import { Column, Line, ColumnProps } from '@ant-design/charts';
-import { Card, Select, Spin, Table } from 'antd';
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
+import { CChartLine, CChartBar } from '@coreui/react-chartjs';
+import { Card, Select, Spin, Table } from 'antd';
 import './Thongke.scss';
 
 const { Option } = Select;
@@ -41,9 +41,7 @@ const postColumns = [
 const colors = [
   'hsl(16, 100%, 76%)', // Orange cho Cảm xúc
   'hsl(217, 100%, 50%)', // Blue cho Bình luận
-  'hsl(0, 100%, 67%)', // Pink cho Chia sẻ
-  'hsl(145, 84%, 73%)', // Green
-  'hsl(271, 100%, 71%)', // Purple
+  'hsl(0, 100%, 67%)',  // Pink cho Chia sẻ
 ];
 
 const Dashboard = () => {
@@ -75,7 +73,7 @@ const Dashboard = () => {
         const endpoint = `http://localhost:9999/api/users/statistics/${userTimeFrame}`;
         const response = await axios.get(endpoint);
         if (response.data.statusCode === 204) {
-          setGrowthData([]); // Không có dữ liệu
+          setGrowthData([]);
         } else {
           const formattedData = response.data.data.map((item: any) => ({
             time: userTimeFrame === 'daily'
@@ -115,9 +113,9 @@ const Dashboard = () => {
         }
         const response = await axios.get(endpoint);
         if (response.data.statusCode === 204) {
-          setTopPosts([]); // Không có dữ liệu
+          setTopPosts([]);
         } else {
-          setTopPosts(response.data.data);
+          setTopPosts(response.data.data.slice(0, 5)); // Chỉ lấy top 3
         }
       } catch (error) {
         console.error('Error fetching top posts:', error);
@@ -138,47 +136,67 @@ const Dashboard = () => {
     }
   }, [postTimeFrame, week, month, year]);
 
-  // Cấu hình biểu đồ cho thống kê người dùng mới
-  const growthRateConfig = {
-    data: growthData,
-    xField: 'time',
-    yField: 'value',
-    smooth: true,
-    point: { size: 5, shape: 'diamond' },
-    areaStyle: { fillOpacity: 0.2 },
-  };
+  // Biểu đồ đường cho thống kê người dùng mới
+  const growthRateChart = (
+    <CChartLine
+      data={{
+        labels: growthData.map(item => item.time),
+        datasets: [
+          {
+            label: 'Số lượng người dùng mới',
+            data: growthData.map(item => item.value),
+            borderColor: 'hsl(217, 100%, 50%)',
+            fill: true,
+            backgroundColor: 'rgba(0, 123, 255, 0.2)',
+          },
+        ],
+      }}
+      options={{
+        plugins: {
+          legend: { display: true },
+        },
+        scales: {
+          x: { title: { display: true, text: 'Thời gian' } },
+          y: { title: { display: true, text: 'Số lượng' } },
+        },
+      }}
+    />
+  );
 
-  // Xử lý dữ liệu cho biểu đồ cột top 3 bài đăng
-  const postChartData = topPosts.flatMap((post) => [
-    { postId: post.postId, interactionType: 'Cảm xúc', value: post.numberEmotion },
-    { postId: post.postId, interactionType: 'Bình luận', value: post.numberComment },
-    { postId: post.postId, interactionType: 'Chia sẻ', value: post.numberShare },
-  ]);
-
-  // Cấu hình biểu đồ cột cho top 3 bài đăng
-  const postChartConfig: ColumnProps = {
-    data: postChartData,
-    xField: 'postId',
-    yField: 'value',
-    seriesField: 'interactionType',
-    isGroup: true,
-    color: colors.slice(0, 3),
-    label: {
-      position: 'top',
-      style: { fill: '#FFFFFF', opacity: 0.6 },
-    },
-    xAxis: {
-      label: {
-        autoHide: true,
-        autoRotate: false,
-      },
-    },
-    meta: {
-      postId: { alias: 'ID Bài đăng' },
-      value: { alias: 'Số lượng' },
-      interactionType: { alias: 'Loại tương tác' },
-    },
-  };
+  // Biểu đồ cột cho top 3 bài đăng
+  const postChart = (
+    <CChartBar
+      data={{
+        labels: topPosts.map(post => `Post ${post.postId}`),
+        datasets: [
+          {
+            label: 'Cảm xúc',
+            data: topPosts.map(post => post.numberEmotion),
+            backgroundColor: colors[0],
+          },
+          {
+            label: 'Bình luận',
+            data: topPosts.map(post => post.numberComment),
+            backgroundColor: colors[1],
+          },
+          {
+            label: 'Chia sẻ',
+            data: topPosts.map(post => post.numberShare),
+            backgroundColor: colors[2],
+          },
+        ],
+      }}
+      options={{
+        plugins: {
+          legend: { display: true },
+        },
+        scales: {
+          x: { title: { display: true, text: 'Bài đăng' } },
+          y: { title: { display: true, text: 'Số lượng' } },
+        },
+      }}
+    />
+  );
 
   return (
     <div className="dashboard-container">
@@ -215,7 +233,7 @@ const Dashboard = () => {
           ) : growthData.length === 0 ? (
             <div className="no-data">Không có dữ liệu để hiển thị</div>
           ) : userViewType === 'Chart' ? (
-            <Line {...growthRateConfig} />
+            growthRateChart
           ) : (
             <Table
               dataSource={growthData.map((item, index) => ({
@@ -254,9 +272,7 @@ const Dashboard = () => {
               placeholder="Chọn tuần"
             >
               {weekList.map((w) => (
-                <Option key={w} value={w}>
-                  Tuần {w}
-                </Option>
+                <Option key={w} value={w}>Tuần {w}</Option>
               ))}
             </Select>
           )}
@@ -268,9 +284,7 @@ const Dashboard = () => {
               placeholder="Chọn tháng"
             >
               {monthList.map((m) => (
-                <Option key={m} value={m}>
-                  Tháng {m}
-                </Option>
+                <Option key={m} value={m}>Tháng {m}</Option>
               ))}
             </Select>
           )}
@@ -280,9 +294,7 @@ const Dashboard = () => {
             onChange={(value: number) => setYear(value)}
           >
             {yearList.map((y) => (
-              <Option key={y} value={y}>
-                {y}
-              </Option>
+              <Option key={y} value={y}>{y}</Option>
             ))}
           </Select>
           <Select
@@ -302,11 +314,7 @@ const Dashboard = () => {
           ) : topPosts.length === 0 ? (
             <div className="no-data">Không có dữ liệu để hiển thị</div>
           ) : postViewType === 'Chart' ? (
-            postChartData.length > 0 ? (
-              <Column {...postChartConfig} />
-            ) : (
-              <div className="no-data">Đang tải dữ liệu biểu đồ...</div>
-            )
+            postChart
           ) : (
             <Table
               dataSource={topPosts.map((item, index) => ({
