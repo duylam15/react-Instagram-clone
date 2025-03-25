@@ -3,7 +3,9 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import MessageInput from "../../components/CommentInput/MessageInput";
 
-const userId = 1; // Giả sử ID user là 1, có thể lấy từ context hoặc props
+import { Client, Stomp } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
+const userId = Number(localStorage.getItem("userId")); 
 // Định nghĩa type Conversation
 interface Conversation {
 	idConversation: number;
@@ -28,7 +30,33 @@ const Messages = () => {
 	const [conversations, setConversations] = useState<Conversation[]>([]);
 	const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
-
+	useEffect(() => {
+		const socket = new SockJS("http://localhost:9999/api/ws");
+    	const stompClient = Stomp.over(socket);
+		stompClient.onConnect = () => {
+			console.log("Connected to WebSocket Server");
+	
+			// Lắng nghe tin nhắn từ backend
+			const subscription = stompClient.subscribe(
+				`/topic/conversation/${selectedChat?.idConversation}`,
+				(message) => {
+					console.log("Received:", message.body);
+					const newMessage = JSON.parse(message.body);
+					setMessages((prevMessages) => [...prevMessages, newMessage]);
+				}
+			);
+	
+			return () => {
+				subscription.unsubscribe(); // Hủy lắng nghe khi component bị unmount
+			};
+		};
+	
+		stompClient.activate();
+	
+		return () => {
+			stompClient.deactivate();
+		};
+	}, [selectedChat]);
 	// Lấy danh sách conversation của user
 	useEffect(() => {
 		const fetchConversations = async () => {
