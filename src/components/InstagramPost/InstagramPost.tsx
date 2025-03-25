@@ -57,19 +57,29 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 				<p className="text-gray-600"><IconDots color={iconColor} /></p>
 			</div>
 
-			{/* Post Image */}
-			<Carousel
-				infinite={false}
-				arrows className="ant-custom">
-				{post?.postMedia.map((postMedia: any) => (
-					<img
-						key={postMedia?.postMediaId}
-						src={postMedia?.mediaUrl}
-						alt="Post"
-						className="w-full h-[585px] object-cover rounded-lg"
-					/>
-				))}
+			{/* Post Image or Video */}
+			<Carousel infinite={false} arrows className="ant-custom">
+				{post?.postMedia.map((postMedia: any) => {
+					const isVideo = postMedia.mediaType === "video" || postMedia.mediaUrl.endsWith(".mp4");
+
+					return isVideo ? (
+						<video
+							key={postMedia?.postMediaId}
+							src={postMedia?.mediaUrl}
+							controls
+							className="w-full h-[585px] object-cover rounded-lg"
+						/>
+					) : (
+						<img
+							key={postMedia?.postMediaId}
+							src={postMedia?.mediaUrl}
+							alt="Post"
+							className="w-full h-[585px] object-cover rounded-lg"
+						/>
+					);
+				})}
 			</Carousel>
+
 
 			{/* Actions */}
 			<div className="flex justify-between pt-4">
