@@ -22,3 +22,35 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Các file biên dịch của LaTeX
+*.aux
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# Các file PDF hoặc DVI đầu ra
+*.dvi
+*.pdf
+*.ps
+
+# Các file tạm thời của BiBTeX và các trình biên dịch khác
+*.bbl
+*.blg
+*.spl
+*.run.xml
+
+# Các file thư mục LaTeX có thể tạo lại
+_tex/
+
