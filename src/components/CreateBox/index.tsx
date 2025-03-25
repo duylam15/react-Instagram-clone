@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { Modal, Button, Carousel, Upload } from "antd";
+import { Modal, Button, Carousel, Upload, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import "./createBox.css"
 import axios from "axios";
@@ -41,7 +41,7 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 
 			// 1️⃣ Thêm dữ liệu `postCreateRequest`
 			const postCreateRequest = {
-				userId: 2,
+				userId: 1,
 				content: "aa",
 				visibility: "PUBLIC",
 				typePost: "TEXT",
@@ -66,12 +66,14 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 			const response = await axios.post("http://localhost:9999/api/posts", formData, {
 				headers: {
 					"Content-Type": "multipart/form-data",
-					Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDI2MzQ4NzQsImV4cCI6MTc0MjYzNjY3NH0.6nmhybRvUQoE_jyiK6kqFoLwLvRkU2rNKw_zCIg0pds`
+					Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDI4NjQyNzAsImV4cCI6MTc0Mjg2NjA3MH0.XFxyFEYl-G3PKdbUK1AqXSW0aJlK97Msf8zvMbNjjCk`
 				},
 			});
 
+			message.success("✅ Post created successfully!");
 			console.log("✅ Post created:", response.data);
 		} catch (error) {
+			message.error("❌ Error creating post!");
 			console.error("❌ Error creating post:", error);
 		}
 	};
