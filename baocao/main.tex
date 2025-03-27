@@ -1,14 +1,18 @@
-\documentclass[a4paper,12pt]{article}
-\usepackage[utf8]{vietnam}
+\documentclass[a4paper,12pt]{report}
+\usepackage[utf8]{inputenc} % Hỗ trợ mã hóa UTF-8
+\usepackage[T1]{fontenc} % Hỗ trợ font tiếng Việt
+\usepackage[vietnamese]{babel} % Hỗ trợ ngôn ngữ tiếng Việt
 \usepackage{titlesec}
 \usepackage{enumitem}
 \usepackage{graphicx}
 
+% Tùy chỉnh định dạng cho \part, \chapter, \section, \subsection
+\titleformat{\part}{\Huge\bfseries\center}{\thepart}{1em}{}
+\titleformat{\chapter}{\Huge\bfseries}{\thechapter}{1em}{}
 \titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
 \titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
 
 \begin{document}
-
 
 % Trang bìa
 \input{header/title}
@@ -16,24 +20,33 @@
 \newpage
 
 \section*{MỤC LỤC}
-\begin{itemize}
-		\item \textbf{LỜI CẢM ƠN} \dotfill \pageref{sec:thanks}
-    \item \textbf{GIỚI THIỆU} \dotfill \pageref{sec:introduction}
-    \item \textbf{LÝ DO CHỌN ĐỀ TÀI} \dotfill \pageref{sec:reason}
-    \item \textbf{YÊU CẦU CHỨC NĂNG} \dotfill \pageref{sec:functional-requirements}
-    \item \textbf{YÊU CẦU PHI CHỨC NĂNG} \dotfill \pageref{sec:non-functional-requirements}
-\end{itemize}
+\tableofcontents % Tự động tạo mục lục
 
 \newpage
 
-\input{chapter/thanks}\label{sec:thanks}
+\chapter{Lời cảm ơn}\label{sec:thanks}
+\input{chapter/thanks}
 
-\input{chapter/introduction}\label{sec:introduction}
+\chapter{Giới thiệu}\label{sec:introduction}
+\input{chapter/introduction}
 
-\input{chapter/reason}\label{sec:reason}
+\chapter{Lý do chọn đề tài}\label{sec:reason}
+\input{chapter/reason}
 
-\input{chapter/functional_requirements}\label{sec:functional-requirements} 
+\chapter{Yêu cầu chức năng}\label{sec:functional-requirements}
+\input{chapter/functional_requirements}
 
-\input{chapter/non_functional_requirements}\label{sec:non-functional-requirements}
+\chapter{Yêu cầu phi chức năng}\label{sec:non-functional-requirements}
+\input{chapter/non_functional_requirements}
+
+
+\chapter{Cấu trúc mã nguồn}
+\input{chapter/3_CauTRUCMaNguon.tex}
+
+\chapter{Các tính năng được xây dựng}
+\input{chapter/4_CacTinhNangXayDung.tex}
+
+\chapter{Sơ đồ ERD}
+\input{chapter/5_ERD.tex}
 
 \end{document}

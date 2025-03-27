@@ -1,9 +1,12 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { Modal, Button, Carousel, Upload } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Modal, Button, Carousel, Upload, message } from "antd";
+import { LeftOutlined, RightOutlined, UploadOutlined } from "@ant-design/icons";
 import "./createBox.css"
 import axios from "axios";
+import { FaSmile } from "react-icons/fa";
+import Picker from "@emoji-mart/react";
+import data from "@emoji-mart/data";
 
 interface CreateBoxProps {
 	onClose: () => void;
@@ -14,7 +17,8 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [images, setImages] = useState<string[]>([]);
 	console.log("imagesimagesimages", images)
-
+	const [comment, setComment] = useState("");
+	const [showPicker, setShowPicker] = useState(false);
 
 	// Chọn ảnh từ máy tính
 	const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,8 +45,8 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 
 			// 1️⃣ Thêm dữ liệu `postCreateRequest`
 			const postCreateRequest = {
-				userId: 2,
-				content: "aa",
+				userId: 1,
+				content: comment,
 				visibility: "PUBLIC",
 				typePost: "TEXT",
 			};
@@ -66,21 +70,30 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 			const response = await axios.post("http://localhost:9999/api/posts", formData, {
 				headers: {
 					"Content-Type": "multipart/form-data",
-					Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDI2MzQ4NzQsImV4cCI6MTc0MjYzNjY3NH0.6nmhybRvUQoE_jyiK6kqFoLwLvRkU2rNKw_zCIg0pds`
+					Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDI4NjQyNzAsImV4cCI6MTc0Mjg2NjA3MH0.XFxyFEYl-G3PKdbUK1AqXSW0aJlK97Msf8zvMbNjjCk`
 				},
 			});
 
+			message.success("✅ Post created successfully!");
 			console.log("✅ Post created:", response.data);
 		} catch (error) {
+			message.error("❌ Error creating post!");
 			console.error("❌ Error creating post:", error);
 		}
 	};
 
 
+	const handleEmojiSelect = (emoji: { native: string }) => {
+		setComment((prev) => prev + emoji.native); // Thêm emoji vào nội dung input
+		setShowPicker(false); // Ẩn picker sau khi chọn
+	};
+
+	console.log("Nội dung comment:", comment);
+
 	return (
-		<div className="overlay" >
+		<div className="overlay" onClick={onClose}>
 			<div className="rounded-xl" onClick={(e) => e.stopPropagation()}>
-				<div className="flex justify-between items-center flex-col w-[1000px] h-[90vh] bg-red-50 rounded-xl">
+				<div className="flex justify-between items-center flex-col mt-[-20px] w-[1000px] h-[90vh]  rounded-xl">
 					<div className="bg-black w-full text-white font-medium text-[20px] rounded-t-xl text-center p-2 flex justify-between items-center">
 						<div className="">
 						</div>
@@ -91,9 +104,9 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 							Create Post
 						</div>
 					</div>
-					<div className="flex w-full h-full">
+					<div className="flex w-full h-[90vh]">
 						{/* Khu vực hiển thị ảnh */}
-						<div className="bg-gray-700 h-full w-[60%] rounded-bl-xl flex items-center justify-center flex-col">
+						<div className="bg-gray-700 h-full max-w-[60%] w-full rounded-bl-xl flex items-center justify-center flex-col">
 							{images.length > 0 ? (
 								<div className="w-full h-full relative">
 									<Carousel infinite={false}
@@ -103,12 +116,12 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 												key={index}
 												src={img}
 												alt="Selected"
-												className="h-[85vh] w-[70%]  object-cover rounded-bl-xl"
+												className="h-[83vh] w-[70%]  object-cover rounded-bl-xl"
 											/>
 										))}
 									</Carousel>
 									<button
-										className="bg-white absolute bottom-5 right-10 p-2 rounded-lg shadow-md"
+										className="bg-black absolute bottom-5 right-10 p-2 rounded-lg shadow-md"
 										onClick={() => setIsModalOpen(true)}
 									>
 										Chỉnh sửa ảnh
@@ -148,52 +161,117 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 						</div>
 
 						{/* Khu vực comment */}
-						<div className="bg-gray-600 h-full w-[50%] rounded-br-xl flex items-center justify-center flex-col overflow-auto">
-							<div className="comment">Comment</div>
+						<div className="bg-gray-600 h-full w-[50%] rounded-br-xl  overflow-auto">
+							<div className="comment p-3">
+								<div className="flex items-center justify-start">
+									<img src="/public/images/uifaces-popular-image (7).jpg" alt=""
+										className="w-[50px] h-[50px] rounded-full" />
+									<div className="text-white">UserName</div>
+								</div>
+								<div className="input-post mt-3">
+									<div className="flex items-center py-2">
+										<textarea
+											placeholder={t('Comment')}
+											className="w-full text-white outline-none  p-1"
+											value={comment}
+											onChange={(e) => setComment(e.target.value)}
+											style={{ color: "var(--text-color)" }}
+										></textarea>
+
+										{/* Nút mở Emoji Picker */}
+										<FaSmile
+											className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
+											onClick={() => setShowPicker(!showPicker)}
+										/>
+
+										{/* Hiển thị Emoji Picker */}
+										{showPicker && (
+											<div className=" absolute bottom-0 right-54 z-10">
+												<Picker data={data} onEmojiSelect={handleEmojiSelect} />
+											</div>
+										)}
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 
 			{/* Modal chỉnh sửa ảnh */}
-			<Modal
-				open={isModalOpen}
-				onCancel={() => setIsModalOpen(false)}
-				footer={null}
-				centered
-				className="model_post"
-			>
-				<div className="flex">
-					{/* Danh sách ảnh hiện tại */}
-					<div className="flex flex-wrap gap-3 ">
-						{images.map((img, index) => (
-							<div key={index} className="relative group">
-								<img src={img} alt="Selected" className="w-24 h-24 object-cover rounded" />
-								<button
-									className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded opacity-80 hover:opacity-100 transition"
-									onClick={() => handleRemoveImage(index)}
-								>
-									Xóa
-								</button>
-							</div>
-						))}
-					</div>
-
-					{/* Thêm ảnh mới */}
-					<Upload
-						showUploadList={false}
-						beforeUpload={(file) => {
-							handleAddImage(file);
-							return false;
-						}}
+			{isModalOpen &&
+				<div onClick={(e) => e.stopPropagation()} style={{ top: "20%" }}>
+					<Modal
+						open={isModalOpen}
+						onCancel={() => setIsModalOpen(false)}
+						footer={null}
+						centered
+						className="model_post"
+						mask={false} // ❌ Tắt overlay
+						style={{ top: "20%" }}
 					>
-						<button className="w-24 h-24  rounded flex items-center justify-center gap-2" >
-							+
-						</button>
-					</Upload>
-				</div>
-			</Modal >
+						<div className="flex">
+							{/* Danh sách ảnh hiện tại */}
+							<div className="flex flex-wrap gap-3">
+								<Carousel
+									dots={true}
+									className="w-[240px]"
+									arrows
+									prevArrow={<CustomPrevArrow />}
+									nextArrow={<CustomNextArrow />}
+									slidesToShow={2}
+								>
+									{images.map((img, index) => (
+										<div key={index} className="relative">
+											<img src={img} alt="Selected" className="w-[100px] h-[100px] object-cover rounded" />
+											<button
+												className="absolute top-2 right-8 bg-red-500 text-white p-1 rounded opacity-80 hover:opacity-100 transition"
+												onClick={() => handleRemoveImage(index)}
+											>
+												Xóa
+											</button>
+										</div>
+									))}
+								</Carousel>
+							</div>
 
+							{/* Thêm ảnh mới */}
+							<div className="ml-4">
+								<Upload
+									showUploadList={false}
+									beforeUpload={(file) => {
+										handleAddImage(file);
+										return false;
+									}}
+								>
+									<button className="w-24 h-24 rounded flex items-center justify-center gap-2">
+										+
+									</button>
+								</Upload>
+							</div>
+						</div>
+					</Modal>
+				</div>
+			}
 		</div >
 	);
 }
+
+
+const CustomPrevArrow = ({ onClick }: any) => (
+	<div
+		className="absolute top-1/2 -left-8 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
+		onClick={onClick}
+	>
+		<LeftOutlined />
+	</div>
+);
+
+const CustomNextArrow = ({ onClick }: any) => (
+	<div
+		className="absolute top-1/2 -right-3 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
+		onClick={onClick}
+	>
+		<RightOutlined />
+	</div>
+);

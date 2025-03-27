@@ -8,8 +8,8 @@ export default function Avatar({ width, height }: { width: string, height: strin
 		<div className='flex  items-center justify-center gap-3'>
 			<img src="/public/images/uifaces-popular-image (11).jpg" className={`${width} ${height} rounded-full`} />
 			<div className="font-medium text-[15px] flex flex-col gap-0">
-				<p>username</p>
-				<p className='text-[14px] font-light'>{t('suggested_for_you')}</p>
+				<p className='mb-0'>username</p>
+				<p className='mb-0 text-[14px] font-light'>{t('suggested_for_you')}</p>
 			</div>
 		</div>
 	)
