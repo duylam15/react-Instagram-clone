@@ -3,25 +3,25 @@ import { Link, useNavigate } from "react-router-dom";
 import { notification } from "antd";
 import { callLogin, callInfoUser } from "../../services/auth";
 import { FaFacebook } from "react-icons/fa";
-import "./login.css"
+import "./login.css";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Hàm kiểm tra đầu vào
   const validateInputs = () => {
     let isValid = true;
-    let newErrors: { email?: string; password?: string } = {};
+    let newErrors: { username?: string; password?: string } = {};
 
-    if (!email) {
-      newErrors.email = "Vui lòng nhập email!";
+    if (!username) {
+      newErrors.username = "Vui lòng nhập tên đăng nhập!";
       isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email không hợp lệ!";
+    } else if (username.length < 3) {
+      newErrors.username = "Tên đăng nhập phải có ít nhất 3 ký tự!";
       isValid = false;
     }
 
@@ -38,17 +38,17 @@ const Login = () => {
   };
 
   // Xử lý nhập liệu - nếu đúng thì xóa lỗi
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    if (errors.email) {
-      setErrors((prev) => ({ ...prev, email: "" })); // Xóa lỗi nếu đúng
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value);
+    if (errors.username) {
+      setErrors((prev) => ({ ...prev, username: "" }));
     }
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
     if (errors.password) {
-      setErrors((prev) => ({ ...prev, password: "" })); // Xóa lỗi nếu đúng
+      setErrors((prev) => ({ ...prev, password: "" }));
     }
   };
 
@@ -68,27 +68,41 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await callLogin(email, password);
+      const res = await callLogin(username, password);
 
       if (res?.data) {
-        // Đăng nhập thành công, lấy thông tin người dùng
-        const userInfo = await callInfoUser(res.data.token);
+        // Lưu token vào localStorage
+        const token = res.data.token; // Đảm bảo key 'token' đúng với phản hồi từ backend
+        const userId = res.data.userId
+
+        console.log(res)
+        if (!token) {
+          throw new Error("Không tìm thấy token trong phản hồi");
+        }
+
+        localStorage.setItem("token", token); // Lưu token vào localStorage
+        localStorage.setItem("userId" , userId)
+
+        console.log("Token saved:", token);
+
+        // Lấy thông tin người dùng với token vừa lưu
+        const userInfo = await callInfoUser(token);
 
         notification.success({
           message: "Đăng nhập thành công!",
           duration: 3,
         });
 
-        console.log("User info:", userInfo);
+        console.log("User info:", userInfo.data); // Kiểm tra thông tin người dùng
         navigate("/register"); // Chuyển hướng sau khi đăng nhập
       } else {
         throw new Error("Thông tin đăng nhập không hợp lệ");
       }
-    } catch (error) {
-      
+    } catch (error: any) {
+      console.error("Login error:", error);
       notification.error({
         message: "Lỗi hệ thống!",
-        description: "Vui lòng thử lại sau.",
+        description: error.message || "Vui lòng thử lại sau.",
         duration: 5,
       });
     } finally {
@@ -115,14 +129,14 @@ const Login = () => {
           <div className="mb-2">
             <input
               type="text"
-              placeholder="Email"
-              value={email}
-              onChange={handleEmailChange}
+              placeholder="Tên đăng nhập"
+              value={username}
+              onChange={handleUsernameChange}
               className={`p-2 border rounded-md text-sm w-full ${
-                errors.email ? "border-red-500" : "border-gray-300"
+                errors.username ? "border-red-500" : "border-gray-300"
               } focus:outline-none focus:border-black`}
             />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+            {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
           </div>
 
           <div className="mb-2">
@@ -143,25 +157,24 @@ const Login = () => {
           </button>
         </form>
 
-          <div className="flex items-center my-3">
-            <div className="flex-grow border-t border-gray-300"></div>
-            <span className="px-2 text-gray-500 text-sm font-semibold">HOẶC</span>
-            <div className="flex-grow border-t border-gray-300"></div>
-          </div>
+        <div className="flex items-center my-3">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="px-2 text-gray-500 text-sm font-semibold">HOẶC</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
 
-          {/* Đăng nhập với Facebook */}
-          <button
-            className="flex btn_facebook items-center justify-center font-semibold p-2 rounded-lg hover:text-blue-800 transition duration-300 bg-transparent"
-            style={{ background: "none" }}
-          >
-            <FaFacebook style={{ fontSize: "20px", color: "rgb(76,181,249)", marginRight: 8 }} />
-            Đăng nhập bằng Facebook
-          </button>
+        {/* Đăng nhập với Facebook */}
+        <button
+          className="flex btn_facebook items-center justify-center font-semibold p-2 rounded-lg hover:text-blue-800 transition duration-300 bg-transparent"
+          style={{ background: "none" }}
+        >
+          <FaFacebook style={{ fontSize: "20px", color: "rgb(76,181,249)", marginRight: 8 }} />
+          Đăng nhập bằng Facebook
+        </button>
 
-          <Link to='/forgotpassword' className="text-black-500 text-sm text-center mt-2">
-            Quên mật khẩu?
-          </Link>
-        
+        <Link to="/forgotpassword" className="text-black-500 text-sm text-center mt-2">
+          Quên mật khẩu?
+        </Link>
 
         {/* Đăng ký tài khoản */}
         <div className="border border-gray-300 w-full text-center text-sm mt-5 p-3 rounded-md">

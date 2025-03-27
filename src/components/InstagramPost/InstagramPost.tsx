@@ -6,6 +6,7 @@ import { IconDots } from "../icons/ic_dots";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
 import { formatTimeAgo } from "../../utils/date";
+import CommentSection from "../../views/comment/Comment";
 
 type PostMedia = {
 	mediaId: number;
@@ -92,7 +93,7 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 
 			{/* Comment Input */}
 			<div className="mt-2 pt-2 ">
-				<CommentInput />
+				<CommentInput post={post} />
 			</div>
 
 			{/* Modal hiển thị hình ảnh + comments */}
@@ -130,19 +131,7 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 								<div className="text-gray-600"><IconDots color={iconColor} /></div>
 							</div>
 							<div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
-								{post?.comments.map((comments: any) => (
-									<div className="flex  items-center gap-3">
-										<img
-											src="/public/images/uifaces-popular-image (11).jpg"
-											alt="Avatar"
-											className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
-										/>
-										<div className="flex flex-col items-start justify-center">
-											<span className="font-semibold" style={{ color: "var(--text-color)" }}>{post?.userId}</span>
-											<span className="font-semibold" style={{ color: "var(--text-color)" }}>Nội dung comment</span>
-										</div>
-									</div>
-								))}
+									<CommentSection comments={post?.comments} post={post} />
 							</div>
 						</div>
 						<div>
@@ -165,7 +154,7 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 							</div>
 							<div className="pl-5 pr-5 border-t "
 								style={{ borderColor: "var(--white-to-gray)" }}
-							><CommentInput /></div>
+							><CommentInput post={post} /></div>
 						</div>
 					</div>
 				</div>
