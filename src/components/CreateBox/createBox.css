@@ -12,9 +12,12 @@
 }
 
 .model_post .ant-modal-content{
-  background: red !important;
+  padding: 15px;
+  padding-left: 50px;
+  background: rgb(57, 57, 57) !important;
   width: auto;
-  height: 96px  !important; 
+  height: 125px  !important; 
+  width: 420px !important;
 }
 
 .model_post  .ant-modal-title {

@@ -40,9 +40,10 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 	// Lấy hàm dịch `t` từ i18n
 	const { t } = useTranslation();
 	const iconColor = theme === "dark" ? "white" : "black";
+	const [isOpen, setIsOpen] = useState(false);
 
 	return (
-		<div className={`max-w-[470px] h-[900px] var(--bg-color) pt-2 border-b border-gray-600`}>
+		<div className={`max-w-[470px] h-[900px] var(--bg-color) pt-0 border-b border-gray-600`}>
 			{/* Header */}
 			<div className="flex items-center justify-between pt-3 pb-3">
 				<div className="flex items-center gap-3">
@@ -54,7 +55,20 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 					<span className="font-semibold text-gray-800" style={{ color: "var(--text-color)" }}>{post?.userId} </span>
 					<span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>{formatTimeAgo(`${post?.createdAt}`, t)}  </span>
 				</div>
-				<p className="text-gray-600"><IconDots color={iconColor} /></p>
+				<div className="relative inline-block">
+					<p
+						className="text-gray-600 cursor-pointer"
+						onClick={() => setIsOpen(!isOpen)}
+					>
+						<IconDots color="gray" />
+					</p>
+					{isOpen && (
+						<div className="absolute z-40 right-0  w-40 bg-white border rounded-lg shadow-lg p-2">
+							<p className="p-2 hover:bg-gray-100 cursor-pointer">Xóa</p>
+							<p className="p-2 hover:bg-gray-100 cursor-pointer">Sửa</p>
+						</div>
+					)}
+				</div>
 			</div>
 
 			{/* Post Image or Video */}
@@ -82,8 +96,8 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 
 
 			{/* Actions */}
-			<div className="flex justify-between pt-4">
-				<div className="flex items-center gap-5">
+			<div className="flex justify-between pt-2">
+				<div className="flex items-center gap-4">
 					<p onClick={() => setLiked(!liked)} className="text-xl">
 						{liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
 					</p>
@@ -95,7 +109,7 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 				</p>
 			</div>
 			{/* Likes and Caption */}
-			<div className="pt-3">
+			<div className="">
 				<p className="font-semibold">{post?.numberEmotion} {t('likes')}</p>
 				<p><span className="font-semibold">{post?.userId}</span> {post?.content}</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>{t('view_more')} {post?.numberComment} {t('comment')} </p>
 			</div>
@@ -110,14 +124,14 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 				centered className="model-custom" height={"90%"}>
 				<div className="flex w-full h-full">
 					{/* Hình ảnh bên trái */}
-					<div className="w-[55%] h-[full]">
+					<div className="w-[55%] h-[full] rounded-xl">
 						<Carousel infinite={false} arrows className="carousel-custom">
 							{post?.postMedia.map((postMedia: any) => (
 								<img
 									key={postMedia?.postMediaId}
 									src={postMedia?.mediaUrl}
 									alt="Post"
-									className="w-full h-full object-cover rounded-lg"
+									className="w-full h-[90vh] object-cover rounded-l-lg"
 								/>
 							))}
 						</Carousel>
@@ -126,7 +140,7 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 					{/* Comments bên phải */}
 					<div className="w-1/2 flex flex-col justify-between h-full">
 						<div className="overflow-y-auto h-[400px]">
-							<div className="flex p-5 justify-between items-center gap-3 border-b  pb-3"
+							<div className="flex p-3 justify-between items-center gap-3 border-b  pb-3"
 								style={{ borderColor: "var(--white-to-gray)" }}>
 								<div className="flex items-center justify-center gap-3">
 									<img
@@ -158,7 +172,7 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 						<div>
 
 							<div className="flex justify-between p-4 pb-0 border-t" style={{ borderColor: "var(--white-to-gray)" }}>
-								<div className="flex items-center gap-5">
+								<div className="flex items-center gap-3">
 									<p onClick={() => setLiked(!liked)} className="text-xl">
 										{liked ? <FaHeart className="text-red-500" /> : <FaRegHeart style={{ color: "var(--text-color)" }} />}
 									</p>
@@ -169,9 +183,9 @@ const InstagramPost = ({ post }: { post?: Post }) => {
 									{saved ? <FaBookmark style={{ color: "var(--text-color)" }} /> : <FaRegBookmark style={{ color: "var(--text-color)" }} />}
 								</p>
 							</div>
-							<div className="p-4 pt-0">
-								<p className="font-semibold text-[16px] mt-3" style={{ color: "var(--text-color)" }}>{post?.numberEmotion} {t('likes')}</p>
-								<p className="font-light" style={{ color: "var(--text-color)" }}>{formatTimeAgo(`${post?.createdAt}`, t)} </p>
+							<div className="p-4 pt-0 ">
+								<p className="font-semibold text-[16px] p-0 m-0 " style={{ color: "var(--text-color)" }}>{post?.numberEmotion} {t('likes')}</p>
+								<p className="font-light p-0 m-0 " style={{ color: "var(--text-color)" }}>{formatTimeAgo(`${post?.createdAt}`, t)} </p>
 							</div>
 							<div className="pl-5 pr-5 border-t "
 								style={{ borderColor: "var(--white-to-gray)" }}

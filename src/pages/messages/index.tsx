@@ -86,7 +86,7 @@ const Messages = () => {
 	console.log("messages", messages)
 
 	return (
-		<div className="flex w-[100%] h-[100vh]" style={{ borderColor: "var(--white-to-gray)" }}>
+		<div className="flex w-[92%] h-[100vh] ml-20" style={{ borderColor: "var(--white-to-gray)" }}>
 			{/* Sidebar danh sách chat */}
 			<div className="w-[550px] border-r overflow-y-auto" style={{ borderColor: "var(--white-to-gray)" }}>
 				<h2 className="p-4 pt-6 text-2xl font-bold">Username</h2>
