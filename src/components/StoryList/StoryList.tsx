@@ -65,9 +65,7 @@ const StoryList = () => {
 		fetchPosts();
 	}, []);
 
-
 	console.log("postspostsposts", posts)
-
 	return (
 		<div className="home">
 			<div

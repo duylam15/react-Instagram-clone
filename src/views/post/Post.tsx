@@ -74,6 +74,8 @@ const Post = () => {
 
   // Xử lý khi chọn file mới
   const handleFileChange = ({ fileList }) => {
+    console.log(fileList)
+    console.log(newFiles)
     setNewFiles(fileList.map(file => file.originFileObj));
   };
 
@@ -146,7 +148,7 @@ const Post = () => {
             onChange={(e) => setEditedContent(e.target.value)}
           />
 
-          {/* Chọn chế độ hiển thị */} 
+          {/* Chọn chế độ hiển thị */}
           <Select
             value={visibility}
             onChange={setVisibility}
@@ -227,12 +229,12 @@ const Post = () => {
                       <CTableDataCell>{post.visibility}</CTableDataCell>
                       <CTableDataCell>
                         <div style={{ display: "flex", gap: 5 }} onClick={() => handleEdit(post)}>
-                        <CButton color="primary" size="sm" className="me-2">
-                          Xem
-                        </CButton>
-                        <CButton color="warning" size="sm" onClick={() => handleEdit(post)}>
-                          Sửa
-                        </CButton>
+                          <CButton color="primary" size="sm" className="me-2">
+                            Xem
+                          </CButton>
+                          <CButton color="warning" size="sm" onClick={() => handleEdit(post)}>
+                            Sửa
+                          </CButton>
                         </div>
                       </CTableDataCell>
                     </CTableRow>
