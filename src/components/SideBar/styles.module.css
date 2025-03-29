@@ -11,6 +11,8 @@
     position: fixed;
     border-right: 1px solid var(--white-to-gray);
     z-index: 100;
+     background: var(--bg-color);
+  color: var(--text-color);
 }
 
 .searchContainer {

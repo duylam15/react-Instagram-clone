@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import { FaHeart, FaRegHeart, FaComment, FaPaperPlane, FaBookmark, FaRegBookmark, FaSmile } from "react-icons/fa";
 import CommentInput from "../CommentInput/CommentInput";
-import { Modal, Carousel, message, Upload } from 'antd';
+import { Modal, Carousel, message, Upload, Spin } from 'antd';
 import { IconDots } from "../icons/ic_dots";
-import { useTheme } from "../../contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
 import { formatTimeAgo } from "../../utils/date";
 import CommentSection from "../../views/comment/Comment";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 
-import axios from "axios";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { deletePostService, updatePost } from "../../services/post";
 
 type PostMedia = {
 	mediaId: number;
@@ -35,57 +34,22 @@ type Post = {
 
 interface InstagramPostProps {
 	post?: Post;
-	onClose: () => void;
+	onRefresh: () => void;
 }
 
-const InstagramPost = ({ post, onClose }: InstagramPostProps) => {
+const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	const [liked, setLiked] = useState(false);
 	const [saved, setSaved] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
-
-	console.log("postpostpost", post)
-
-	// Lấy giá trị theme từ context
-	const { theme } = useTheme();
-
-	// Lấy hàm dịch `t` từ i18n
-	const iconColor = theme === "dark" ? "white" : "black";
 	const [isOpen, setIsOpen] = useState(false);
-
-	const handleDelete = async (postId: number) => {
-		if (!postId) {
-			alert("Không tìm thấy ID bài viết!");
-			return;
-		}
-
-		try {
-			const formData = new FormData();
-			formData.append("postUpdateRequest", JSON.stringify({ visibility: "DELETE" }));
-
-			const response = await fetch(`http://localhost:9999/api/posts/${postId}`, {
-				method: "PUT",
-				body: formData,
-			});
-
-			if (response.ok) {
-				alert("Xóa bài viết thành công!");
-				setIsOpen(false);
-			} else {
-				alert("Xóa thất bại!");
-			}
-		} catch (error) {
-			console.error("Lỗi khi xóa bài viết:", error);
-		}
-	};
-
 	const [isOpenPut, setIsOpenPut] = useState(false);
-
 	const { t } = useTranslation();
 	const [isModalOpenPut, setIsModalOpenPut] = useState(false);
 	const [images, setImages] = useState<string[]>([]);
-	console.log("postpostpost", post)
 	const [comment, setComment] = useState("");
-	console.log("commentcommentcomment", comment)
+	const [showPicker, setShowPicker] = useState(false);
+	const [loading, setLoading] = useState(false);
+
 	useEffect(() => {
 		if (post?.postMedia) {
 			const mediaUrls = post.postMedia.map(media => media.mediaUrl);
@@ -96,9 +60,16 @@ const InstagramPost = ({ post, onClose }: InstagramPostProps) => {
 		}
 	}, [post]);  // Chạy khi `post` thay đổi
 
-
-	console.log("imagesimagesimages", images)
-	const [showPicker, setShowPicker] = useState(false);
+	const handleDelete = async (postId: number) => {
+		try {
+			const result = await deletePostService(postId);
+			alert(result.message);
+			setIsOpen(false);
+			onRefresh();
+		} catch (error: any) {
+			alert(error.message || "Lỗi khi xóa bài viết!");
+		}
+	};
 
 	// Xóa ảnh
 	const handleRemoveImage = (index: number) => {
@@ -113,78 +84,19 @@ const InstagramPost = ({ post, onClose }: InstagramPostProps) => {
 
 	const handlePostUpdate = async () => {
 		try {
-			// 🛠 Kiểm tra postId hợp lệ
-			if (!post?.postId) {
-				message.error("❌ Lỗi: Không tìm thấy ID bài viết!");
-				return;
+			setLoading(true); // Bắt đầu loading
+			const response = await updatePost(post?.postId, comment, images);
+			if (response?.data?.imageUrl) {
+				setImages([...images, response.data.imageUrl]);
 			}
-
-			// 🔹 Tạo FormData
-			const formData = new FormData();
-
-			// 🔹 Thêm dữ liệu bài viết (Tên chính xác: `postUpdateRequest`)
-			const postUpdateRequest = {
-				content: comment || "", // Đảm bảo không bị undefined
-				visibility: "PRIVATE",
-			};
-
-			// 🟢 Debug: Kiểm tra dữ liệu gửi đi
-			console.log("📝 postUpdateRequest:", postUpdateRequest);
-			formData.append("postUpdateRequest", JSON.stringify(postUpdateRequest));
-
-			// 🔹 Kiểm tra danh sách ảnh
-			if (images.length > 0) {
-				for (let i = 0; i < images.length; i++) {
-					try {
-						let file;
-
-						if (images[i].startsWith("blob:")) {
-							// Lấy file từ blob URL
-							const response = await fetch(images[i]);
-							const blob = await response.blob();
-							file = new File([blob], `image${i}.png`, { type: blob.type });
-						} else {
-							// Nếu là ảnh từ URL (đã upload trước đó), không cần fetch lại
-							file = images[i]; // Chỉ lưu URL, không cần append vào FormData
-						}
-
-						formData.append("newFiles", file);
-						console.log(`✅ Ảnh ${i + 1} đã được thêm vào FormData`);
-					} catch (error) {
-						console.error(`❌ Lỗi tải ảnh ${i + 1}:`, error);
-					}
-				}
-			}
-
-			// 🟢 Kiểm tra FormData trước khi gửi
-			console.log("🟢 FormData gửi đi:");
-			for (let pair of formData.entries()) {
-				console.log(pair[0], pair[1]);
-			}
-
-			// 🔹 Gửi API
-			const response = await axios.put(
-				`http://localhost:9999/api/posts/${post.postId}`,
-				formData,
-				{
-					headers: {
-						Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDMyMzYxMzcsImV4cCI6MTc0MzIzNzkzN30.oa2TUUj9CyKSRUQlBj0DCGk-HnRL4jB4yV1BRg0CcyM`,
-					},
-				}
-			);
-
-			if (response.data?.data?.imageUrl) {
-				setImages([...images, response.data.data.imageUrl]); // Cập nhật danh sách ảnh
-			}
-			console.log("imagesimagesxxx", response)
-
-
-			// ✅ Hiển thị thông báo thành công
-			message.success("✅ Bài viết đã được cập nhật thành công!");
-			console.log("✅ Phản hồi API:", response.data);
+			console.log("✅ Phản hồi API:", response);
+			onRefresh();
+			handleClose()
 		} catch (error) {
-			message.error("❌ Lỗi khi cập nhật bài viết!");
-			console.error("❌ Chi tiết lỗi:", error);
+			console.error("❌ Lỗi khi cập nhật bài viết:", error);
+		}
+		finally {
+			setLoading(false); // Kết thúc loading
 		}
 	};
 
@@ -193,13 +105,12 @@ const InstagramPost = ({ post, onClose }: InstagramPostProps) => {
 		setShowPicker(false); // Ẩn picker sau khi chọn
 	};
 
-	console.log("Nội dung comment:", comment);
 	const handleClose = () => {
 		setIsOpenPut(false)
 	};
 
 	return (
-		<div className={`max-w-[470px] h-[900px] var(--bg-color) pt-0 border-b border-gray-600`}>
+		<div className={`max-w-[470px] pt-0 border-b border-gray-600`}>
 			{/* Header */}
 			<div className="flex items-center justify-between pt-3 pb-3">
 				<div className="flex items-center gap-3">
@@ -211,23 +122,41 @@ const InstagramPost = ({ post, onClose }: InstagramPostProps) => {
 					<span className="font-semibold text-gray-800" style={{ color: "var(--text-color)" }}>{post?.userId} </span>
 					<span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>{formatTimeAgo(`${post?.createdAt}`, t)}  </span>
 				</div>
-				<div className="relative inline-block">
+				<div className="relative inline-block" style={{
+					color: "var(--text-color)",
+					background: " var(--bg-color)"
+				}}
+				>
 					<p
-						className="text-gray-600 cursor-pointer"
+						className=" cursor-pointer"
+
 						onClick={() => setIsOpen(!isOpen)}
 					>
 						<IconDots color="gray" />
 					</p>
 					{isOpen && (
-						<div className="absolute z-40 right-0  w-40 bg-white border rounded-lg shadow-lg p-2">
+						<div className="absolute z-40 right-0  w-40 border   rounded-lg shadow-lg flex  flex-col text-center "
+							style={{
+								color: "var(--text-color)",
+								background: " var(--white-to-gray)",
+								lineHeight: 1,
+								borderColor: "var(--white-to-gray)"
+							}}>
 							<p
-								className="p-2 hover:bg-gray-100 cursor-pointer"
+								className="hover:bg-gray-100 cursor-pointer w-full text-center leading-[40px] m-0 rounded-t-lg"
 								onClick={() => post?.postId && handleDelete(post.postId)}
-							>
+								onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-color-hover)")}
+								onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bg-color)")}>
 								Xóa
 							</p>
+							<p
+								className="hover:bg-gray-100 cursor-pointer w-full text-center leading-[40px] m-0 rounded-b-lg"
+								onClick={() => post?.postId && setIsOpenPut(true)}
+								onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-color-hover)")}
+								onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bg-color)")}>
+								Sửa
+							</p>
 
-							<p className="p-2 hover:bg-gray-100 cursor-pointer" onClick={() => post?.postId && setIsOpenPut(true)}>Sửa</p>
 						</div>
 					)}
 				</div>
@@ -235,79 +164,84 @@ const InstagramPost = ({ post, onClose }: InstagramPostProps) => {
 
 			{isOpenPut && <div className="overlay" onClick={() => handleClose()}>
 				<div className="rounded-xl" onClick={(e) => e.stopPropagation()}>
-					<div className="flex justify-between items-center flex-col mt-[-20px] w-[1000px] h-[90vh]  rounded-xl">
-						<div className="bg-black w-full text-white font-medium text-[20px] rounded-t-xl text-center p-2 flex justify-between items-center">
-							<div className="">
+					{loading ? (
+						<Spin size="large" tip="Creating post..." />
+					) : (
+						<div className="flex justify-between items-center flex-col mt-[-20px] w-[1000px] h-[90vh]  rounded-xl">
+
+							<div className="bg-black w-full text-white font-medium text-[20px] rounded-t-xl text-center p-2 flex justify-between items-center">
+								<div className="">
+								</div>
+								<div className="ml-30">
+									Update post
+								</div>
+								<div className="" onClick={handlePostUpdate}>
+									Update Post
+								</div>
 							</div>
-							<div className="ml-30">
-								Create new post
-							</div>
-							<div className="" onClick={handlePostUpdate}>
-								Create Post
-							</div>
-						</div>
-						<div className="flex w-full h-[90vh]">
-							{/* Khu vực hiển thị ảnh */}
-							<div className="bg-gray-700 h-full max-w-[60%] w-full rounded-bl-xl flex items-center justify-center flex-col">
-								{1 && (
-									<div className="w-full h-full relative">
-										<Carousel infinite={false}
-											arrows >
-											{images.map((img, index) => (
-												<img
-													key={index}
-													src={img}
-													alt="Selected"
-													className="h-[83vh] w-[70%]  object-cover rounded-bl-xl"
+							<div className="flex w-full h-[90vh]">
+								{/* Khu vực hiển thị ảnh */}
+								<div className="bg-gray-700 h-full max-w-[60%] w-full rounded-bl-xl flex items-center justify-center flex-col">
+									{1 && (
+										<div className="w-full h-full relative">
+											<Carousel infinite={false}
+												arrows >
+												{images.map((img, index) => (
+													<img
+														key={index}
+														src={img}
+														alt="Selected"
+														className="h-[83vh] w-[70%]  object-cover rounded-bl-xl"
+													/>
+												))}
+											</Carousel>
+											<button
+												className="bg-black absolute bottom-5 right-10 p-2 rounded-lg shadow-md"
+												onClick={() => setIsModalOpenPut(true)}
+											>
+												Chỉnh sửa ảnh
+											</button>
+										</div>
+									)}
+								</div>
+
+								{/* Khu vực comment */}
+								<div className="bg-gray-600 h-full w-[50%] rounded-br-xl  overflow-auto">
+									<div className="comment p-3">
+										<div className="flex items-center justify-start">
+											<img src="/public/images/uifaces-popular-image (7).jpg" alt=""
+												className="w-[50px] h-[50px] rounded-full" />
+											<div className="text-white">UserName</div>
+										</div>
+										<div className="input-post mt-3">
+											<div className="flex items-center py-2">
+												<textarea
+													placeholder={t('Comment')}
+													className="w-full text-white outline-none  p-1"
+													value={comment}
+													onChange={(e) => setComment(e.target.value)}
+													style={{ color: "var(--text-color)" }}
+												></textarea>
+
+												{/* Nút mở Emoji Picker */}
+												<FaSmile
+													className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
+													onClick={() => setShowPicker(!showPicker)}
 												/>
-											))}
-										</Carousel>
-										<button
-											className="bg-black absolute bottom-5 right-10 p-2 rounded-lg shadow-md"
-											onClick={() => setIsModalOpenPut(true)}
-										>
-											Chỉnh sửa ảnh
-										</button>
-									</div>
-								)}
-							</div>
 
-							{/* Khu vực comment */}
-							<div className="bg-gray-600 h-full w-[50%] rounded-br-xl  overflow-auto">
-								<div className="comment p-3">
-									<div className="flex items-center justify-start">
-										<img src="/public/images/uifaces-popular-image (7).jpg" alt=""
-											className="w-[50px] h-[50px] rounded-full" />
-										<div className="text-white">UserName</div>
-									</div>
-									<div className="input-post mt-3">
-										<div className="flex items-center py-2">
-											<textarea
-												placeholder={t('Comment')}
-												className="w-full text-white outline-none  p-1"
-												value={comment}
-												onChange={(e) => setComment(e.target.value)}
-												style={{ color: "var(--text-color)" }}
-											></textarea>
-
-											{/* Nút mở Emoji Picker */}
-											<FaSmile
-												className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
-												onClick={() => setShowPicker(!showPicker)}
-											/>
-
-											{/* Hiển thị Emoji Picker */}
-											{showPicker && (
-												<div className=" absolute bottom-0 right-54 z-10">
-													<Picker data={data} onEmojiSelect={handleEmojiSelect} />
-												</div>
-											)}
+												{/* Hiển thị Emoji Picker */}
+												{showPicker && (
+													<div className=" absolute bottom-0 right-54 z-10">
+														<Picker data={data} onEmojiSelect={handleEmojiSelect} />
+													</div>
+												)}
+											</div>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-					</div>
+					)}
 				</div>
 
 				{/* Modal chỉnh sửa ảnh */}
@@ -443,7 +377,26 @@ const InstagramPost = ({ post, onClose }: InstagramPostProps) => {
 									<span className="font-semibold" style={{ color: "var(--text-color)" }}>{post?.userId}</span>
 								</div>
 
-								<div className="text-gray-600"><IconDots color={iconColor} /></div>
+								<div className="relative inline-block">
+									<p
+										className="text-gray-600 cursor-pointer"
+										onClick={() => setIsOpen(!isOpen)}
+									>
+										<IconDots color="gray" />
+									</p>
+									{isOpen && (
+										<div className="absolute z-40 right-0  w-40 bg-white border rounded-lg shadow-lg p-2">
+											<p
+												className="p-2 hover:bg-gray-100 cursor-pointer"
+												onClick={() => post?.postId && handleDelete(post.postId)}
+											>
+												Xóa
+											</p>
+
+											<p className="p-2 hover:bg-gray-100 cursor-pointer" style={{ color: "var(--text-color)" }} onClick={() => post?.postId && setIsOpenPut(true)}>Sửa</p>
+										</div>
+									)}
+								</div>
 							</div>
 							<div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
 								<CommentSection comments={post?.comments} post={post} />
