@@ -111,77 +111,82 @@ const InstagramPost = ({ post, onClose }: InstagramPostProps) => {
 		setImages((prev) => [...prev, imageUrl]);
 	};
 
-	const convertBlobToFile = async (blobUrl: string, fileName: string) => {
-		try {
-			const response = await fetch(blobUrl);
-			const blob = await response.blob();
-
-			// ✅ Tạo File từ Blob, thêm đầy đủ metadata
-			const file = new File([blob], fileName, {
-				type: blob.type,
-				lastModified: new Date().getTime(), // Hoặc có thể lấy từ blob nếu có
-			});
-
-			console.log("📂 File được tạo từ Blob:", file);
-			return file;
-		} catch (error) {
-			console.error("❌ Lỗi khi chuyển đổi Blob thành File:", error);
-			return null;
-		}
-	};
-
 	const handlePostUpdate = async () => {
 		try {
+			// 🛠 Kiểm tra postId hợp lệ
 			if (!post?.postId) {
 				message.error("❌ Lỗi: Không tìm thấy ID bài viết!");
 				return;
 			}
 
+			// 🔹 Tạo FormData
 			const formData = new FormData();
 
+			// 🔹 Thêm dữ liệu bài viết (Tên chính xác: `postUpdateRequest`)
 			const postUpdateRequest = {
-				content: comment || "",
+				content: comment || "", // Đảm bảo không bị undefined
 				visibility: "PRIVATE",
 			};
 
+			// 🟢 Debug: Kiểm tra dữ liệu gửi đi
+			console.log("📝 postUpdateRequest:", postUpdateRequest);
 			formData.append("postUpdateRequest", JSON.stringify(postUpdateRequest));
 
-			for (const image of images) {
-				if (image.startsWith("blob:")) {
-					console.log("📤 Chuyển Blob thành File...");
+			// 🔹 Kiểm tra danh sách ảnh
+			if (images.length > 0) {
+				for (let i = 0; i < images.length; i++) {
+					try {
+						let file;
 
-					// 🔹 Chuyển Blob thành File với đầy đủ metadata
-					const file = await convertBlobToFile(image, "uploaded_image.jpg");
+						if (images[i].startsWith("blob:")) {
+							// Lấy file từ blob URL
+							const response = await fetch(images[i]);
+							const blob = await response.blob();
+							file = new File([blob], `image${i}.png`, { type: blob.type });
+						} else {
+							// Nếu là ảnh từ URL (đã upload trước đó), không cần fetch lại
+							file = images[i]; // Chỉ lưu URL, không cần append vào FormData
+						}
 
-					if (file) {
-						formData.append("files", file);
-						console.log("✅ File đã thêm vào FormData:", file);
+						formData.append("newFiles", file);
+						console.log(`✅ Ảnh ${i + 1} đã được thêm vào FormData`);
+					} catch (error) {
+						console.error(`❌ Lỗi tải ảnh ${i + 1}:`, error);
 					}
-				} else {
-					formData.append("imageUrls", image);
 				}
 			}
 
-			console.log("🟢 FormData gửi đi:", formData.entries());
+			// 🟢 Kiểm tra FormData trước khi gửi
+			console.log("🟢 FormData gửi đi:");
+			for (let pair of formData.entries()) {
+				console.log(pair[0], pair[1]);
+			}
 
+			// 🔹 Gửi API
 			const response = await axios.put(
 				`http://localhost:9999/api/posts/${post.postId}`,
 				formData,
 				{
 					headers: {
-						Authorization: `Bearer <YOUR_ACCESS_TOKEN>`,
+						Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDMyMzYxMzcsImV4cCI6MTc0MzIzNzkzN30.oa2TUUj9CyKSRUQlBj0DCGk-HnRL4jB4yV1BRg0CcyM`,
 					},
 				}
 			);
 
+			if (response.data?.data?.imageUrl) {
+				setImages([...images, response.data.data.imageUrl]); // Cập nhật danh sách ảnh
+			}
+			console.log("imagesimagesxxx", response)
+
+
+			// ✅ Hiển thị thông báo thành công
 			message.success("✅ Bài viết đã được cập nhật thành công!");
-			console.log("✅ API Response:", response.data);
+			console.log("✅ Phản hồi API:", response.data);
 		} catch (error) {
 			message.error("❌ Lỗi khi cập nhật bài viết!");
 			console.error("❌ Chi tiết lỗi:", error);
 		}
 	};
-
 
 	const handleEmojiSelect = (emoji: { native: string }) => {
 		setComment((prev) => prev + emoji.native); // Thêm emoji vào nội dung input
@@ -191,10 +196,6 @@ const InstagramPost = ({ post, onClose }: InstagramPostProps) => {
 	console.log("Nội dung comment:", comment);
 	const handleClose = () => {
 		setIsOpenPut(false)
-	};
-
-	const handleClose2 = () => {
-		setIsModalOpenPut(false)
 	};
 
 	return (
