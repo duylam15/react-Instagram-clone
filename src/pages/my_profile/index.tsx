@@ -7,8 +7,12 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import ImageUploader from "../../components/Avatar/ImageUploader";
 import "./style.css"
+import FriendsMenu from "./friendMenu";
+import FriendButton from "./friendButton";
 
 export default function MyProfile() {
+  let idDangNhap = 1; 
+  let idProfileDangXem = 2 ;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -136,12 +140,17 @@ export default function MyProfile() {
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4 justify-center">
             <h2 className="text-xl font-normal">{username || "Loading..."}</h2>
-            <div
+            {/* <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[148px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
             >
               Đang theo dõi
-            </div>
+            </div> */}
+            {idDangNhap != idProfileDangXem && 
+            <FriendButton 
+              idUser1={idDangNhap} /// id dang nhap
+              idUser2={idProfileDangXem} /// id profile dang xem
+            />}
             <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[100px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
@@ -162,13 +171,14 @@ export default function MyProfile() {
           </div>
 
           <div className="flex gap-6 mt-2">
-            <span className="font-light">
+            <span className="font-light flex items-center gap-2">
               <strong className="font-bold">20</strong> {t("post")}
             </span>
-            <span className="font-light">
-              <strong className="font-bold">5.2K</strong> {t("follower")}
+            <span className="font-light flex items-center gap-2">
+              {/* <strong className="font-bold">5.2K</strong> {t("follower")} */}
+              <FriendsMenu/>
             </span>
-            <span className="font-light">
+            <span className="font-light flex items-center gap-2">
               <strong className="font-bold">120</strong> {t("following")}
             </span>
           </div>
