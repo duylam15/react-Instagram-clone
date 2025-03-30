@@ -1,0 +1,65 @@
+\noindent{\large \textbf{Các tính năng được xây dựng}}
+
+
+\vspace{0.5cm} % Tạo khoảng cách 0.5cm
+\noindent{\normalsize \textbf{Quản lý bài post}}
+\begin{itemize}
+    \renewcommand{\labelitemi}{-} % Thay đổi dấu đầu dòng thành "-"
+    \item \textbf{Thêm bài post:} Đăng tải bài viết kèm hình ảnh, video, văn bản. Hình ảnh và video được upload lên Cloudinary thông qua API \texttt{POST /api/post}.
+    \item \textbf{Chia sẻ bài post:} Thả cảm xúc (like), hiển thị danh sách bài viết, chia sẻ bài post.
+    \item \textbf{Bình luận bài post:} Hỗ trợ văn bản, emoji (dùng \texttt{@emoji-mart/react}), và hình ảnh (tích hợp Cloudinary).
+    \item \textbf{Xóa bài post:} Người dùng có thể xóa bài post của mình thông qua API \texttt{DELETE /api/post/\{id\}}.
+\end{itemize}
+
+\vspace{0.3cm}
+\noindent{\normalsize \textbf{Quản lý bình luận}}
+\begin{itemize}
+    \renewcommand{\labelitemi}{-}
+    \item \textbf{Thêm comment:} Thả cảm xúc (like), trả lời comment (hỗ trợ comment lồng nhau).
+    \item \textbf{Lọc comment:} Theo nội dung, thời gian, hoặc người bình luận, giúp người dùng dễ dàng tìm kiếm bình luận.
+    \item \textbf{Xóa comment:} Người dùng có thể xóa bình luận của mình hoặc của người khác (nếu là chủ bài post).
+\end{itemize}
+
+\vspace{0.3cm}
+\noindent{\normalsize \textbf{Quản lý tin nhắn}}
+\begin{itemize}
+    \renewcommand{\labelitemi}{-}
+    \item \textbf{Gửi tin nhắn:} Hỗ trợ văn bản, hình ảnh.
+    \item \textbf{Hiển thị trạng thái:} Hiển thị trạng thái tin nhắn (đã gửi, đã xem), trạng thái hoạt động của người dùng (online/offline).
+    \item \textbf{Tạo nhóm chat:} Hỗ trợ tạo nhóm chat với tối đa 100 người, tích hợp với module \texttt{Friends} để thêm thành viên.
+\end{itemize}
+
+\vspace{0.3cm}
+\noindent{\normalsize \textbf{Quản lý hồ sơ cá nhân}}
+\begin{itemize}
+    \renewcommand{\labelitemi}{-}
+    \item \textbf{Chỉnh sửa thông tin:} Cập nhật avatar (upload lên AWS S3), chỉnh sửa thông tin như tên, email, mô tả.
+    \item \textbf{Xem danh sách bài post:} Hiển thị tất cả bài post của người dùng, cho phép chỉnh sửa hoặc xóa bài viết.
+    \item \textbf{Xem thông tin công khai:} Hiển thị thông tin hồ sơ (avatar, số lượng bài post, số lượng bạn bè) cho người dùng khác xem.
+\end{itemize}
+
+\vspace{0.3cm}
+\noindent{\normalsize \textbf{Quản lý danh sách bạn bè}}
+\begin{itemize}
+    \renewcommand{\labelitemi}{-}
+    \item \textbf{Gửi, hủy, xác nhận:} Gửi lời mời kết bạn, hủy lời mời, hoặc xác nhận lời mời từ người khác. Khi xác nhận, hệ thống tự động tạo cuộc trò chuyện (tích hợp với module \texttt{Message}).
+    \item \textbf{Chặn bạn:} Chặn người dùng, xem danh sách bạn bè, tìm kiếm bạn bè theo tên hoặc email.
+\end{itemize}
+
+\vspace{0.3cm}
+\noindent{\normalsize \textbf{Quản lý thông báo}}
+\begin{itemize}
+    \renewcommand{\labelitemi}{-}
+    \item \textbf{Gửi thông báo thời gian thực:} Thông báo khi có lời mời kết bạn, bình luận mới, hoặc tin nhắn mới, sử dụng WebSocket và RabbitMQ để xử lý bất đồng bộ.
+    \item \textbf{Hiển thị danh sách thông báo:} Hiển thị tất cả thông báo của người dùng, cho phép đánh dấu đã đọc hoặc xóa thông báo.
+\end{itemize}
+
+\vspace{0.3cm}
+\noindent{\normalsize \textbf{Tìm kiếm}}
+\begin{itemize}
+    \renewcommand{\labelitemi}{-}
+    \item \textbf{Tìm kiếm người dùng:} Tìm kiếm người dùng theo tên hoặc email, hiển thị danh sách kết quả.
+    \item \textbf{Tìm kiếm bài post:} Tìm kiếm bài post theo nội dung hoặc hashtag.
+   
+\end{itemize}
+

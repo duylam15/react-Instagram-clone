@@ -1,13 +1,12 @@
 .layout-app {
-    display: flex;
-    height: 100vh; // Chiều cao toàn màn hình
-}
-
-.sidebar {
+  background: var(--bg-color);
+  color: var(--text-color);
+  .sidebar {
     width: 98px;
     transition: width 0.3s ease;
-}
+  }
 
-.main-content {
+  .main-content {
     width: 100%;
+  }
 }

@@ -11,6 +11,8 @@
     position: fixed;
     border-right: 1px solid var(--white-to-gray);
     z-index: 100;
+     background: var(--bg-color);
+  color: var(--text-color);
 }
 
 .searchContainer {
@@ -37,7 +39,20 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(123, 8, 8, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.overlay2 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(123, 8, 8, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;

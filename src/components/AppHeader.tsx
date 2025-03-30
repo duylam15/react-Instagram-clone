@@ -12,7 +12,6 @@ import {
   CHeaderToggler,
   CNavLink,
   CNavItem,
-  useColorModes,
 } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import {
@@ -28,16 +27,17 @@ import {
 import { AppBreadcrumb } from './index';
 import { AppHeaderDropdown } from './header/index';
 
-// Khai báo kiểu cho dispatch và sidebarShow
 interface RootState {
   sidebarShow: boolean;
 }
 
-const AppHeader: React.FC = () => {
-  const headerRef = useRef<HTMLDivElement>(null); // Đặt kiểu cho useRef
+interface AppHeaderProps {
+  colorMode: string;
+  setColorMode: (mode: string) => void;
+}
 
-  const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme');
-
+const AppHeader: React.FC<AppHeaderProps> = ({ colorMode, setColorMode }) => {
+  const headerRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const sidebarShow = useSelector((state: RootState) => state.sidebarShow);
 
@@ -100,7 +100,6 @@ const AppHeader: React.FC = () => {
               Friends
             </CNavLink>
           </CNavItem>
-          
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
           <CNavItem>

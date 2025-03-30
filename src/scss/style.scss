@@ -4,6 +4,7 @@
 @use "@coreui/chartjs/scss/coreui-chartjs";
 @use "vendors/simplebar";
 
+.admin-container {
 body {
   background-color: var(--cui-tertiary-bg);
 }
@@ -64,4 +65,5 @@ body {
   .footer {
     --cui-footer-bg: var(--cui-body-bg);
   }
+}
 }

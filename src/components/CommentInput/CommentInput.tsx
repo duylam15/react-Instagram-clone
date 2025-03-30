@@ -3,12 +3,37 @@ import { FaSmile } from "react-icons/fa";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
 
-const CommentInput = () => {
+type PostMedia = {
+	mediaId: number;
+	mediaUrl: string;
+};
+
+type Post = {
+	postId: number;
+	userId: number;
+	content: string;
+	comments: [];
+	typePost: string;
+	visibility: string;
+	createdAt: string;
+	updatedAt: string;
+	numberComment: number;
+	numberEmotion: number;
+	numberShare: number;
+	postMedia: PostMedia[]; // Mảng chứa các media của bài post
+};
+
+
+const CommentInput = ( { post }: { post?: Post } ) => {
 	const [comment, setComment] = useState("");
 	const [showPicker, setShowPicker] = useState(false);
 	const inputRef = useRef(null);
 	const { t } = useTranslation();
+	const [loading, setLoading] = useState(false);
+
+	const userId = localStorage.getItem("userId")
 
 
 	const handleEmojiSelect = (emoji: { native: string }) => {
@@ -17,8 +42,32 @@ const CommentInput = () => {
 	};
 
 	const handleSubmit = () => {
-		console.log("Nội dung comment:", comment);
-		setComment(""); // Xóa nội dung sau khi đăng
+		if (!comment.trim()) return; // Không gửi nếu comment rỗng
+
+		var postId = post?.postId;
+		console.log(postId)
+		setLoading(true);
+		try {
+			const response = axios.post("http://localhost:9999/api/comments", {
+				postId,
+				userId,
+				content: comment,
+				typeComment: "TEXT", // Giả sử comment dạng text
+				numberEmotion: 0,
+				numberCommentChild: 0,
+			}, {
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`, // Nếu cần auth
+					"Content-Type": "application/json",
+				},
+			});
+
+			setComment(""); // Reset ô nhập comment
+		} catch (error) {
+			console.error("Error creating comment:", error);
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return (
@@ -56,6 +105,7 @@ const CommentInput = () => {
 						<Picker data={data} onEmojiSelect={handleEmojiSelect} />
 					</div>
 				)}
+
 			</div>
 		</div>
 	);
