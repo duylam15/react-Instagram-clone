@@ -11,6 +11,7 @@ import data from "@emoji-mart/data";
 
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { deletePostService, updatePost } from "../../services/post";
+import { getUserById } from "../../services/user/user";
 
 type PostMedia = {
 	mediaId: number;
@@ -49,6 +50,8 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	const [comment, setComment] = useState("");
 	const [showPicker, setShowPicker] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const [userName, setUserName] = useState<string>();
+	const [user, setUser] = useState();
 
 	useEffect(() => {
 		if (post?.postMedia) {
@@ -59,6 +62,19 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			setComment(post?.content);
 		}
 	}, [post]);  // Chạy khi `post` thay đổi
+
+	useEffect(() => {
+		const fetchUser = async () => {
+			const response: any = await getUserById(post?.userId);
+			console.log()
+			if (response && response?.data) {
+				const { firstName, lastName } = response?.data;
+				setUserName(`${firstName} ${lastName}`); // Gán vào state
+				setUser(response?.data); // Gán vào state
+			}
+		};
+		fetchUser();
+	}, []);
 
 	const handleDelete = async (postId: number) => {
 		try {
@@ -119,7 +135,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 						alt="Avatar"
 						className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 					/>
-					<span className="font-semibold text-gray-800" style={{ color: "var(--text-color)" }}>{post?.userId} </span>
+					<span className="font-semibold text-gray-800" style={{ color: "var(--text-color)" }}>{userName} </span>
 					<span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>{formatTimeAgo(`${post?.createdAt}`, t)}  </span>
 				</div>
 				<div className="relative inline-block" style={{
@@ -339,7 +355,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			{/* Likes and Caption */}
 			<div className="">
 				<p className="font-semibold">{post?.numberEmotion} {t('likes')}</p>
-				<p><span className="font-semibold">{post?.userId}</span> {post?.content}</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>{t('view_more')} {post?.numberComment} {t('comment')} </p>
+				<p><span className="font-semibold">{userName}</span> {post?.content}</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>{t('view_more')} {post?.numberComment} {t('comment')} </p>
 			</div>
 			{/* Comment Input */}
 			<div className="mt-2 pt-2 ">
@@ -374,7 +390,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 										alt="Avatar"
 										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 									/>
-									<span className="font-semibold" style={{ color: "var(--text-color)" }}>{post?.userId}</span>
+									<span className="font-semibold" style={{ color: "var(--text-color)" }}>{userName}</span>
 								</div>
 
 								<div className="relative inline-block">
