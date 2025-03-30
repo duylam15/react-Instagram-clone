@@ -4,8 +4,9 @@ import { checkFriend, checkSent, createInvite, deleteFriend, updateInvite } from
 
 const FriendButton = (data: { idUser1: number, idUser2: number }) => {
 
-  const [loading , setLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [textButton, setTextButton] = useState("Thêm bạn")
+  const [textButton1, setTextButton1] = useState("Đồng ý")
   const statusButton = { xoaban: "Xoá ban", themban: "Thêm bạn", huyloimoi: "Huỷ lời mời", tuchoi: "Từ chối" }
 
   // kiểm tra coi cả 2 có phải bạn không ? 
@@ -17,7 +18,7 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
   const ChekcFriend = async () => {
     try {
       const response = await checkFriend(data);
-      console.log(response);
+      console.log( response);
       if (response.data.isFriend)
         setTextButton(statusButton.xoaban)
     } catch (error) {
@@ -28,7 +29,7 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
   const ChekcSent = async () => {
     try {
       const response = await checkSent(data);
-      console.log(response);
+      console.log( response);
       if (response.data.isSent) {
         if (response.data.data.sender == data.idUser1)
           setTextButton(statusButton.huyloimoi)
@@ -43,42 +44,42 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
     }
   }
 
+  const DeleteFriend = async () => {
+    try {
+      const response = await deleteFriend({ idUser: data.idUser1, idFriend: data.idUser2 })
+      console.log(response);
+      setLoading(!loading)
+    } catch (error) {
+
+    }
+  }
+
+  const CreateInvite = async (status: string) => {
+    try {
+      const response = await createInvite({ idSender: data.idUser1, idReceiver: data.idUser2, status: status })
+      console.log(response);
+      setLoading(!loading)
+    } catch (error) {
+
+    }
+  }
+
+  const UpdateInvite = async (data : {idUser1 :  number , idUser2 : number , status: string}) => {
+    try {
+      const response = await updateInvite({ idSender: data.idUser1, idReceiver: data.idUser2, status: data.status })
+      console.log(response);
+      setLoading(!loading)
+    } catch (error) {
+
+    }
+  }
+
   useEffect(() => {
     ChekcFriend();
     ChekcSent();
   }, [loading])
 
   const handleClick = () => {
-
-    const DeleteFriend = async () => {
-      try {
-        const response = await deleteFriend({ idUser: data.idUser1, idFriend: data.idUser2 })
-        console.log(response);
-        setLoading(!loading)
-      } catch (error) {
-
-      }
-    }
-
-    const CreateInvite = async (status: string) => {
-      try {
-        const response = await createInvite({ idSender: data.idUser1, idReceiver: data.idUser2, status: status })
-        console.log(response);
-        setLoading(!loading)
-      } catch (error) {
-
-      }
-    }
-
-    const UpdateInvite = async (status: string) => {
-      try {
-        const response = await updateInvite({ idSender: data.idUser1, idReceiver: data.idUser2, status: status })
-        console.log(response);
-        setLoading(!loading)
-      } catch (error) {
-
-      }
-    }
 
 
 
@@ -92,17 +93,28 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
       CreateInvite("SENT")
     }
     if (textButton == statusButton.tuchoi) {
-      UpdateInvite("DENY")
+      UpdateInvite({idUser1 :  data.idUser2 , idUser2 : data.idUser1 , status: "DENY"})
     }
     if (textButton == statusButton.huyloimoi) {
-      UpdateInvite("CANCEL")
+      UpdateInvite({idUser1 :  data.idUser1 , idUser2 : data.idUser2 , status: "CANCEL"})
     }
   };
 
+  const handleClickAccept  = () => {
+    UpdateInvite({idUser1 :  data.idUser2 , idUser2 : data.idUser1 , status: "ACCEPT"});
+  }
+
   return (
-    <Button type="primary" onClick={handleClick}>
-      {textButton}
-    </Button>
+    <>
+      {textButton == statusButton.tuchoi &&
+        <Button type="primary" onClick={handleClickAccept}>
+          {textButton1}
+        </Button>
+      }
+      <Button type="primary" onClick={handleClick}>
+        {textButton}
+      </Button>
+    </>
   );
 };
 

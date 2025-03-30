@@ -11,8 +11,8 @@ import FriendsMenu from "./friendMenu";
 import FriendButton from "./friendButton";
 
 export default function MyProfile() {
-  let idDangNhap = 2; 
-  let idProfileDangXem = 1 ;
+  let idDangNhap = 1; 
+  let idProfileDangXem = 2 ;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
