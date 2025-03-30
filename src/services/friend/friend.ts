@@ -4,7 +4,7 @@ const API_URL_BASE = "http://localhost:9999"
 
 export const guiLoiMoiKetBan = async (data : {sender : number , receiver : number , status : string}) => {
     try {
-        console.log("Gọi API...");
+        console.log("Gọi API... gui loi moi ket ban");
         console.log(data)
         const response = await axios.post(
             `${API_URL_BASE}/api/listinvitedfriend`,
@@ -109,3 +109,50 @@ export const deleteFriend = async (data : { idUser :number, idFriend : number  }
     }
 };
 
+export const getListFriends = async (data : { idProfile  :number}) => {
+    try {
+        console.log("Gọi API...");
+        console.log(data)
+        const response = await axios.get(
+            `http://localhost:9999/api/friend/getlistfriends/${data.idProfile}`
+        );
+        console.log("Dữ liệu nhận được:", response);
+        return response;
+    } catch (error: any) {
+        console.error("❌ Lỗi khi gọi API:", error.message);
+        console.error("🛠 Chi tiết lỗi:", error);
+        return error;
+    }
+};
+
+export const getListInviteReceived = async (data : { idProfile  :number}) => {
+    try {
+        console.log("Gọi API...");
+        console.log(data)
+        const response = await axios.get(
+            `http://localhost:9999/api/listinvitedfriend/received/${data.idProfile}`
+        );
+        console.log("Dữ liệu nhận được:", response);
+        return response;
+    } catch (error: any) {
+        console.error("❌ Lỗi khi gọi API:", error.message);
+        console.error("🛠 Chi tiết lỗi:", error);
+        return error;
+    }
+};
+
+export const getListInviteSent = async (data : { idProfile  :number}) => {
+    try {
+        console.log("Gọi API...");
+        console.log(data)
+        const response = await axios.get(
+            `http://localhost:9999/api/listinvitedfriend/sended/${data.idProfile}`
+        );
+        console.log("Dữ liệu nhận được:", response);
+        return response;
+    } catch (error: any) {
+        console.error("❌ Lỗi khi gọi API:", error.message);
+        console.error("🛠 Chi tiết lỗi:", error);
+        return error;
+    }
+};

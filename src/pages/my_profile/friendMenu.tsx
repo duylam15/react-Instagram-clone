@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dropdown, Menu, Button, Modal, List, Avatar, Input } from "antd";
 import { UserOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons";
+import { deleteFriend, getListFriends, getListInviteReceived, getListInviteSent, updateInvite } from "../../services/friend/friend";
+import { getUserProfile } from "../../services/user/user";
 
-const FriendsMenu = () => {
+const FriendsMenu = (data : {idProfileDangXem : number }) => {
+  
+  const idDangNhap =  localStorage.getItem("idUser")
+  const idProfile = data.idProfileDangXem ;
   const [visibleModal, setVisibleModal] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [loading , setLoading] = useState(false);
 
   // Dữ liệu mẫu
   const [friends, setFriends] = useState([
@@ -23,6 +29,75 @@ const FriendsMenu = () => {
     { id: 7, name: "Đặng Thị G" }
   ]);
 
+  const fetchListInviteSent = async () => {
+    try {
+      const response = await getListInviteSent({ idProfile: idProfile });
+      console.log("danh sach loi moi da gui")
+      console.log(response)
+      const listInviteSent = [];
+      await Promise.all(response.data.data.map(async (item: any) => {
+        const profile = await getUserProfile({ idUser: item.receiver });
+        listInviteSent.push({ id: profile.data.userId, name: profile.data.firstName + " " + profile.data.lastName })
+      }))
+      console.log("danh sach loi moi da gui : ")
+      console.log(listInviteSent);
+      setSentRequests(listInviteSent);
+    } catch (error) {
+
+    }
+  };
+
+  const fetchListInviteReceived = async () => {
+    try {
+      const response = await getListInviteReceived({ idProfile: idProfile });
+      console.log("danh sach loi moi da nhânkj")
+      console.log(response)
+      const listInviteReceived  = [];
+      await Promise.all(response.data.data.map(async (item: any) => {
+        const profile = await getUserProfile({ idUser: item.sender });
+        listInviteReceived.push({ id: profile.data.userId, name: profile.data.firstName + " " + profile.data.lastName })
+      }))
+      console.log("danh sach loi moi da nhânkj : ")
+      console.log(listInviteReceived);
+      setReceivedRequests(listInviteReceived);
+    } catch (error) {
+
+    }
+  };
+
+  const fetchListFriends = async () => {
+    try {
+      const response = await getListFriends({ idProfile: idProfile });
+      console.log("danh sach ban be")
+      console.log(response)
+      const listFriends  = [];
+      await Promise.all(response.data.data.map(async (item: any) => {
+        const profile = await getUserProfile({ idUser: item.friend_id == idProfile ? item.user_id : item.friend_id });
+        listFriends.push({ id: profile.data.userId, name: profile.data.firstName + " " + profile.data.lastName })
+      }))
+      console.log("danh sach ban be : ")
+      console.log(listFriends);
+      setFriends(listFriends);
+    } catch (error) {
+
+    }
+  };
+
+  useEffect(() => {
+    fetchListFriends();
+    fetchListInviteReceived();
+    fetchListInviteSent();
+    console.log(friends.length + "------------------------------")
+  }, []);
+
+  useEffect(() => {
+    fetchListFriends();
+    fetchListInviteReceived();
+    fetchListInviteSent();
+    console.log(friends.length + "------------------------------")
+  }, [loading]);
+
+
   const handleMenuClick = ({ key }) => {
     setVisibleModal(key);
   };
@@ -30,13 +105,55 @@ const FriendsMenu = () => {
   const handleCloseModal = () => {
     setVisibleModal(null);
     setSearchText(""); // Reset tìm kiếm khi đóng modal
+    setLoading(!loading);
   };
 
-  const handleDelete = (id, type) => {
-    if (type === "friends") setFriends(friends.filter(friend => friend.id !== id));
-    if (type === "sent") setSentRequests(sentRequests.filter(req => req.id !== id));
-    if (type === "received") setReceivedRequests(receivedRequests.filter(req => req.id !== id));
+
+  const handleType = async (id, type) => {
+    console.log("+++++" + id)
+    if (type === "list") {
+      console.log("xoá")
+      try {
+        const response = await deleteFriend({ idUser: idProfile, idFriend: id })
+        console.log(response);
+        setFriends((prevFriends) => prevFriends.filter(friend => friend.id !== id));
+      } catch (error) {
+
+      }
+    };
+    if (type === "sent") {
+      console.log("huy yeu cau")
+      try {
+        const response = await updateInvite({ idSender: idProfile, idReceiver: id, status: "CANCEL" })
+        console.log(response);
+        setSentRequests((prevSent) => prevSent.filter(request => request.id !== id));
+      } catch (error) {
+
+      }
+    };
+    if (type === "received") {
+      console.log("từ chôi")
+      try {
+        const response = await updateInvite({ idSender: id, idReceiver: idProfile, status: "DENY" })
+        console.log(response);
+        setReceivedRequests((prevReceived) => prevReceived.filter(request => request.id !== id));
+      } catch (error) {
+
+      }
+    };
   };
+
+  const handleAccept = async (id) => {
+    console.log("dong y")
+    try {
+      const response = await updateInvite({ idSender: id, idReceiver: idProfile, status: "ACCEPT" })
+      console.log(response);
+      setReceivedRequests((prevReceived) => prevReceived.filter(request => request.id !== id));
+    } catch (error) {
+
+    }
+  }
+  
 
   const filterData = (data) =>
     data.filter(item => item.name.toLowerCase().includes(searchText.toLowerCase()));
@@ -44,10 +161,16 @@ const FriendsMenu = () => {
   const menu = (
     <Menu onClick={handleMenuClick}>
       <Menu.Item key="list">Danh sách</Menu.Item>
-      <Menu.Item key="sent">Lời mời đã gửi</Menu.Item>
-      <Menu.Item key="received">Lời mời đã nhận</Menu.Item>
+      {
+        idProfile == idDangNhap && 
+        <>
+          <Menu.Item key="sent">Lời mời đã gửi</Menu.Item>
+          <Menu.Item key="received">Lời mời đã nhận</Menu.Item>
+        </>
+      }
     </Menu>
   );
+
 
   const renderModal = (title, data, type) => (
     <Modal
@@ -56,7 +179,7 @@ const FriendsMenu = () => {
       onCancel={handleCloseModal}
       footer={null}
       centered
-      width={320}
+      width={400}
     >
       {/* Ô tìm kiếm */}
       <div style={{ display: "flex", justifyContent: "center", marginBottom: "15px" }}>
@@ -77,7 +200,7 @@ const FriendsMenu = () => {
           onBlur={(e) => (e.target.style.borderColor = "#d9d9d9")}
         />
       </div>
-  
+
       {/* Danh sách */}
       <List
         dataSource={filterData(data)}
@@ -90,23 +213,32 @@ const FriendsMenu = () => {
                 <Button
                   type="text"
                   style={{ color: "#1890ff", fontWeight: "bold" }}
-                  onClick={() => handleDelete(item.id, type)}
+                  onClick={() => handleType(item.id, type)}
                 >
                   Hủy yêu cầu
                 </Button>
               ) : type === "received" ? (
-                <Button
-                  type="text"
-                  style={{ color: "#ff4d4f", fontWeight: "bold" }}
-                  onClick={() => handleDelete(item.id, type)}
-                >
-                  Từ chối
-                </Button>
+                <>
+                  <Button
+                    type="text"
+                    style={{ color: "#1890ff", fontWeight: "bold" }}
+                    onClick={() => handleAccept(item.id, type)}
+                  >
+                    Đồng ý
+                  </Button>
+                  <Button
+                    type="text"
+                    style={{ color: "#ff4d4f", fontWeight: "bold" }}
+                    onClick={() => handleType(item.id , type)}
+                  >
+                    Từ chối
+                  </Button>
+                </>
               ) : (
                 <Button
                   type="text"
                   style={{ color: "#ff4d4f", fontWeight: "bold" }}
-                  onClick={() => handleDelete(item.id, type)}
+                  onClick={() => handleType(item.id, type)}
                 >
                   Xóa
                 </Button>
@@ -122,12 +254,12 @@ const FriendsMenu = () => {
         )}
       />
     </Modal>
-  );  
+  );
 
   return (
     <>
       <Dropdown overlay={menu} trigger={["click"]}>
-        <Button type="text">20 Bạn bè</Button>
+        <Button type="text">{friends.length} Bạn bè</Button>
       </Dropdown>
 
       {/* Modals */}

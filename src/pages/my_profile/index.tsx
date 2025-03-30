@@ -9,10 +9,11 @@ import ImageUploader from "../../components/Avatar/ImageUploader";
 import "./style.css"
 import FriendsMenu from "./friendMenu";
 import FriendButton from "./friendButton";
+import { number } from "prop-types";
 
 export default function MyProfile() {
-  let idDangNhap = 1; 
-  let idProfileDangXem = 2 ;
+  let idDangNhap =  Number(localStorage.getItem("idUser"));
+  let idProfileDangXem = 1 ;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -41,7 +42,7 @@ export default function MyProfile() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:9999/api/users/1");
+        const response = await axios.get(`http://localhost:9999/api/api/users/${idProfileDangXem}`);
         setUsername(response.data.data.userName);
         setAvatar(response.data.data.urlAvatar);
       } catch (error) {
@@ -70,7 +71,7 @@ export default function MyProfile() {
     formData.append("avatar", file);
 
     try {
-      const response = await axios.put("http://localhost:9999/api/users/avatar/1", formData, {
+      const response = await axios.put(`http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 
@@ -88,7 +89,7 @@ export default function MyProfile() {
   const handleRemoveAvatar = async () => {
     try {
       const response = await axios.delete(
-        "http://localhost:9999/api/users/avatar/1"
+        `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`
       );
 
 
@@ -107,7 +108,7 @@ export default function MyProfile() {
   useEffect(() => {
     const fetchUserPosts = async () => {
       try {
-        const response = await axios.get("http://localhost:9999/api/posts/user/1");
+        const response = await axios.get(`http://localhost:9999/api/api/posts/user/${idProfileDangXem}`);
         const posts = response.data.data.data; // Lấy mảng bài post
 
         setPosts(posts); // Cập nhật state
@@ -120,7 +121,6 @@ export default function MyProfile() {
   }, []);
 
   console.log("postspostsposts", posts)
-
 
   return (
     <div className="ml-25 p-4 flex flex-col items-center">
@@ -176,7 +176,7 @@ export default function MyProfile() {
             </span>
             <span className="font-light flex items-center gap-2">
               {/* <strong className="font-bold">5.2K</strong> {t("follower")} */}
-              <FriendsMenu/>
+              <FriendsMenu idProfileDangXem = {idProfileDangXem}/>
             </span>
             <span className="font-light flex items-center gap-2">
               <strong className="font-bold">120</strong> {t("following")}

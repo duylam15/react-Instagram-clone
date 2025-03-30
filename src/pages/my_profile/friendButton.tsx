@@ -5,7 +5,7 @@ import { checkFriend, checkSent, createInvite, deleteFriend, updateInvite } from
 const FriendButton = (data: { idUser1: number, idUser2: number }) => {
 
   const [loading, setLoading] = useState(false)
-  const [textButton, setTextButton] = useState("Thêm bạn")
+  const [textButton, setTextButton] = useState("")
   const [textButton1, setTextButton1] = useState("Đồng ý")
   const statusButton = { xoaban: "Xoá ban", themban: "Thêm bạn", huyloimoi: "Huỷ lời mời", tuchoi: "Từ chối" }
 
@@ -15,21 +15,12 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
   // rồi =>  user1 là user_id => textButton = huỷ hoặc user1 = receiver_id => textButton =  từ chối
   // chưa => textButton = thêm bạn 
 
-  const ChekcFriend = async () => {
-    try {
-      const response = await checkFriend(data);
-      console.log( response);
-      if (response.data.isFriend)
-        setTextButton(statusButton.xoaban)
-    } catch (error) {
-
-    }
-  }
 
   const ChekcSent = async () => {
     try {
       const response = await checkSent(data);
-      console.log( response);
+      console.log("check sent")
+      console.log(response);
       if (response.data.isSent) {
         if (response.data.data.sender == data.idUser1)
           setTextButton(statusButton.huyloimoi)
@@ -39,6 +30,20 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
       else {
         setTextButton(statusButton.themban)
       }
+    } catch (error) {
+
+    }
+  }
+
+  const ChekcFriend = async () => {
+    try {
+      const response = await checkFriend(data);
+      console.log("check friend")
+      console.log(response);
+      if (response.data.isFriend)
+        setTextButton(statusButton.xoaban)
+      else
+        ChekcSent();
     } catch (error) {
 
     }
@@ -64,7 +69,7 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
     }
   }
 
-  const UpdateInvite = async (data : {idUser1 :  number , idUser2 : number , status: string}) => {
+  const UpdateInvite = async (data: { idUser1: number, idUser2: number, status: string }) => {
     try {
       const response = await updateInvite({ idSender: data.idUser1, idReceiver: data.idUser2, status: data.status })
       console.log(response);
@@ -76,7 +81,6 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
 
   useEffect(() => {
     ChekcFriend();
-    ChekcSent();
   }, [loading])
 
   const handleClick = () => {
@@ -93,15 +97,15 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
       CreateInvite("SENT")
     }
     if (textButton == statusButton.tuchoi) {
-      UpdateInvite({idUser1 :  data.idUser2 , idUser2 : data.idUser1 , status: "DENY"})
+      UpdateInvite({ idUser1: data.idUser2, idUser2: data.idUser1, status: "DENY" })
     }
     if (textButton == statusButton.huyloimoi) {
-      UpdateInvite({idUser1 :  data.idUser1 , idUser2 : data.idUser2 , status: "CANCEL"})
+      UpdateInvite({ idUser1: data.idUser1, idUser2: data.idUser2, status: "CANCEL" })
     }
   };
 
-  const handleClickAccept  = () => {
-    UpdateInvite({idUser1 :  data.idUser2 , idUser2 : data.idUser1 , status: "ACCEPT"});
+  const handleClickAccept = () => {
+    UpdateInvite({ idUser1: data.idUser2, idUser2: data.idUser1, status: "ACCEPT" });
   }
 
   return (
