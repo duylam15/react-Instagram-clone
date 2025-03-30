@@ -7,14 +7,15 @@ const TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDI4N
 export const getPosts = async () => {
   try {
     // Lấy token từ localStorage
-    // const token = localStorage.getItem("token");
-    // if (!token) {
-    //   throw new Error("Token không tồn tại. Vui lòng đăng nhập lại.");
-    // }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("Token không tồn tại. Vui lòng đăng nhập lại.");
+    }
+    console.log(token)
 
     const response = await axios.get("http://localhost:9999/api/posts", {
       headers: {
-        Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDMxNTE5NzgsImV4cCI6MTc0MzE1Mzc3OH0.4Yt20OSrWtIVRzMjGcFdir6ZGwsQOkkGL_r4rtvzeF4`, // Sử dụng token từ localStorage
+        Authorization: `Bearer ${token}`, // Sử dụng token từ localStorage
       },
     });
     return response.data.data;
