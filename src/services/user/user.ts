@@ -118,3 +118,15 @@ export const getUserProfile = async (data : {idUser : number}) => {
         return null;
     }
 };
+
+
+export const getUserById = async (id: any) => { 
+    try {
+        const response = await axios.get(`${API_URL_BASE}/api/api/users/${id}`);
+        return response.data;
+    } catch (error: any) {
+        console.error("❌ Lỗi khi gọi API:", error.message);
+        console.error("🛠 Chi tiết lỗi:", error);
+        return null;
+    }
+};
