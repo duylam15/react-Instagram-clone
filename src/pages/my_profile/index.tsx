@@ -7,12 +7,19 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import ImageUploader from "../../components/Avatar/ImageUploader";
 import "./style.css"
+import FriendsMenu from "./friendMenu";
+import FriendButton from "./friendButton";
+import { number } from "prop-types";
 import { useNavigate } from 'react-router-dom';
 
 export default function MyProfile() {
+  let idDangNhap =  Number(localStorage.getItem("idUser"));
+  let idProfileDangXem = 1 ;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+
   const [username, setUsername] = useState("");
   const [avatar, setAvatar] = useState("/images/default-avatar.jpg");
 
@@ -35,13 +42,13 @@ export default function MyProfile() {
   const { t } = useTranslation();
   const iconColor = theme === "dark" ? "white" : "black";
 
-  
+
 
   // Lấy thông tin user
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:9999/api/users/1");
+        const response = await axios.get(`http://localhost:9999/api/api/users/${idProfileDangXem}`);
         setUsername(response.data.data.userName);
         setAvatar(response.data.data.urlAvatar);
       } catch (error) {
@@ -53,54 +60,55 @@ export default function MyProfile() {
   }, []);
 
   // Mở/đóng modal hiển thị ảnh
-  const handleImageClick = (img: string) => {
-    setSelectedImage(img);
+  const handleImageClick = (post: any) => {
+    setSelectedImages(post.postMedia.map((media: any) => media.mediaUrl)); // Lấy danh sách ảnh của bài post
     setIsModalOpen(true);
   };
+
 
   // Mở popup thay đổi avatar
   const handleOpenPop = () => setIsPopOpen(true);
   const handleClosePop = () => setIsPopOpen(false);
 
   // Xử lý tải ảnh mới
-  const handleUpload = async (options:any) => {
-	const { file, onSuccess, onError } = options;
-	const formData = new FormData();
-	formData.append("avatar", file);
-  
-	try {
-	  const response = await axios.put("http://localhost:9999/api/users/avatar/1", formData, {
-		headers: { "Content-Type": "multipart/form-data" }
-	  });
-  
-	  setAvatar(response.data.data.urlAvatar);
-	  handleClosePop();
-	  onSuccess("Upload thành công"); 
-	} catch (error) {
-	  console.error("Lỗi khi cập nhật avatar:", error);
-	  onError(error);
-	}
+  const handleUpload = async (options: any) => {
+    const { file, onSuccess, onError } = options;
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const response = await axios.put(`http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      setAvatar(response.data.data.urlAvatar);
+      handleClosePop();
+      onSuccess("Upload thành công");
+    } catch (error) {
+      console.error("Lỗi khi cập nhật avatar:", error);
+      onError(error);
+    }
   };
-  
+
 
   // Gỡ ảnh hiện tại 
   const handleRemoveAvatar = async () => {
-	try {
-	  const response = await axios.delete(
-		"http://localhost:9999/api/users/avatar/1"
-	  );
-  
-  
-	  // Cập nhật avatar về mặc định
-	  setAvatar("/images/default-avatar.jpg");
-  
-	  // Đóng popup nếu có
-	  handleClosePop();
-	} catch (error: any) {
-	  console.error("Lỗi khi gỡ avatar:", error);
-	}
+    try {
+      const response = await axios.delete(
+        `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`
+      );
+
+
+      // Cập nhật avatar về mặc định
+      setAvatar("/images/default-avatar.jpg");
+
+      // Đóng popup nếu có
+      handleClosePop();
+    } catch (error: any) {
+      console.error("Lỗi khi gỡ avatar:", error);
+    }
   };
-  
+
 
   //nhấn vào icon '...'
   const handleIconClick = () => {
@@ -110,7 +118,24 @@ export default function MyProfile() {
   const handleEditProfileClick = () => {
     navigate('/edit-profile'); // Điều hướng đến trang chỉnh sửa thông tin cá nhân
   };
-  
+  const [posts, setPosts] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchUserPosts = async () => {
+      try {
+        const response = await axios.get(`http://localhost:9999/api/api/posts/user/${idProfileDangXem}`);
+        const posts = response.data.data.data; // Lấy mảng bài post
+
+        setPosts(posts); // Cập nhật state
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách bài viết:", error);
+      }
+    };
+
+    fetchUserPosts();
+  }, []);
+
+  console.log("postspostsposts", posts)
 
   return (
     <div className="ml-25 p-4 flex flex-col items-center">
@@ -130,12 +155,17 @@ export default function MyProfile() {
         <div className="relative flex flex-col gap-4">
           <div className="flex items-center gap-4 justify-center">
             <h2 className="text-xl font-normal">{username || "Loading..."}</h2>
-            <div
+            {/* <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[148px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
             >
               Đang theo dõi
-            </div>
+            </div> */}
+            {idDangNhap != idProfileDangXem && 
+            <FriendButton 
+              idUser1={idDangNhap} /// id dang nhap
+              idUser2={idProfileDangXem} /// id profile dang xem
+            />}
             <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[100px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
@@ -168,13 +198,14 @@ export default function MyProfile() {
           </div>
 
           <div className="flex gap-6 mt-2">
-            <span className="font-light">
+            <span className="font-light flex items-center gap-2">
               <strong className="font-bold">20</strong> {t("post")}
             </span>
-            <span className="font-light">
-              <strong className="font-bold">5.2K</strong> {t("follower")}
+            <span className="font-light flex items-center gap-2">
+              {/* <strong className="font-bold">5.2K</strong> {t("follower")} */}
+              <FriendsMenu idProfileDangXem = {idProfileDangXem}/>
             </span>
-            <span className="font-light">
+            <span className="font-light flex items-center gap-2">
               <strong className="font-bold">120</strong> {t("following")}
             </span>
           </div>
@@ -184,18 +215,19 @@ export default function MyProfile() {
         </div>
       </div>
 
-      {/* Danh sách ảnh */}
+      {/* Danh sách ảnh từ bài viết */}
       <div className="grid grid-cols-3 gap-1">
-        {images.map((img, index) => (
+        {posts.map((post: any) =>
           <div
-            key={index}
+            key={post?.postId}
             className="aspect-square h-[410px] w-[308px] cursor-pointer"
-            onClick={() => handleImageClick(img)}
+            onClick={() => handleImageClick(post)}
           >
-            <img src={img} alt="Post" className="w-full h-full object-cover" />
+            <img src={post?.postMedia[0]?.mediaUrl} alt="Post" className="w-full h-full object-cover" />
           </div>
-        ))}
+        )}
       </div>
+
 
       {/* Modal Thay đổi avatar */}
       <Modal
@@ -214,7 +246,7 @@ export default function MyProfile() {
           <div className="w-full h-[1px] bg-gray-300 my-1"></div>
 
           {/* Tải ảnh lên */}
-		  <ImageUploader onUploadSuccess={(url) => setAvatar(url)} onClose={handleClosePop} />
+          <ImageUploader onUploadSuccess={(url) => setAvatar(url)} onClose={handleClosePop} />
 
 
           <div className="w-full h-[1px] bg-gray-300 my-1"></div>
@@ -257,81 +289,44 @@ export default function MyProfile() {
           />
         )}
       </Modal>
-  
 
-			{/* Modal hiển thị ảnh */}
-			<Modal open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={"70%"} centered>
-				<div className="flex">
-					{/* Hình ảnh bên trái */}
-					<div className="w-[55%]">
-						<Carousel infinite={false} arrows>
-							{selectedImage && <img src={selectedImage} alt="Post" className="w-full h-[90vh] object-cover" />}
-						</Carousel>
-					</div>
 
-					{/* Comments bên phải */}
-					<div className="w-1/2 flex flex-col justify-between">
-						<div className="overflow-y-auto h-[400px]">
-							<div className="flex p-5  items-center gap-3 border-b border-gray-300 pb-3">
-								<img
-									src="/public/images/uifaces-popular-image (11).jpg"
-									alt="Avatar"
-									className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
-								/>
-								<span className="font-semibold text-gray-800">username</span>
-							</div>
-							<div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
-								<div className="flex  items-center gap-3">
-									<img
-										src="/public/images/uifaces-popular-image (11).jpg"
-										alt="Avatar"
-										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
-									/>
-									<div className="flex flex-col items-center">
-										<span className="font-semibold text-gray-800">username</span>
-										<span className="font-semibold text-gray-800">username</span>
-									</div>
-								</div>
-								<div className="flex  items-center gap-3">
-									<img
-										src="/public/images/uifaces-popular-image (11).jpg"
-										alt="Avatar"
-										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
-									/>
-									<div className="flex flex-col items-center">
-										<span className="font-semibold text-gray-800">username</span>
-										<span className="font-semibold text-gray-800">username</span>
-									</div>
-								</div><div className="flex  items-center gap-3">
-									<img
-										src="/public/images/uifaces-popular-image (11).jpg"
-										alt="Avatar"
-										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
-									/>
-									<div className="flex flex-col items-center">
-										<span className="font-semibold text-gray-800">username</span>
-										<span className="font-semibold text-gray-800">username</span>
-									</div>
-								</div><div className="flex  items-center gap-3">
-									<img
-										src="/public/images/uifaces-popular-image (11).jpg"
-										alt="Avatar"
-										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
-									/>
-									<div className="flex flex-col items-center">
-										<span className="font-semibold text-gray-800">username</span>
-										<span className="font-semibold text-gray-800">username</span>
-									</div>
-								</div>
-							</div>
-							{/* Thêm comments giả lập */}
-						</div>
+      {/* Modal hiển thị ảnh */}
+      <Modal open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={"70%"} centered>
+        <div className="flex">
+          {/* Hình ảnh bên trái */}
+          <div className="w-[55%]">
+            <Carousel infinite={false} arrows>
+              {selectedImages.map((img, index) => (
+                <img key={index} src={img} alt="Post" className="w-full h-[90vh] object-cover" />
+              ))}
+            </Carousel>
+          </div>
 
-						<div className="pl-5 pr-5 border-t border-gray-300"><CommentInput /></div>
+          {/* Comments bên phải */}
+          <div className="w-1/2 flex flex-col justify-between">
+            <div className="overflow-y-auto h-[400px]">
+              <div className="flex p-5  items-center gap-3 border-b border-gray-300 pb-3">
+                <img
+                  src="/public/images/uifaces-popular-image (11).jpg"
+                  alt="Avatar"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
+                />
+                <span className="font-semibold text-gray-800">username</span>
+              </div>
 
-					</div>
-				</div>
-			</Modal>
-		</div>
-	);
+              <div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
+               comment
+              </div>
+            </div>
+
+            <div className="pl-5 pr-5 border-t border-gray-300">
+              <CommentInput />
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+    </div>
+  );
 }

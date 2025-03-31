@@ -1,7 +1,6 @@
 .layout-app {
-  display: flex;
-  height: 100vh;
-
+  background: var(--bg-color);
+  color: var(--text-color);
   .sidebar {
     width: 98px;
     transition: width 0.3s ease;

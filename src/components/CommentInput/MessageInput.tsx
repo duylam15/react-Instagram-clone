@@ -4,6 +4,8 @@ import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import { Client, Stomp } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
 // Định nghĩa kiểu cho props
 interface MessageInputProps {
@@ -38,11 +40,21 @@ const MessageInput: React.FC<MessageInputProps> = ({ conversationId, senderId, o
 			console.log("Gửi tin nhắn thành công:", response.data.data);
 
 			// Gửi tin nhắn mới về component cha (nếu cần cập nhật danh sách tin nhắn)
-			if (onMessageSent) onMessageSent(response.data.data);
+			// if (onMessageSent) onMessageSent(response.data.data);
 			if (onMessageSent) {
-				console.log("Đang gửi tin nhắn mới về cha:", response.data.data);
-				onMessageSent(response.data.data);
-			  }
+				const sentMessage = response.data.data;
+				const socket = new SockJS("http://localhost:9999/api/ws");
+				const stompClient = Stomp.over(socket);
+
+				// Kết nối STOMP trước khi publish
+				stompClient.connect({}, () => {
+					console.log("WebSocket connected!");
+
+					// Chỉ gửi tin nhắn khi kết nối thành công
+					stompClient.send("/app/chat", {}, JSON.stringify(sentMessage));
+					console.log("Tin nhắn đã gửi qua WebSocket:", sentMessage);
+				});
+			}
 			// Xóa nội dung input sau khi gửi
 			setMessage("");
 

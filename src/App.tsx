@@ -12,28 +12,31 @@ import "./scss/examples.scss";
 
 import { router } from "./routes";
 import store from "./store";
+import { RefreshProvider } from "./contexts/RefreshContext";
 
 // Lazy load layout của admin
 const DefaultLayoutAdmin = React.lazy(() => import("./layout/DefaultLayoutAdmin"));
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <RouterProvider router={router} />
-      <HashRouter>
-        <Suspense
-          fallback={
-            <div className="pt-3 text-center">
-              <CSpinner color="primary" variant="grow" />
-            </div>
-          }
-        >
-          <Routes>
-            <Route path="admin/*" element={<DefaultLayoutAdmin />} />
-          </Routes>
-        </Suspense>
-      </HashRouter>
-    </ThemeProvider>
+    <RefreshProvider>
+      <ThemeProvider>
+        <RouterProvider router={router} />
+        <HashRouter>
+          <Suspense
+            fallback={
+              <div className="pt-3 text-center">
+                <CSpinner color="primary" variant="grow" />
+              </div>
+            }
+          >
+            <Routes>
+              <Route path="admin/*" element={<DefaultLayoutAdmin />} />
+            </Routes>
+          </Suspense>
+        </HashRouter>
+      </ThemeProvider>
+    </RefreshProvider>
   );
 };
 

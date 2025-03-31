@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./index.css"
 import InstagramPost from "../InstagramPost/InstagramPost";
 import { getPosts } from "../../services/post";
+import { useRefresh } from "../../contexts/RefreshContext";
 
 type PostMedia = {
 	mediaId: number;
@@ -52,6 +53,8 @@ const StoryList = () => {
 
 	const [posts, setPosts] = useState<Post[]>([]);
 
+	const { refreshTrigger, refresh } = useRefresh(); // Lấy giá trị từ context
+
 	useEffect(() => {
 		const fetchPosts = async () => {
 			try {
@@ -63,11 +66,11 @@ const StoryList = () => {
 		};
 
 		fetchPosts();
-	}, []);
+	}, [refreshTrigger]);
 
+	
 
 	console.log("postspostsposts", posts)
-
 	return (
 		<div className="home">
 			<div
@@ -92,10 +95,9 @@ const StoryList = () => {
 			</div>
 			<div className="list-post ml-22 mt-[-10px]">
 				{posts?.map((post: Post) => (
-					<InstagramPost post={post} />
+					<InstagramPost post={post} onRefresh={refresh} />
 				))}
 			</div>
-
 		</div>
 	);
 };

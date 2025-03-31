@@ -102,3 +102,31 @@ export const validateUser = async (data: any) => {
         return error;
     }
 };
+
+export const getUserProfile = async (data : {idUser : number}) => {
+    try {
+        console.log("Gọi API...");
+        console.log(data)
+        const response = await axios.get(
+            `${API_URL_BASE}/api/api/users/${data.idUser}`
+        );
+        console.log("Dữ liệu nhận được:", response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error("❌ Lỗi khi gọi API:", error.message);
+        console.error("🛠 Chi tiết lỗi:", error);
+        return null;
+    }
+};
+
+
+export const getUserById = async (id: any) => { 
+    try {
+        const response = await axios.get(`${API_URL_BASE}/api/api/users/${id}`);
+        return response.data;
+    } catch (error: any) {
+        console.error("❌ Lỗi khi gọi API:", error.message);
+        console.error("🛠 Chi tiết lỗi:", error);
+        return null;
+    }
+};

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 export default function Home() {
 	const { t } = useTranslation();
 	return (
-		<div className="home flex gap-25 justify-center  ml-30">
+		<div className="home flex min-h-[100vh] gap-25 justify-center  ml-50">
 			<StoryList />
 			<div className='w-80 mt-6'>
 				<div className="flex  items-center justify-between gap-20">
