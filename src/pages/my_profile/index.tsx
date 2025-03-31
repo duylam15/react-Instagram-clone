@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import ImageUploader from "../../components/Avatar/ImageUploader";
 import "./style.css"
+import { useNavigate } from 'react-router-dom';
 
 export default function MyProfile() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,6 +15,11 @@ export default function MyProfile() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [username, setUsername] = useState("");
   const [avatar, setAvatar] = useState("/images/default-avatar.jpg");
+
+  const [showEditOption, setShowEditOption] = useState(false);
+  const navigate = useNavigate();
+
+ 
 
   const images = [
     "/images/uifaces-popular-image (12).jpg",
@@ -95,6 +101,15 @@ export default function MyProfile() {
 	}
   };
   
+
+  //nhấn vào icon '...'
+  const handleIconClick = () => {
+    setShowEditOption(!showEditOption); // Hiển thị hoặc ẩn tùy chọn chỉnh sửa
+  };
+
+  const handleEditProfileClick = () => {
+    navigate('/edit-profile'); // Điều hướng đến trang chỉnh sửa thông tin cá nhân
+  };
   
 
   return (
@@ -112,7 +127,7 @@ export default function MyProfile() {
         </div>
 
         {/* Thông tin cá nhân */}
-        <div className="flex flex-col gap-4">
+        <div className="relative flex flex-col gap-4">
           <div className="flex items-center gap-4 justify-center">
             <h2 className="text-xl font-normal">{username || "Loading..."}</h2>
             <div
@@ -134,9 +149,21 @@ export default function MyProfile() {
               +
             </div>
             <div className="px-4 py-1 rounded-md font-medium text-[14px] text-center w-[30px] h-[32px] leading-[100%] flex items-center justify-center text-black-600">
-              <p className="text-gray-600">
+              <p className="text-gray-600" onClick={handleIconClick}>
                 <IconDots color={iconColor} />
               </p>
+
+              {showEditOption && (
+              <div className="absolute bg-white-100 p-2 text-center rounded-md shadow-lg mt-2 w-[230px] right-0 top-[14%] text-black">
+                <button
+                  onClick={handleEditProfileClick}
+                  className="text-black font-medium text-[14px]  py-1 px-2 rounded-md"
+                  style={{ backgroundColor: '#ffff' }} // Màu nền cho nút
+                >
+                  Chỉnh sửa thông tin cá nhân
+                </button>
+              </div>
+            )}
             </div>
           </div>
 
