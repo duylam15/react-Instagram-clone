@@ -13,7 +13,7 @@ const EditProfile = () => {
     lastName: '',
     email: '',
     phoneNumber: '',
-    password: '',
+  
   });
   
 
@@ -23,7 +23,7 @@ const EditProfile = () => {
     lastName?: string;
     email?: string;
     phoneNumber?: string;
-    password?: string;
+    
   }>({});
   
 
@@ -107,16 +107,7 @@ const EditProfile = () => {
       }
     }
   
-    // Kiểm tra password
-    else if (name === 'password') {
-      if (!value.trim()) {
-        errorMessage = 'Password is required';
-      } else if (value.length < 6 || value.length > 100) {
-        errorMessage = 'Password must be between 6 and 100 characters';
-      } else if (!/(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(value)) {
-        errorMessage = 'Password must contain at least one letter and one number';
-      }
-    }
+   
   
     setErrors((prevErrors) => ({
       ...prevErrors,
@@ -215,18 +206,7 @@ const EditProfile = () => {
               />
               {errors.phoneNumber && <span className='error-message'>{errors.phoneNumber}</span>}
             </div>
-            <div>
-              <label htmlFor='password'>Mật khẩu</label>
-              <input
-                type='password'
-                id='password'
-                name='password'
-                value={user.password}
-                onChange={handleChange}
-                required
-              />
-              {errors.password && <span className='error-message'>{errors.password}</span>}
-            </div>
+            
             <div className='button-container'>
               <button type='submit' className='btn btn-save'>
                 Cập nhật

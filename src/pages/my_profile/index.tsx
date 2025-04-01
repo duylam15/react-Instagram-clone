@@ -10,11 +10,12 @@ import "./style.css"
 import FriendsMenu from "./friendMenu";
 import FriendButton from "./friendButton";
 import { number } from "prop-types";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function MyProfile() {
-  let idDangNhap =  Number(localStorage.getItem("idUser"));
-  let idProfileDangXem = 1 ;
+  let idDangNhap = Number(localStorage.getItem("idUser"));
+  const { id } = useParams(); // Lấy id từ URL
+  let idProfileDangXem = id;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -25,8 +26,6 @@ export default function MyProfile() {
 
   const [showEditOption, setShowEditOption] = useState(false);
   const navigate = useNavigate();
-
- 
 
   const images = [
     "/images/uifaces-popular-image (12).jpg",
@@ -49,7 +48,7 @@ export default function MyProfile() {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(`http://localhost:9999/api/api/users/${idProfileDangXem}`);
-        setUsername(response.data.data.userName);
+        setUsername(response?.data?.data?.userName);
         setAvatar(response.data.data.urlAvatar);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin profile:", error);
@@ -57,7 +56,7 @@ export default function MyProfile() {
       }
     };
     fetchUserProfile();
-  }, []);
+  }, [id]);
 
   // Mở/đóng modal hiển thị ảnh
   const handleImageClick = (post: any) => {
@@ -138,7 +137,7 @@ export default function MyProfile() {
   console.log("postspostsposts", posts)
 
   return (
-    <div className="ml-25 p-4 flex flex-col items-center">
+    <div className="ml-25 min-h-[100vh] p-4 flex flex-col items-center">
       {/* Thông tin người dùng */}
       <div className="flex items-center gap-30 mb-8">
         {/* Ảnh đại diện */}
@@ -161,11 +160,11 @@ export default function MyProfile() {
             >
               Đang theo dõi
             </div> */}
-            {idDangNhap != idProfileDangXem && 
-            <FriendButton 
-              idUser1={idDangNhap} /// id dang nhap
-              idUser2={idProfileDangXem} /// id profile dang xem
-            />}
+            {idDangNhap != idProfileDangXem &&
+              <FriendButton
+                idUser1={idDangNhap} /// id dang nhap
+                idUser2={idProfileDangXem} /// id profile dang xem
+              />}
             <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[100px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
@@ -184,16 +183,16 @@ export default function MyProfile() {
               </p>
 
               {showEditOption && (
-              <div className="absolute bg-white-100 p-2 text-center rounded-md shadow-lg mt-2 w-[230px] right-0 top-[14%] text-black">
-                <button
-                  onClick={handleEditProfileClick}
-                  className="text-black font-medium text-[14px]  py-1 px-2 rounded-md"
-                  style={{ backgroundColor: '#ffff' }} // Màu nền cho nút
-                >
-                  Chỉnh sửa thông tin cá nhân
-                </button>
-              </div>
-            )}
+                <div className="absolute bg-white-100 p-2 text-center rounded-md shadow-lg mt-2 w-[230px] right-0 top-[14%] text-black">
+                  <button
+                    onClick={handleEditProfileClick}
+                    className="text-black font-medium text-[14px]  py-1 px-2 rounded-md"
+                    style={{ backgroundColor: '#ffff' }} // Màu nền cho nút
+                  >
+                    Chỉnh sửa thông tin cá nhân
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -203,7 +202,7 @@ export default function MyProfile() {
             </span>
             <span className="font-light flex items-center gap-2">
               {/* <strong className="font-bold">5.2K</strong> {t("follower")} */}
-              <FriendsMenu idProfileDangXem = {idProfileDangXem}/>
+              <FriendsMenu idProfileDangXem={idProfileDangXem} />
             </span>
             <span className="font-light flex items-center gap-2">
               <strong className="font-bold">120</strong> {t("following")}
@@ -301,7 +300,7 @@ export default function MyProfile() {
                 <img key={index} src={img} alt="Post" className="w-full h-[90vh] object-cover" />
               ))}
             </Carousel>
-          </div>
+          </div>  
 
           {/* Comments bên phải */}
           <div className="w-1/2 flex flex-col justify-between">
@@ -316,7 +315,7 @@ export default function MyProfile() {
               </div>
 
               <div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
-               comment
+                comment
               </div>
             </div>
 

@@ -60,6 +60,13 @@ export default function SideBar(): JSX.Element {
 	// Lấy hàm dịch `t` từ i18n
 	const { t } = useTranslation();
 
+	useEffect(() => {
+		if (location.pathname.startsWith("/profile")) {
+			setShowSearch(false);
+			setShowNotifications(false);
+		}
+	}, [location.pathname]); // Chạy mỗi khi đường dẫn thay đổi
+
 	// Điều chỉnh sidebar khi vào trang Messages
 	useEffect(() => {
 		setSidebarWidth(location.pathname === "/messages" ? "90px" : "200px");

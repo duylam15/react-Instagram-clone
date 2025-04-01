@@ -55,6 +55,10 @@ export const router = createBrowserRouter([
         element: <MyProfile />,
       },
       {
+        path: '/profile/:id',
+        element: <MyProfile />,
+      },
+      {
         path: '/messages',
         element: <Messages />,
       },
@@ -67,17 +71,17 @@ export const router = createBrowserRouter([
 
   {
     path: '/login',
-    element:<Login/>
+    element: <Login />
   },
 
   {
     path: '/register',
-    element:<Register/>
+    element: <Register />
   },
 
   {
     path: '/forgotpassword',
-    element:<ForgotPassword/>
+    element: <ForgotPassword />
   },
   {
     path: '/admin',
