@@ -10,7 +10,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@ant-design/charts": "^1.4.3",
+        "@ant-design/charts": "^2.2.1",
         "@ant-design/icons": "5.0.1",
         "@coreui/chartjs": "^4.1.0",
         "@coreui/coreui": "^5.3.1",
@@ -37,6 +37,7 @@
         "chart.js": "^4.4.7",
         "classnames": "^2.5.1",
         "core-js": "^3.41.0",
+        "crypto-js": "^4.2.0",
         "date-fns": "^4.1.0",
         "dayjs": "^1.11.13",
         "emoji-mart": "^5.6.0",
