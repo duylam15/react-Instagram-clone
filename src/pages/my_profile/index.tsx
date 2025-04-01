@@ -11,8 +11,8 @@ import FriendsMenu from "./friendMenu";
 import FriendButton from "./friendButton";
 
 export default function MyProfile() {
-  let idDangNhap = 1; 
-  let idProfileDangXem = 2 ;
+  let idDangNhap = 1;
+  let idProfileDangXem = 2;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -123,7 +123,7 @@ export default function MyProfile() {
 
 
   return (
-    <div className="ml-25 p-4 flex flex-col items-center">
+    <div className="ml-25 min-h-[100vh] p-4 flex flex-col items-center">
       {/* Thông tin người dùng */}
       <div className="flex items-center gap-30 mb-8">
         {/* Ảnh đại diện */}
@@ -146,11 +146,11 @@ export default function MyProfile() {
             >
               Đang theo dõi
             </div> */}
-            {idDangNhap != idProfileDangXem && 
-            <FriendButton 
-              idUser1={idDangNhap} /// id dang nhap
-              idUser2={idProfileDangXem} /// id profile dang xem
-            />}
+            {idDangNhap != idProfileDangXem &&
+              <FriendButton
+                idUser1={idDangNhap} /// id dang nhap
+                idUser2={idProfileDangXem} /// id profile dang xem
+              />}
             <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[100px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
@@ -176,7 +176,7 @@ export default function MyProfile() {
             </span>
             <span className="font-light flex items-center gap-2">
               {/* <strong className="font-bold">5.2K</strong> {t("follower")} */}
-              <FriendsMenu/>
+              <FriendsMenu />
             </span>
             <span className="font-light flex items-center gap-2">
               <strong className="font-bold">120</strong> {t("following")}
@@ -289,7 +289,7 @@ export default function MyProfile() {
               </div>
 
               <div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
-               comment
+                comment
               </div>
             </div>
 
