@@ -11,6 +11,7 @@ import Explore from '../pages/explore';
 import Login from '../pages/login';
 import Register from '../pages/register';
 import ForgotPassword from '../pages/forgotpassword';
+import EditProfile from '../pages/my_profile/EditProfile';
 
 const Dashboard = React.lazy(() => import('../views/dashboard/Dashboard'))
 const User = React.lazy(() => import('../views/user/User'))
@@ -58,8 +59,8 @@ export const router = createBrowserRouter([
         element: <Messages />,
       },
       {
-        path: '/explore',
-        element: <Explore />,
+        path: '/edit-profile',
+        element: <EditProfile />,
       },
     ],
   },

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FaHeart, FaRegHeart, FaComment, FaPaperPlane, FaBookmark, FaRegBookmark, FaSmile } from "react-icons/fa";
 import CommentInput from "../CommentInput/CommentInput";
 import { Modal, Carousel, message, Upload, Spin } from 'antd';
@@ -11,7 +11,7 @@ import data from "@emoji-mart/data";
 
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { deletePostService, updatePost } from "../../services/post";
-import { getUserById } from "../../services/user/user";
+import axios from "axios";
 
 type PostMedia = {
 	mediaId: number;
@@ -50,8 +50,9 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	const [comment, setComment] = useState("");
 	const [showPicker, setShowPicker] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [userName, setUserName] = useState<string>();
-	const [user, setUser] = useState();
+	const [comments, setComments] = useState<any[]>(post?.comments || []);
+	const commentInputRef = useRef<HTMLInputElement>(null);
+	const [parentCommentId, setParentCommentId] = useState<number | null>(null);
 
 	useEffect(() => {
 		if (post?.postMedia) {
@@ -62,19 +63,6 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			setComment(post?.content);
 		}
 	}, [post]);  // Chạy khi `post` thay đổi
-
-	useEffect(() => {
-		const fetchUser = async () => {
-			const response: any = await getUserById(post?.userId);
-			console.log()
-			if (response && response?.data) {
-				const { firstName, lastName } = response?.data;
-				setUserName(`${firstName} ${lastName}`); // Gán vào state
-				setUser(response?.data); // Gán vào state
-			}
-		};
-		fetchUser();
-	}, []);
 
 	const handleDelete = async (postId: number) => {
 		try {
@@ -125,6 +113,80 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		setIsOpenPut(false)
 	};
 
+	// Hàm xử lý comment mới
+	const handleNewComment = async (newComment: any) => {
+		if (parentCommentId) {
+			// Nếu đang reply một comment
+			try {
+				const response = await axios.post(
+					`http://localhost:9999/api/comments/reply/${parentCommentId}`,
+					{
+						postId: post?.postId,
+						userId: localStorage.getItem("userId"),
+						content: newComment.content,
+						typeComment: "TEXT",
+						numberEmotion: 0,
+						numberCommentChild: 0,
+					},
+					{
+						headers: {
+							Authorization: `Bearer ${localStorage.getItem("token")}`,
+							"Content-Type": "application/json",
+						},
+					}
+				);
+
+				// Tạo comment mới với thông tin từ response
+				const replyComment = {
+					...response.data.data,
+					userName: localStorage.getItem("userName") || "User",
+					authorAvatarUrl: localStorage.getItem("userAvatar") || "/default-avatar.png",
+					createdAt: new Date().toISOString(),
+					numberEmotion: 0,
+					numberCommentChild: 0,
+					parentId: parentCommentId
+				};
+
+				// Cập nhật state comments
+				setComments(prevComments => {
+					const updatedComments = [...prevComments];
+					const parentComment = updatedComments.find(c => c.commentId === parentCommentId);
+					if (parentComment) {
+						// Tăng số lượng reply của comment cha
+						parentComment.numberCommentChild = (parentComment.numberCommentChild || 0) + 1;
+						
+						// Nếu comment cha chưa có mảng replies, tạo mảng mới
+						if (!parentComment.replies) {
+							parentComment.replies = [];
+						}
+						
+						// Thêm reply vào mảng replies của comment cha
+						parentComment.replies.push(replyComment);
+					}
+					return updatedComments;
+				});
+
+				// Reset parentCommentId
+				setParentCommentId(null);
+			} catch (error) {
+				console.error("Error creating reply:", error);
+			}
+		} else {
+			// Nếu là comment mới
+			setComments(prevComments => [...prevComments, newComment]);
+			if (post) {
+				post.numberComment = (post.numberComment || 0) + 1;
+			}
+		}
+	};
+
+	const handleReplyClick = (commentId: number) => {
+		setParentCommentId(commentId);
+		if (commentInputRef.current) {
+			commentInputRef.current.focus();
+		}
+	};
+
 	return (
 		<div className={`max-w-[470px] pt-0 border-b border-gray-600`}>
 			{/* Header */}
@@ -135,7 +197,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 						alt="Avatar"
 						className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 					/>
-					<span className="font-semibold text-gray-800" style={{ color: "var(--text-color)" }}>{userName} </span>
+					<span className="font-semibold text-gray-800" style={{ color: "var(--text-color)" }}>{post?.userId} </span>
 					<span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>{formatTimeAgo(`${post?.createdAt}`, t)}  </span>
 				</div>
 				<div className="relative inline-block" style={{
@@ -355,11 +417,16 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			{/* Likes and Caption */}
 			<div className="">
 				<p className="font-semibold">{post?.numberEmotion} {t('likes')}</p>
-				<p><span className="font-semibold">{userName}</span> {post?.content}</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>{t('view_more')} {post?.numberComment} {t('comment')} </p>
+				<p><span className="font-semibold">{post?.userId}</span> {post?.content}</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>{t('view_more')} {post?.numberComment} {t('comment')} </p>
 			</div>
 			{/* Comment Input */}
-			<div className="mt-2 pt-2 ">
-				<CommentInput post={post} />
+			<div className="mt-2 pt-2">
+				<CommentInput 
+					post={post} 
+					onCommentAdded={handleNewComment}
+					ref={commentInputRef}
+					parentCommentId={parentCommentId}
+				/>
 			</div>
 			{/* Modal hiển thị hình ảnh + comments */}
 			<Modal open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={"70%"}
@@ -390,7 +457,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 										alt="Avatar"
 										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 									/>
-									<span className="font-semibold" style={{ color: "var(--text-color)" }}>{userName}</span>
+									<span className="font-semibold" style={{ color: "var(--text-color)" }}>{post?.userId}</span>
 								</div>
 
 								<div className="relative inline-block">
@@ -415,11 +482,14 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 								</div>
 							</div>
 							<div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
-								<CommentSection comments={post?.comments} post={post} />
+								<CommentSection 
+									comments={comments} 
+									post={post} 
+									onReplyClick={handleReplyClick}
+								/>
 							</div>
 						</div>
 						<div>
-
 							<div className="flex justify-between p-4 pb-0 border-t" style={{ borderColor: "var(--white-to-gray)" }}>
 								<div className="flex items-center gap-3">
 									<p onClick={() => setLiked(!liked)} className="text-xl">
@@ -436,9 +506,16 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 								<p className="font-semibold text-[16px] p-0 m-0 " style={{ color: "var(--text-color)" }}>{post?.numberEmotion} {t('likes')}</p>
 								<p className="font-light p-0 m-0 " style={{ color: "var(--text-color)" }}>{formatTimeAgo(`${post?.createdAt}`, t)} </p>
 							</div>
-							<div className="pl-5 pr-5 border-t "
+							<div className="pl-5 pr-5 border-t"
 								style={{ borderColor: "var(--white-to-gray)" }}
-							><CommentInput post={post} /></div>
+							>
+								<CommentInput 
+									post={post} 
+									onCommentAdded={handleNewComment}
+									ref={commentInputRef}
+									parentCommentId={parentCommentId}
+								/>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -455,7 +532,7 @@ const CustomPrevArrow = ({ onClick }: any) => (
 		className="absolute top-1/2 -left-8 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
 		onClick={onClick}
 	>
-		<LeftOutlined />
+		<LeftOutlined onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} />
 	</div>
 );
 
@@ -464,6 +541,6 @@ const CustomNextArrow = ({ onClick }: any) => (
 		className="absolute top-1/2 -right-3 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
 		onClick={onClick}
 	>
-		<RightOutlined />
+		<RightOutlined onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} />
 	</div>
 );

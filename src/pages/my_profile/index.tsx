@@ -9,10 +9,12 @@ import ImageUploader from "../../components/Avatar/ImageUploader";
 import "./style.css"
 import FriendsMenu from "./friendMenu";
 import FriendButton from "./friendButton";
+import { number } from "prop-types";
+import { useNavigate } from 'react-router-dom';
 
 export default function MyProfile() {
-  let idDangNhap = 1;
-  let idProfileDangXem = 2;
+  let idDangNhap =  Number(localStorage.getItem("idUser"));
+  let idProfileDangXem = 1 ;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -20,6 +22,11 @@ export default function MyProfile() {
 
   const [username, setUsername] = useState("");
   const [avatar, setAvatar] = useState("/images/default-avatar.jpg");
+
+  const [showEditOption, setShowEditOption] = useState(false);
+  const navigate = useNavigate();
+
+ 
 
   const images = [
     "/images/uifaces-popular-image (12).jpg",
@@ -41,7 +48,7 @@ export default function MyProfile() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:9999/api/users/1");
+        const response = await axios.get(`http://localhost:9999/api/api/users/${idProfileDangXem}`);
         setUsername(response.data.data.userName);
         setAvatar(response.data.data.urlAvatar);
       } catch (error) {
@@ -70,7 +77,7 @@ export default function MyProfile() {
     formData.append("avatar", file);
 
     try {
-      const response = await axios.put("http://localhost:9999/api/users/avatar/1", formData, {
+      const response = await axios.put(`http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 
@@ -88,7 +95,7 @@ export default function MyProfile() {
   const handleRemoveAvatar = async () => {
     try {
       const response = await axios.delete(
-        "http://localhost:9999/api/users/avatar/1"
+        `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`
       );
 
 
@@ -102,12 +109,21 @@ export default function MyProfile() {
     }
   };
 
+
+  //nhấn vào icon '...'
+  const handleIconClick = () => {
+    setShowEditOption(!showEditOption); // Hiển thị hoặc ẩn tùy chọn chỉnh sửa
+  };
+
+  const handleEditProfileClick = () => {
+    navigate('/edit-profile'); // Điều hướng đến trang chỉnh sửa thông tin cá nhân
+  };
   const [posts, setPosts] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchUserPosts = async () => {
       try {
-        const response = await axios.get("http://localhost:9999/api/posts/user/1");
+        const response = await axios.get(`http://localhost:9999/api/api/posts/user/${idProfileDangXem}`);
         const posts = response.data.data.data; // Lấy mảng bài post
 
         setPosts(posts); // Cập nhật state
@@ -120,7 +136,6 @@ export default function MyProfile() {
   }, []);
 
   console.log("postspostsposts", posts)
-
 
   return (
     <div className="ml-25 min-h-[100vh] p-4 flex flex-col items-center">
@@ -137,7 +152,7 @@ export default function MyProfile() {
         </div>
 
         {/* Thông tin cá nhân */}
-        <div className="flex flex-col gap-4">
+        <div className="relative flex flex-col gap-4">
           <div className="flex items-center gap-4 justify-center">
             <h2 className="text-xl font-normal">{username || "Loading..."}</h2>
             {/* <div
@@ -164,9 +179,21 @@ export default function MyProfile() {
               +
             </div>
             <div className="px-4 py-1 rounded-md font-medium text-[14px] text-center w-[30px] h-[32px] leading-[100%] flex items-center justify-center text-black-600">
-              <p className="text-gray-600">
+              <p className="text-gray-600" onClick={handleIconClick}>
                 <IconDots color={iconColor} />
               </p>
+
+              {showEditOption && (
+              <div className="absolute bg-white-100 p-2 text-center rounded-md shadow-lg mt-2 w-[230px] right-0 top-[14%] text-black">
+                <button
+                  onClick={handleEditProfileClick}
+                  className="text-black font-medium text-[14px]  py-1 px-2 rounded-md"
+                  style={{ backgroundColor: '#ffff' }} // Màu nền cho nút
+                >
+                  Chỉnh sửa thông tin cá nhân
+                </button>
+              </div>
+            )}
             </div>
           </div>
 
@@ -176,7 +203,7 @@ export default function MyProfile() {
             </span>
             <span className="font-light flex items-center gap-2">
               {/* <strong className="font-bold">5.2K</strong> {t("follower")} */}
-              <FriendsMenu />
+              <FriendsMenu idProfileDangXem = {idProfileDangXem}/>
             </span>
             <span className="font-light flex items-center gap-2">
               <strong className="font-bold">120</strong> {t("following")}
