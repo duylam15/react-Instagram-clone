@@ -94,7 +94,7 @@ const Login = () => {
         });
 
         console.log("User info:", userInfo.data); // Kiểm tra thông tin người dùng
-        navigate("/register"); // Chuyển hướng sau khi đăng nhập
+        navigate("/"); // Chuyển hướng sau khi đăng nhập
       } else {
         throw new Error("Thông tin đăng nhập không hợp lệ");
       }
