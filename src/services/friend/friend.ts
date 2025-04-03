@@ -125,6 +125,7 @@ export const getListFriends = async (data : { idProfile  :number}) => {
     }
 };
 
+// danh sách người nhận kb của idnguoidung
 export const getListInviteReceived = async (data : { idProfile  :number}) => {
     try {
         console.log("Gọi API...");
@@ -141,6 +142,7 @@ export const getListInviteReceived = async (data : { idProfile  :number}) => {
     }
 };
 
+// danh sách người dùng gửi lời mời
 export const getListInviteSent = async (data : { idProfile  :number}) => {
     try {
         console.log("Gọi API...");

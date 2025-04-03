@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import axios from "axios";
 import MessageInput from "../../components/CommentInput/MessageInput";
 
+import VideoCall from "../call/VideoCall"
 import { Client, Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import ChatAppGemini from "../../components/chatGemini";
@@ -33,10 +34,10 @@ const Messages = () => {
 	const [messages, setMessages] = useState<Message[]>([]);
 	useEffect(() => {
 		const socket = new SockJS("http://localhost:9999/api/ws");
-    	const stompClient = Stomp.over(socket);
+		const stompClient = Stomp.over(socket);
 		stompClient.onConnect = () => {
 			console.log("Connected to WebSocket Server");
-	
+
 			// Lắng nghe tin nhắn từ backend
 			const subscription = stompClient.subscribe(
 				`/topic/conversation/${selectedChat?.idConversation}`,
@@ -46,14 +47,14 @@ const Messages = () => {
 					setMessages((prevMessages) => [...prevMessages, newMessage]);
 				}
 			);
-	
+
 			return () => {
 				subscription.unsubscribe(); // Hủy lắng nghe khi component bị unmount
 			};
 		};
-	
+
 		stompClient.activate();
-	
+
 		return () => {
 			stompClient.deactivate();
 		};
@@ -162,11 +163,14 @@ const Messages = () => {
 
 						{/* Input gửi tin nhắn */}
 						<div className="flex items-center rounded-full px-4 focus:outline-none ml-4 mr-4 mb-4 border" style={{ borderColor: "var(--white-to-gray)" }}>
-						<MessageInput 
-						conversationId={selectedChat.idConversation} 
-						senderId={userId} 
-						onMessageSent={(newMessage) => setMessages([...messages, newMessage])}
-						/>
+							<MessageInput
+								conversationId={selectedChat.idConversation}
+								senderId={userId}
+								onMessageSent={(newMessage) => setMessages([...messages, newMessage])}
+							/>
+						</div>
+						<div className="flex justify-end p-4">
+							<VideoCall />
 						</div>
 					</div>
 				) : (
