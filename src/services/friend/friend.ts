@@ -109,7 +109,7 @@ export const deleteFriend = async (data : { idUser :number, idFriend : number  }
     }
 };
 
-export const getListFriends = async (data : { idProfile  :number}) => {
+export const getListFriends = async (data : { idProfile  :number},token:any) => {
     try {
         console.log("Gọi API...");
         console.log(data)

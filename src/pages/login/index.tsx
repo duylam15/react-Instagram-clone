@@ -74,14 +74,13 @@ const Login = () => {
         // Lưu token vào localStorage
         const token = res.data.token; // Đảm bảo key 'token' đúng với phản hồi từ backend
         const userId = res.data.userId
-
         console.log(res)
         if (!token) {
           throw new Error("Không tìm thấy token trong phản hồi");
         }
 
         localStorage.setItem("token", token); // Lưu token vào localStorage
-        localStorage.setItem("userId" , userId)
+        localStorage.setItem("userId", userId)
 
         console.log("Token saved:", token);
 
@@ -132,9 +131,8 @@ const Login = () => {
               placeholder="Tên đăng nhập"
               value={username}
               onChange={handleUsernameChange}
-              className={`p-2 border rounded-md text-sm w-full ${
-                errors.username ? "border-red-500" : "border-gray-300"
-              } focus:outline-none focus:border-black`}
+              className={`p-2 border rounded-md text-sm w-full ${errors.username ? "border-red-500" : "border-gray-300"
+                } focus:outline-none focus:border-black`}
             />
             {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
           </div>
@@ -145,9 +143,8 @@ const Login = () => {
               placeholder="Mật khẩu"
               value={password}
               onChange={handlePasswordChange}
-              className={`p-2 border rounded-md text-sm w-full ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              } focus:outline-none focus:border-black`}
+              className={`p-2 border rounded-md text-sm w-full ${errors.password ? "border-red-500" : "border-gray-300"
+                } focus:outline-none focus:border-black`}
             />
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>

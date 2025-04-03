@@ -2,7 +2,6 @@ import axios from "axios";
 import { message } from "antd";
 
 const API_BASE_URL = "http://localhost:9999/api/posts";
-const TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMDEiLCJpYXQiOjE3NDI4NjQyNzAsImV4cCI6MTc0Mjg2NjA3MH0.XFxyFEYl-G3PKdbUK1AqXSW0aJlK97Msf8zvMbNjjCk";
 
 export const getPosts = async () => {
   try {
@@ -33,6 +32,10 @@ export const getPosts = async () => {
 
 export const createPost = async (userId:any, comment:any, images:any) => {
   try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("Token không tồn tại. Vui lòng đăng nhập lại.");
+    }
     const formData = new FormData();
     // Thêm dữ liệu postCreateRequest
     const postCreateRequest = {
@@ -55,7 +58,7 @@ export const createPost = async (userId:any, comment:any, images:any) => {
     const response = await axios.post(API_BASE_URL, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-        Authorization: TOKEN,
+         Authorization: `Bearer ${token}`,
       },
     });
 
@@ -68,13 +71,15 @@ export const createPost = async (userId:any, comment:any, images:any) => {
 
 export const updatePost = async (postId: any, comment: any, images: any) => {
   try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("Token không tồn tại. Vui lòng đăng nhập lại.");
+    }
     if (!postId) {
       message.error("❌ Lỗi: Không tìm thấy ID bài viết!");
       return;
     }
-
     const formData = new FormData();
-
     const postUpdateRequest = {
       content: comment || "",
       visibility: "PRIVATE",
@@ -102,7 +107,7 @@ export const updatePost = async (postId: any, comment: any, images: any) => {
 
     const response = await axios.put(`${API_BASE_URL}/${postId}`, formData, {
       headers: {
-        Authorization: TOKEN,
+         Authorization: `Bearer ${token}`,
       },
     });
 

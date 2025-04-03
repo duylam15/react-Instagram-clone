@@ -11,10 +11,11 @@ import FriendsMenu from "./friendMenu";
 import FriendButton from "./friendButton";
 import { number } from "prop-types";
 import ChatAppGemini from "../../components/chatGemini";
+import { useNavigate } from "react-router-dom";
 
 export default function MyProfile() {
-  let idDangNhap =  Number(localStorage.getItem("idUser"));
-  let idProfileDangXem = 2 ;
+  let idDangNhap = Number(localStorage.getItem("idUser"));
+  let idProfileDangXem = 2;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -39,7 +40,6 @@ export default function MyProfile() {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const iconColor = theme === "dark" ? "white" : "black";
-
 
 
   // Lấy thông tin user
@@ -157,13 +157,13 @@ export default function MyProfile() {
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[148px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
             >
-                abc
+              abc
             </div>
-            {idDangNhap != idProfileDangXem && 
-            <FriendButton 
-              idUser1={idDangNhap} /// id dang nhap
-              idUser2={idProfileDangXem} /// id profile dang xem
-            />}
+            {idDangNhap != idProfileDangXem &&
+              <FriendButton
+                idUser1={idDangNhap} /// id dang nhap
+                idUser2={idProfileDangXem} /// id profile dang xem
+              />}
             <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[100px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
@@ -299,7 +299,7 @@ export default function MyProfile() {
                 <img key={index} src={img} alt="Post" className="w-full h-[90vh] object-cover" />
               ))}
             </Carousel>
-          </div>  
+          </div>
 
           {/* Comments bên phải */}
           <div className="w-1/2 flex flex-col justify-between">
@@ -323,7 +323,7 @@ export default function MyProfile() {
             </div>
           </div>
         </div>
-      </Modal>  
+      </Modal>
       <ChatAppGemini />
     </div>
   );

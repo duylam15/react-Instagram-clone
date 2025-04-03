@@ -21,14 +21,23 @@ export const callRegister = async (data: RegisterData) => {
     });
 };
 
-export const callLogin = (username, password) => {
+export const callLogin = (username:any, password:any) => {
     return axios.post(`${API_BACKEND}auth/generateToken`, { username, password });
 };
 
-export const callInfoUser = (token) => {
+export const callInfoUser = (token:any) => {
     return axios.get(`${API_BACKEND}auth/user/userProfile`, {
         headers: {
             Authorization: `Bearer ${token}`, // Thêm token vào header
         },
     });
 };
+
+export const callUserProfile = (id:any, token:any) => {
+     return axios.get(`http://localhost:9999/api/api/users/${id}`,{
+        headers: {
+            Authorization: `Bearer ${token}`, // Thêm token vào header
+        },
+    });
+};
+

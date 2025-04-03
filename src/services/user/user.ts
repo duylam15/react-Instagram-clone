@@ -130,3 +130,18 @@ export const getUserById = async (id: any) => {
         return null;
     }
 };
+
+export const getListUserNoPage = async (token:any) => { 
+    try {
+        const response = await axios.get(`${API_URL_BASE}/api/api/users/getdsusers`,{
+        headers: {
+            Authorization: `Bearer ${token}`, // Thêm token vào header
+        },
+    });
+        return response;
+    } catch (error: any) {
+        console.error("❌ Lỗi khi gọi API:", error.message);
+        console.error("🛠 Chi tiết lỗi:", error);
+        return null;
+    }
+};

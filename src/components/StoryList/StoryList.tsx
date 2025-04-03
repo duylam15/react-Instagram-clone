@@ -68,7 +68,7 @@ const StoryList = () => {
 		fetchPosts();
 	}, [refreshTrigger]);
 
-	
+
 
 	console.log("postspostsposts", posts)
 	return (
@@ -94,8 +94,8 @@ const StoryList = () => {
 				))}
 			</div>
 			<div className="list-post ml-22 mt-[-10px]">
-				{posts?.map((post: Post) => (
-					<InstagramPost post={post} onRefresh={refresh} />
+				{posts?.map((post: Post, index) => (
+					<div key={index}><InstagramPost post={post} onRefresh={refresh} /></div>
 				))}
 			</div>
 		</div>
