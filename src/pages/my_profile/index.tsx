@@ -10,10 +10,11 @@ import "./style.css"
 import FriendsMenu from "./friendMenu";
 import FriendButton from "./friendButton";
 import { number } from "prop-types";
+import ChatAppGemini from "../../components/chatGemini";
 
 export default function MyProfile() {
   let idDangNhap =  Number(localStorage.getItem("idUser"));
-  let idProfileDangXem = 1 ;
+  let idProfileDangXem = 2 ;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -140,12 +141,12 @@ export default function MyProfile() {
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4 justify-center">
             <h2 className="text-xl font-normal">{username || "Loading..."}</h2>
-            {/* <div
+            <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[148px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
             >
-              Đang theo dõi
-            </div> */}
+                abc
+            </div>
             {idDangNhap != idProfileDangXem && 
             <FriendButton 
               idUser1={idDangNhap} /// id dang nhap
@@ -298,8 +299,8 @@ export default function MyProfile() {
             </div>
           </div>
         </div>
-      </Modal>
-
+      </Modal>  
+      <ChatAppGemini />
     </div>
   );
 }
