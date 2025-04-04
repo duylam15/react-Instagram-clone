@@ -7,6 +7,8 @@ import VideoCall from "../call/VideoCall"
 import { Client, Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import ChatAppGemini from "../../components/chatGemini";
+
+import ImageCaptionUploader from '../../components/InstagramPost/ImageCaptionUploader';
 const userId = Number(localStorage.getItem("userId")); 
 // Định nghĩa type Conversation
 interface Conversation {
@@ -180,6 +182,7 @@ const Messages = () => {
 				)}
 			</div>
 			<ChatAppGemini/>
+			<ImageCaptionUploader />
 		</div>
 	);
 };
