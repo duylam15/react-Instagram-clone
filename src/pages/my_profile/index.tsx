@@ -11,10 +11,13 @@ import FriendsMenu from "./friendMenu";
 import FriendButton from "./friendButton";
 import { number } from "prop-types";
 import ChatAppGemini from "../../components/chatGemini";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export default function MyProfile() {
-  let idDangNhap =  Number(localStorage.getItem("idUser"));
-  let idProfileDangXem = 2 ;
+  let idDangNhap = Number(localStorage.getItem("idUser"));
+  let idProfileDangXem = 2;
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -26,27 +29,29 @@ export default function MyProfile() {
   const [showEditOption, setShowEditOption] = useState(false);
   const navigate = useNavigate();
 
-  const images = [
-    "/images/uifaces-popular-image (12).jpg",
-    "/images/uifaces-popular-image (13).jpg",
-    "/images/uifaces-popular-image (14).jpg",
-    "/images/uifaces-popular-image (5).jpg",
-    "/images/uifaces-popular-image (6).jpg",
-    "/images/uifaces-popular-image (7).jpg",
-    "/images/uifaces-popular-image (14).jpg",
-  ];
+  const { id: urlId } = useParams();
+  const userId = localStorage.getItem('userId');
+
+  const id = urlId || userId;
 
   const { theme } = useTheme();
   const { t } = useTranslation();
   const iconColor = theme === "dark" ? "white" : "black";
+  const [postCount, setPostCount] = useState(0); // thêm dòng này
 
 
 
   // Lấy thông tin user
   useEffect(() => {
     const fetchUserProfile = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get(`http://localhost:9999/api/api/users/${idProfileDangXem}`);
+        const response = await axios.get(`http://localhost:9999/api/api/users/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Thêm token vào header
+          },
+        });
         setUsername(response?.data?.data?.userName);
         setAvatar(response.data.data.urlAvatar);
       } catch (error) {
@@ -91,9 +96,15 @@ export default function MyProfile() {
 
   // Gỡ ảnh hiện tại 
   const handleRemoveAvatar = async () => {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
     try {
       const response = await axios.delete(
-        `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`
+        `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Thêm token vào header
+        },
+      }
       );
 
 
@@ -120,11 +131,17 @@ export default function MyProfile() {
 
   useEffect(() => {
     const fetchUserPosts = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get(`http://localhost:9999/api/api/posts/user/${idProfileDangXem}`);
+        const response = await axios.get(`http://localhost:9999/api/posts/user/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Thêm token vào header
+          },
+        });
         const posts = response.data.data.data; // Lấy mảng bài post
-
-        setPosts(posts); // Cập nhật state
+        setPosts(posts);
+        setPostCount(posts.length);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách bài viết:", error);
       }
@@ -150,20 +167,20 @@ export default function MyProfile() {
         </div>
 
         {/* Thông tin cá nhân */}
-        <div className="relative flex flex-col gap-4">
+        <div className="relative flex flex-col gap-1">
           <div className="flex items-center gap-4 justify-center">
             <h2 className="text-xl font-normal">{username || "Loading..."}</h2>
             <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[148px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
             >
-                abc
+              abc
             </div>
-            {idDangNhap != idProfileDangXem && 
-            <FriendButton 
-              idUser1={idDangNhap} /// id dang nhap
-              idUser2={idProfileDangXem} /// id profile dang xem
-            />}
+            {idDangNhap != idProfileDangXem &&
+              <FriendButton
+                idUser1={idDangNhap} /// id dang nhap
+                idUser2={idProfileDangXem} /// id profile dang xem
+              />}
             <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[100px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
@@ -195,20 +212,16 @@ export default function MyProfile() {
             </div>
           </div>
 
-          <div className="flex gap-6 mt-2">
+          <div className="flex gap-2 mt-2">
             <span className="font-light flex items-center gap-2">
-              <strong className="font-bold">20</strong> {t("post")}
+              <strong className="font-bold">{postCount}</strong> {t("post")}
             </span>
             <span className="font-light flex items-center gap-2">
-              {/* <strong className="font-bold">5.2K</strong> {t("follower")} */}
-              <FriendsMenu idProfileDangXem={idProfileDangXem} />
+              <FriendsMenu idProfileDangXem={id} />
             </span>
             <span className="font-light flex items-center gap-2">
-              <strong className="font-bold">120</strong> {t("following")}
             </span>
           </div>
-
-          <p className="mt-2 text-sm">Bio của bạn có thể ở đây ✨</p>
           <p className="mt-2 text-sm">Bio của bạn có thể ở đây ✨</p>
         </div>
       </div>
@@ -299,7 +312,7 @@ export default function MyProfile() {
                 <img key={index} src={img} alt="Post" className="w-full h-[90vh] object-cover" />
               ))}
             </Carousel>
-          </div>  
+          </div>
 
           {/* Comments bên phải */}
           <div className="w-1/2 flex flex-col justify-between">
@@ -323,7 +336,7 @@ export default function MyProfile() {
             </div>
           </div>
         </div>
-      </Modal>  
+      </Modal>
       <ChatAppGemini />
     </div>
   );

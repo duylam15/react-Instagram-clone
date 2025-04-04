@@ -20,14 +20,17 @@ export default function SettingBox({ onClose }: SettingBoxProps) {
 	return (
 		<div className={styles.overlay} onClick={onClose}>
 			<div className={styles.box} onClick={(e) => e.stopPropagation()}>
-				<button onClick={toggleTheme}>
+				<div onClick={toggleTheme}>
 					{theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
-				</button>
+				</div>
 
 				<select onChange={(e) => changeLanguage(e.target.value)} defaultValue={i18n.language}>
 					<option value="en">English</option>
 					<option value="vi">Tiếng Việt</option>
 				</select>
+				<div>
+					Logout
+				</div>
 			</div>
 		</div>
 	);

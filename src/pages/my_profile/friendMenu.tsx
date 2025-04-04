@@ -4,13 +4,13 @@ import { UserOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons"
 import { deleteFriend, getListFriends, getListInviteReceived, getListInviteSent, updateInvite } from "../../services/friend/friend";
 import { getUserProfile } from "../../services/user/user";
 
-const FriendsMenu = (data : {idProfileDangXem : number }) => {
-  
-  const idDangNhap =  localStorage.getItem("idUser")
-  const idProfile = data.idProfileDangXem ;
+const FriendsMenu = (data: { idProfileDangXem: any }) => {
+
+  const idDangNhap = localStorage.getItem("idUser")
+  const idProfile = data.idProfileDangXem;
   const [visibleModal, setVisibleModal] = useState(null);
   const [searchText, setSearchText] = useState("");
-  const [loading , setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Dữ liệu mẫu
   const [friends, setFriends] = useState([
@@ -34,7 +34,7 @@ const FriendsMenu = (data : {idProfileDangXem : number }) => {
       const response = await getListInviteSent({ idProfile: idProfile });
       console.log("danh sach loi moi da gui")
       console.log(response)
-      const listInviteSent = [];
+      const listInviteSent: any = [];
       await Promise.all(response.data.data.map(async (item: any) => {
         const profile = await getUserProfile({ idUser: item.receiver });
         listInviteSent.push({ id: profile.data.userId, name: profile.data.firstName + " " + profile.data.lastName })
@@ -52,7 +52,7 @@ const FriendsMenu = (data : {idProfileDangXem : number }) => {
       const response = await getListInviteReceived({ idProfile: idProfile });
       console.log("danh sach loi moi da nhânkj")
       console.log(response)
-      const listInviteReceived  = [];
+      const listInviteReceived: any = [];
       await Promise.all(response.data.data.map(async (item: any) => {
         const profile = await getUserProfile({ idUser: item.sender });
         listInviteReceived.push({ id: profile.data.userId, name: profile.data.firstName + " " + profile.data.lastName })
@@ -70,7 +70,7 @@ const FriendsMenu = (data : {idProfileDangXem : number }) => {
       const response = await getListFriends({ idProfile: idProfile });
       console.log("danh sach ban be")
       console.log(response)
-      const listFriends  = [];
+      const listFriends = [];
       await Promise.all(response.data.data.map(async (item: any) => {
         const profile = await getUserProfile({ idUser: item.friend_id == idProfile ? item.user_id : item.friend_id });
         listFriends.push({ id: profile.data.userId, name: profile.data.firstName + " " + profile.data.lastName })
@@ -153,7 +153,7 @@ const FriendsMenu = (data : {idProfileDangXem : number }) => {
 
     }
   }
-  
+
 
   const filterData = (data) =>
     data.filter(item => item.name.toLowerCase().includes(searchText.toLowerCase()));
@@ -162,7 +162,7 @@ const FriendsMenu = (data : {idProfileDangXem : number }) => {
     <Menu onClick={handleMenuClick}>
       <Menu.Item key="list">Danh sách</Menu.Item>
       {
-        idProfile == idDangNhap && 
+        idProfile == idDangNhap &&
         <>
           <Menu.Item key="sent">Lời mời đã gửi</Menu.Item>
           <Menu.Item key="received">Lời mời đã nhận</Menu.Item>
@@ -229,7 +229,7 @@ const FriendsMenu = (data : {idProfileDangXem : number }) => {
                   <Button
                     type="text"
                     style={{ color: "#ff4d4f", fontWeight: "bold" }}
-                    onClick={() => handleType(item.id , type)}
+                    onClick={() => handleType(item.id, type)}
                   >
                     Từ chối
                   </Button>
