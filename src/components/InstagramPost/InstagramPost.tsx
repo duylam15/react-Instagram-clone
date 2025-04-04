@@ -75,6 +75,12 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	};
 
+	useEffect(() => {
+		setComments([...post?.comments || []]); // Cập nhật từ post ban đầu
+	}, [post]);
+	
+	
+
 	// Xóa ảnh
 	const handleRemoveImage = (index: number) => {
 		setImages(images.filter((_, i) => i !== index));
@@ -116,7 +122,6 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	// Hàm xử lý comment mới
 	const handleNewComment = async (newComment: any) => {
 		if (parentCommentId) {
-			// Nếu đang reply một comment
 			try {
 				const response = await axios.post(
 					`http://localhost:9999/api/comments/reply/${parentCommentId}`,
@@ -135,8 +140,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 						},
 					}
 				);
-
-				// Tạo comment mới với thông tin từ response
+	
 				const replyComment = {
 					...response.data.data,
 					userName: localStorage.getItem("userName") || "User",
@@ -144,29 +148,30 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					createdAt: new Date().toISOString(),
 					numberEmotion: 0,
 					numberCommentChild: 0,
-					parentId: parentCommentId
+					parentId: parentCommentId,
 				};
-
-				// Cập nhật state comments
-				setComments(prevComments => {
-					const updatedComments = [...prevComments];
-					const parentComment = updatedComments.find(c => c.commentId === parentCommentId);
-					if (parentComment) {
-						// Tăng số lượng reply của comment cha
-						parentComment.numberCommentChild = (parentComment.numberCommentChild || 0) + 1;
-						
-						// Nếu comment cha chưa có mảng replies, tạo mảng mới
-						if (!parentComment.replies) {
-							parentComment.replies = [];
+	
+				// Cập nhật comments một cách đệ quy
+				const updateCommentsRecursively = (comments: any[]): any[] => {
+					return comments.map(comment => {
+						if (comment.commentId === parentCommentId) {
+							return {
+								...comment,
+								numberCommentChild: (comment.numberCommentChild || 0) + 1,
+								replies: [...(comment.replies || []), replyComment],
+							};
 						}
-						
-						// Thêm reply vào mảng replies của comment cha
-						parentComment.replies.push(replyComment);
-					}
-					return updatedComments;
-				});
-
-				// Reset parentCommentId
+						if (comment.replies && comment.replies.length > 0) {
+							return {
+								...comment,
+								replies: updateCommentsRecursively(comment.replies),
+							};
+						}
+						return comment;
+					});
+				};
+	
+				setComments(prevComments => updateCommentsRecursively(prevComments));
 				setParentCommentId(null);
 			} catch (error) {
 				console.error("Error creating reply:", error);
@@ -179,6 +184,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			}
 		}
 	};
+	
 
 	const handleReplyClick = (commentId: number) => {
 		setParentCommentId(commentId);

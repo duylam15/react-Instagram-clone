@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
@@ -48,6 +48,14 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
   const [replies, setReplies] = useState<any[]>([]);
   const [showReplies, setShowReplies] = useState(false);
 
+  // Cập nhật replies khi comment thay đổi
+  useEffect(() => {
+    if (comment.replies && comment.replies.length > 0) {
+      setReplies(comment.replies);
+      setShowReplies(true);
+    }
+  }, [comment]);
+
   const fetchReplies = async () => {
     if (!post?.postId) return;
 
@@ -60,14 +68,17 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
           },
         }
       );
-      setReplies(response.data.data);
+      if (response.data.data) {
+        setReplies(response.data.data);
+        setShowReplies(true);
+      }
     } catch (error) {
       console.error("Error fetching replies:", error);
     }
   };
 
   const handleToggleReplies = () => {
-    if (!showReplies && replies.length === 0) {
+    if (!showReplies && replies.length === 0 && comment.numberCommentChild > 0) {
       fetchReplies();
     }
     setShowReplies(!showReplies);
@@ -110,17 +121,17 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
         </button>
       </div>
 
-      {comment.numberCommentChild > 0 && (
+      {(comment.numberCommentChild > 0 || replies.length > 0) && (
         <div className="ml-12">
           <button className="text-gray-500 text-sm underline" onClick={handleToggleReplies}>
-            {showReplies ? "Hide replies" : `View replies (${comment.numberCommentChild})`}
+            {showReplies ? "Hide replies" : `View replies (${Math.max(comment.numberCommentChild, replies.length)})`}
           </button>
         </div>
       )}
 
-      {showReplies && replies.length > 0 && (
+      {showReplies && (
         <div className="ml-12 mt-2 border-l-2 border-gray-300 pl-4 w-full">
-          {replies.map((reply: any) => (
+          {(comment.replies || replies).map((reply: any) => (
             <CommentItem 
               key={reply.commentId} 
               comment={reply} 

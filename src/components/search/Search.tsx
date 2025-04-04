@@ -220,15 +220,18 @@ export default function Search() {
                             />
                             {/* === Cải thiện Pagination === */}
                             {total > pageSize && ( // Chỉ hiển thị pagination nếu tổng số kết quả lớn hơn kích thước trang
-                                <div className="sticky bottom-0 p-3 text-center" style={{ background: "var(--bg-color)", borderTop: '1px solid var(--border-color)' }}>
+                                <div className="sticky bottom-0 bg-white p-4 border-t">
                                     <Pagination
                                         current={currentPage}
-                                        pageSize={pageSize}
                                         total={total}
-                                        onChange={handlePageChange}
-                                        showSizeChanger // Giữ lại nếu muốn cho phép đổi pageSize
-                                        showQuickJumper // Giữ lại nếu muốn cho phép nhảy trang nhanh
-                                        size="small"   // Làm cho pagination nhỏ gọn hơn
+                                        pageSize={pageSize}
+                                        onChange={(page) => {
+                                            setCurrentPage(page);
+                                            handleSearch(query, page, pageSize);
+                                        }}
+                                        showSizeChanger={false}
+                                        showQuickJumper={false}
+                                        showTotal={(total) => `Tổng ${total} kết quả`}
                                     />
                                 </div>
                             )}
