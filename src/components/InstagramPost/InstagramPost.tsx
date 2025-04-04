@@ -53,6 +53,8 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	const [comments, setComments] = useState<any[]>(post?.comments || []);
 	const commentInputRef = useRef<HTMLInputElement>(null);
 	const [parentCommentId, setParentCommentId] = useState<number | null>(null);
+	const [username, setUsername] = useState("");
+	const [user, setUser] = useState<any>();
 
 	useEffect(() => {
 		if (post?.postMedia) {
@@ -64,6 +66,8 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	}, [post]);  // Chạy khi `post` thay đổi
 
+
+
 	const handleDelete = async (postId: number) => {
 		try {
 			const result = await deletePostService(postId);
@@ -74,6 +78,64 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			alert(error.message || "Lỗi khi xóa bài viết!");
 		}
 	};
+
+
+
+	const postId = post?.postId
+	const token = localStorage.getItem('token');
+	const userId = localStorage.getItem('userId');
+
+	const handleLikeClick = async () => {
+		const token = localStorage.getItem('token');
+		const postId = post?.postId;
+		const userId = localStorage.getItem('userId');
+
+		if (!token || !userId || !postId) {
+			console.error("Thông tin cần thiết chưa có.");
+			return;
+		}
+
+		try {
+			// Gửi yêu cầu POST lên server
+			await axios.post('http://localhost:9999/api/post_emotions', {
+				postId: postId,
+				userId: userId,
+				emotion: liked ? '' : '<3', // Nếu đã like thì bỏ (unlike), nếu chưa thì set cảm xúc <3
+			}, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+
+			// Chuyển đổi trạng thái liked
+			setLiked(!liked);
+			onRefresh();
+
+		} catch (error) {
+			console.error("Lỗi khi gửi cảm xúc:", error);
+		}
+	};
+
+	// Lấy thông tin user
+	useEffect(() => {
+		const fetchUserProfile = async () => {
+			const token = localStorage.getItem('token');
+			const userId = localStorage.getItem('userId');
+			try {
+				const response = await axios.get(`http://localhost:9999/api/api/users/${userId}`, {
+					headers: {
+						Authorization: `Bearer ${token}`, // Thêm token vào header
+					},
+				});
+				setUsername(response?.data?.data?.userName);
+				setUser(response?.data?.data);
+			} catch (error) {
+				console.error("Lỗi khi lấy thông tin profile:", error);
+				setUsername("User not found");
+			}
+		};
+		fetchUserProfile();
+	}, [userId]);
 
 	// Xóa ảnh
 	const handleRemoveImage = (index: number) => {
@@ -154,12 +216,12 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					if (parentComment) {
 						// Tăng số lượng reply của comment cha
 						parentComment.numberCommentChild = (parentComment.numberCommentChild || 0) + 1;
-						
+
 						// Nếu comment cha chưa có mảng replies, tạo mảng mới
 						if (!parentComment.replies) {
 							parentComment.replies = [];
 						}
-						
+
 						// Thêm reply vào mảng replies của comment cha
 						parentComment.replies.push(replyComment);
 					}
@@ -193,11 +255,11 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			<div className="flex items-center justify-between pt-3 pb-3">
 				<div className="flex items-center gap-3">
 					<img
-						src="/public/images/uifaces-popular-image (11).jpg"
+						src={user?.urlAvatar}
 						alt="Avatar"
 						className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 					/>
-					<span className="font-semibold text-gray-800" style={{ color: "var(--text-color)" }}>{post?.userId} </span>
+					<span className="font-semibold text-gray-800" style={{ color: "var(--text-color)" }}>{username} </span>
 					<span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>{formatTimeAgo(`${post?.createdAt}`, t)}  </span>
 				</div>
 				<div className="relative inline-block" style={{
@@ -281,41 +343,6 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 											</button>
 										</div>
 									)}
-								</div>
-
-								{/* Khu vực comment */}
-								<div className="bg-gray-600 h-full w-[50%] rounded-br-xl  overflow-auto">
-									<div className="comment p-3">
-										<div className="flex items-center justify-start">
-											<img src="/public/images/uifaces-popular-image (7).jpg" alt=""
-												className="w-[50px] h-[50px] rounded-full" />
-											<div className="text-white">UserName</div>
-										</div>
-										<div className="input-post mt-3">
-											<div className="flex items-center py-2">
-												<textarea
-													placeholder={t('Comment')}
-													className="w-full text-white outline-none  p-1"
-													value={comment}
-													onChange={(e) => setComment(e.target.value)}
-													style={{ color: "var(--text-color)" }}
-												></textarea>
-
-												{/* Nút mở Emoji Picker */}
-												<FaSmile
-													className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
-													onClick={() => setShowPicker(!showPicker)}
-												/>
-
-												{/* Hiển thị Emoji Picker */}
-												{showPicker && (
-													<div className=" absolute bottom-0 right-54 z-10">
-														<Picker data={data} onEmojiSelect={handleEmojiSelect} />
-													</div>
-												)}
-											</div>
-										</div>
-									</div>
 								</div>
 							</div>
 						</div>
@@ -404,7 +431,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			{/* Actions */}
 			<div className="flex justify-between pt-2">
 				<div className="flex items-center gap-4">
-					<p onClick={() => setLiked(!liked)} className="text-xl">
+					<p onClick={handleLikeClick} className="text-xl">
 						{liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
 					</p>
 					<p className="text-xl"><FaComment /></p>
@@ -416,13 +443,13 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			</div>
 			{/* Likes and Caption */}
 			<div className="">
-				<p className="font-semibold">{post?.numberEmotion} {t('likes')}</p>
-				<p><span className="font-semibold">{post?.userId}</span> {post?.content}</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>{t('view_more')} {post?.numberComment} {t('comment')} </p>
+				<p className="font-semibold">{post?.numberComment} {t('likes')}</p>
+				<p><span className="font-semibold">{username}</span> {post?.content}</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>{t('view_more')} {post?.numberComment} {t('comment')} </p>
 			</div>
 			{/* Comment Input */}
 			<div className="mt-2 pt-2">
-				<CommentInput 
-					post={post} 
+				<CommentInput
+					post={post}
 					onCommentAdded={handleNewComment}
 					ref={commentInputRef}
 					parentCommentId={parentCommentId}
@@ -457,7 +484,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 										alt="Avatar"
 										className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
 									/>
-									<span className="font-semibold" style={{ color: "var(--text-color)" }}>{post?.userId}</span>
+									<span className="font-semibold" style={{ color: "var(--text-color)" }}>{username}</span>
 								</div>
 
 								<div className="relative inline-block">
@@ -482,9 +509,9 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 								</div>
 							</div>
 							<div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
-								<CommentSection 
-									comments={comments} 
-									post={post} 
+								<CommentSection
+									comments={comments}
+									post={post}
 									onReplyClick={handleReplyClick}
 								/>
 							</div>
@@ -509,8 +536,8 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 							<div className="pl-5 pr-5 border-t"
 								style={{ borderColor: "var(--white-to-gray)" }}
 							>
-								<CommentInput 
-									post={post} 
+								<CommentInput
+									post={post}
 									onCommentAdded={handleNewComment}
 									ref={commentInputRef}
 									parentCommentId={parentCommentId}
@@ -532,7 +559,7 @@ const CustomPrevArrow = ({ onClick }: any) => (
 		className="absolute top-1/2 -left-8 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
 		onClick={onClick}
 	>
-		<LeftOutlined onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} />
+		<LeftOutlined onPointerEnterCapture={() => { }} onPointerLeaveCapture={() => { }} />
 	</div>
 );
 
@@ -541,6 +568,6 @@ const CustomNextArrow = ({ onClick }: any) => (
 		className="absolute top-1/2 -right-3 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
 		onClick={onClick}
 	>
-		<RightOutlined onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} />
+		<RightOutlined onPointerEnterCapture={() => { }} onPointerLeaveCapture={() => { }} />
 	</div>
 );

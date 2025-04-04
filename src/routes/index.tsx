@@ -49,26 +49,32 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Home />,
+        errorElement: <Error />,
       },
       {
         path: '/profile',
         element: <MyProfile />,
+        errorElement: <Error />,
       },
       {
         path: '/profile/:id',
         element: <MyProfile />,
+        errorElement: <Error />,
       },
       {
         path: '/messages',
         element: <Messages />,
+        errorElement: <Error />,
       },
       {
         path: '/edit-profile',
         element: <EditProfile />,
+        errorElement: <Error />,
       },
       {
         path: '/explore',
         element: <Explore />,
+        errorElement: <Error />,
       },
     ],
   },
