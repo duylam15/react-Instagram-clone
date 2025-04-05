@@ -34,6 +34,8 @@ export const callInfoUser = (token:any) => {
 };
 
 export const callUserProfile = (id:any, token:any) => {
+    console.log("token call", token);
+    console.log("id call", id);
      return axios.get(`http://localhost:9999/api/api/users/${id}`,{
         headers: {
             Authorization: `Bearer ${token}`, // Thêm token vào header

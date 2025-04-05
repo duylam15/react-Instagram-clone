@@ -1,10 +1,10 @@
-import axios from "axios";
+import axios from '../../configs/axiosConfigAdmin'
+
 
 const API_URL_BASE = "http://localhost:9999"
 
 export const getListPost = async (data : {page : number , size : number, searchTerm: string}) => {
     try {
-        console.log("Gọi API...");
         console.log(data)
         const response = await axios.get(
             `${API_URL_BASE}/api/posts?page=${data.page}&size=${data.size}&search=${data.searchTerm}`
