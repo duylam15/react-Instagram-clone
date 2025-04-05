@@ -5,7 +5,7 @@ import { callUserProfile } from '../../services/auth';
 import { getListUserNoPage } from '../../services/user/user';
 import { getListFriends } from '../../services/friend/friend';
 import axios from 'axios';
-
+import OnlineBox from '../isOnline/isOnline';
 export default function SuggestFriend() {
 	const { t } = useTranslation();
 	const [userName, setUserName] = useState<string | null>("Name");
@@ -153,6 +153,7 @@ export default function SuggestFriend() {
 					</div>
 				))}
 			</div>
+			<OnlineBox/>
 		</div>
 	);
 }
