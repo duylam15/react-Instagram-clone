@@ -23,8 +23,10 @@ const ImageCaptionUploader: React.FC = () => {
     formData.append('file', file);
 
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.post('http://localhost:9999/api/api/geminiGenImage/generate-caption', formData, {
         headers: {
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });

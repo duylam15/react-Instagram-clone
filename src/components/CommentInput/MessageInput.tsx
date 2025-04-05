@@ -19,7 +19,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ conversationId, senderId, o
 	const [showPicker, setShowPicker] = useState(false);
 	const inputRef = useRef(null);
 	const { t } = useTranslation();
-
+	const token = localStorage.getItem("token");
 	const handleEmojiSelect = (emoji: { native: string }) => {
 		setMessage((prev) => prev + emoji.native); // Thêm emoji vào nội dung input
 		setShowPicker(false); // Ẩn picker sau khi chọn
@@ -36,7 +36,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ conversationId, senderId, o
 		};
 
 		try {
-			const response = await axios.post("http://localhost:9999/api/messages/send", payload);
+			const response = await axios.post("http://localhost:9999/api/messages/send", payload,{
+				headers: {
+					Authorization: `Bearer ${token}`, // Thêm token vào header
+				},
+			});
 			console.log("Gửi tin nhắn thành công:", response.data.data);
 
 			// Gửi tin nhắn mới về component cha (nếu cần cập nhật danh sách tin nhắn)
@@ -47,7 +51,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ conversationId, senderId, o
 				const stompClient = Stomp.over(socket);
 
 				// Kết nối STOMP trước khi publish
-				stompClient.connect({}, () => {
+				stompClient.connect({ Authorization: `Bearer ${token}` },
+					() => {
 					console.log("WebSocket connected!");
 
 					// Chỉ gửi tin nhắn khi kết nối thành công

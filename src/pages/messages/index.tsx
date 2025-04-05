@@ -9,10 +9,11 @@ import SockJS from "sockjs-client";
 import ChatAppGemini from "../../components/chatGemini";
 
 import ImageCaptionUploader from '../../components/InstagramPost/ImageCaptionUploader';
-const userId = Number(localStorage.getItem("userId")); 
+const userId = Number(localStorage.getItem("userId"));
 // Định nghĩa type Conversation
 interface Conversation {
 	idConversation: number;
+	idUserReceive: number;
 	firstNameReceiver: string;
 	lastNameReceiver: string;
 	firstNameSender: string;
@@ -34,26 +35,42 @@ const Messages = () => {
 	const [conversations, setConversations] = useState<Conversation[]>([]);
 	const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
+	const token = localStorage.getItem("token");
+	useEffect(() => {
+		console.log("đang vô set user receive id");
+		if (selectedChat) {
+			console.log(selectedChat);
+		  const chat = conversations.find((c) => c.idConversation === selectedChat.idConversation);
+		  if (chat) {
+			localStorage.setItem("userReceiveId", `${selectedChat.idUserReceive}`);
+		  }
+		}
+	  }, [selectedChat, conversations]);
 	useEffect(() => {
 		const socket = new SockJS("http://localhost:9999/api/ws");
 		const stompClient = Stomp.over(socket);
-		stompClient.onConnect = () => {
-			console.log("Connected to WebSocket Server");
+		stompClient.connect(
+			{Authorization: `Bearer ${token}`},
+			() => {
+				console.log("Connected to WebSocket Server");
 
-			// Lắng nghe tin nhắn từ backend
-			const subscription = stompClient.subscribe(
-				`/topic/conversation/${selectedChat?.idConversation}`,
-				(message) => {
-					console.log("Received:", message.body);
-					const newMessage = JSON.parse(message.body);
-					setMessages((prevMessages) => [...prevMessages, newMessage]);
-				}
-			);
+				const subscription = stompClient.subscribe(
+					`/topic/conversation/${selectedChat?.idConversation}`,
+					(message) => {
+						console.log("Received:", message.body);
+						const newMessage = JSON.parse(message.body);
+						setMessages((prevMessages) => [...prevMessages, newMessage]);
+					}
+				);
 
-			return () => {
-				subscription.unsubscribe(); // Hủy lắng nghe khi component bị unmount
-			};
-		};
+				return () => {
+					subscription.unsubscribe();
+				};
+			},
+			(error : unknown) => {
+				console.error("Connection error:", error);
+			}
+		);
 
 		stompClient.activate();
 
@@ -65,7 +82,12 @@ const Messages = () => {
 	useEffect(() => {
 		const fetchConversations = async () => {
 			try {
-				const response = await axios.get(`http://localhost:9999/api/messages/getAllConversation/${userId}`);
+				const response = await axios.get(`http://localhost:9999/api/messages/getAllConversation/${userId}`, {
+					headers: {
+						Authorization: `Bearer ${token}`, // Thêm token vào header
+					},
+				});
+				console.log(response)
 				setConversations(response.data.data || []);
 			} catch (error) {
 				console.error("Lỗi khi lấy danh sách cuộc trò chuyện:", error);
@@ -79,7 +101,11 @@ const Messages = () => {
 		console.log(chat)
 
 		try {
-			const response = await axios.get(`http://localhost:9999/api/messages/1/${chat.idConversation}`);
+			const response = await axios.get(`http://localhost:9999/api/messages/1/${chat.idConversation}`, {
+				headers: {
+					Authorization: `Bearer ${token}`, // Thêm token vào header
+				},
+			});
 			setMessages(Array.isArray(response.data.data.listMessageDTO) ? response.data.data.listMessageDTO : []);
 		} catch (error) {
 			console.error("Lỗi khi lấy tin nhắn:", error);
@@ -181,7 +207,7 @@ const Messages = () => {
 					</div>
 				)}
 			</div>
-			<ChatAppGemini/>
+			{/* <ChatAppGemini /> */}
 			<ImageCaptionUploader />
 		</div>
 	);

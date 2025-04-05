@@ -22,12 +22,34 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 	const [showPicker, setShowPicker] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const { refreshTrigger, refresh } = useRefresh(); // Lấy giá trị từ context
+	const [isLoading, setIsLoading] = useState(false);
 
 	// Chọn ảnh từ máy tính
-	const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+	const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files && event.target.files[0]) {
 			const imageUrl = URL.createObjectURL(event.target.files[0]);
 			setImages((prev) => [...prev, imageUrl]); // Thêm vào danh sách ảnh
+			const file = event.target.files[0];
+			if (!file) return;
+			const formData = new FormData();
+			formData.append('file', file);
+			setComment('Đang tự động tạo caption');
+			setIsLoading(true);
+			try {
+				const token = localStorage.getItem('token');
+				const response = await axios.post('http://localhost:9999/api/api/geminiGenImage/generate-caption', formData, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+						'Content-Type': 'multipart/form-data',
+					},
+				});
+				setComment(response.data);
+			} catch (error) {
+				console.error('Error uploading file', error);
+				setComment('Lỗi khi tải hình ảnh lên.');
+			} finally {
+				setIsLoading(false);
+			}
 		}
 	};
 
@@ -143,20 +165,43 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 										<div className="text-white">UserName</div>
 									</div>
 									<div className="input-post mt-3">
-										<div className="flex items-center py-2">
+										<div className="flex items-center py-2 relative">
 											<textarea
 												placeholder={t('Comment')}
-												className="w-full text-white outline-none  p-1"
+												className="w-full text-white outline-none  p-1 pr-3"
 												value={comment}
 												onChange={(e) => setComment(e.target.value)}
 												style={{ color: "var(--text-color)" }}
 											></textarea>
+											<div className="flex items-center gap-2 ml-2">
+												{isLoading && (
+													<svg
+														className="animate-spin h-5 w-5 text-white"
+														xmlns="http://www.w3.org/2000/svg"
+														fill="none"
+														viewBox="0 0 24 24"
+													>
+														<circle
+															className="opacity-25"
+															cx="12"
+															cy="12"
+															r="10"
+															stroke="currentColor"
+															strokeWidth="4"
+														></circle>
+														<path
+															className="opacity-75"
+															fill="currentColor"
+															d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+														></path>
+													</svg>
+												)}
 
-											{/* Nút mở Emoji Picker */}
-											<FaSmile
-												className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
-												onClick={() => setShowPicker(!showPicker)}
-											/>
+												<FaSmile
+													className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
+													onClick={() => setShowPicker(!showPicker)}
+												/>
+											</div>
 
 											{/* Hiển thị Emoji Picker */}
 											{showPicker && (

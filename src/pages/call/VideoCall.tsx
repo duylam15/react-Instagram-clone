@@ -14,7 +14,7 @@ const VideoCall: React.FC = () => {
   const [receiverID, setReceiverID] = useState<string | null>(null);
   const [stompClient, setStompClient] = useState<Client | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
-
+  const token = localStorage.getItem("token");
   const getUrlParams = (param: string): string | null => {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
@@ -47,10 +47,11 @@ const VideoCall: React.FC = () => {
     const socket = new SockJS("http://localhost:9999/api/ws");
     const client = Stomp.over(socket);
 
-    client.onConnect = () => {
+    client.connect({ Authorization: `Bearer ${token}` },
+      () => {
       console.log("✅ Kết nối WebSocket thành công!");
       setStompClient(client);
-    };
+    });
 
     client.onDisconnect = () => {
       console.log("🔴 WebSocket đã ngắt kết nối.");
