@@ -11,12 +11,22 @@ import FriendsMenu from "./friendMenu";
 import FriendButton from "./friendButton";
 import { number } from "prop-types";
 import ChatAppGemini from "../../components/chatGemini";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export default function MyProfile() {
-  let idDangNhap = Number(localStorage.getItem("idUser"));
-  let idProfileDangXem = 2;
+  const [idDangNhap ,  setIdDangNhap]  = useState(Number(localStorage.getItem("userId")))
+
+
+  const location = useLocation();
+  const [idProfileDangXem, setIdProfileDangXem] = useState(idDangNhap);
+
+  useEffect(() => {
+    const segments = location.pathname.split('/').filter(Boolean);
+    const lastSegment = segments.pop(); // lấy phần cuối cùng
+    const result = /^\d+$/.test(lastSegment) ? parseInt(lastSegment) : idDangNhap;
+    setIdProfileDangXem(result);
+  }, [location]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPopOpen, setIsPopOpen] = useState(false);
@@ -47,11 +57,14 @@ export default function MyProfile() {
       const token = localStorage.getItem('token');
       const userId = localStorage.getItem('userId');
       try {
-        const response = await axios.get(`http://localhost:9999/api/api/users/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Thêm token vào header
-          },
-        });
+        const response = await axios.get(
+          `http://localhost:9999/api/api/users/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Thêm token vào header
+            },
+          }
+        );
         setUsername(response?.data?.data?.userName);
         setAvatar(response.data.data.urlAvatar);
       } catch (error) {
@@ -217,7 +230,7 @@ export default function MyProfile() {
               <strong className="font-bold">{postCount}</strong> {t("post")}
             </span>
             <span className="font-light flex items-center gap-2">
-              <FriendsMenu idProfileDangXem={id} />
+              <FriendsMenu idProfileDangXem={idProfileDangXem} />
             </span>
             <span className="font-light flex items-center gap-2">
             </span>
@@ -337,7 +350,6 @@ export default function MyProfile() {
           </div>
         </div>
       </Modal>
-      <ChatAppGemini />
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { getUserProfile } from "../../services/user/user";
 
 const FriendsMenu = (data: { idProfileDangXem: any }) => {
 
-  const idDangNhap = localStorage.getItem("idUser")
+  const idDangNhap = Number(localStorage.getItem("userId"))
   const idProfile = data.idProfileDangXem;
   const [visibleModal, setVisibleModal] = useState(null);
   const [searchText, setSearchText] = useState("");

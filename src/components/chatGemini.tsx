@@ -13,9 +13,10 @@ const ChatAppGemini = () => {
     setInput("");
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch("http://localhost:9999/api/chatAi/chatGemini", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",   "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
           contents: [
             {
@@ -54,6 +55,11 @@ const ChatAppGemini = () => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  sendMessage();
+                }
+              }}
               placeholder="Nhập tin nhắn..."
               className="chat-input"
             />

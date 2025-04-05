@@ -107,8 +107,14 @@ export const getUserProfile = async (data : {idUser : number}) => {
     try {
         console.log("Gọi API...");
         console.log(data)
+        const token = localStorage.getItem('token');
         const response = await axios.get(
-            `${API_URL_BASE}/api/api/users/${data.idUser}`
+            `${API_URL_BASE}/api/api/users/${data.idUser}`,
+            {
+                headers: {
+                  Authorization: `Bearer ${token}`, // Thêm token vào header
+                },
+            }
         );
         console.log("Dữ liệu nhận được:", response.data);
         return response.data;
