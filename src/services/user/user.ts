@@ -128,7 +128,14 @@ export const getUserProfile = async (data : {idUser : number}) => {
 
 export const getUserById = async (id: any) => { 
     try {
-        const response = await axios.get(`${API_URL_BASE}/api/api/users/${id}`);
+	    const userId: any = localStorage.getItem('userId');
+	    const token: any = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL_BASE}/api/api/users/${id}`,
+        {
+                headers: {
+                  Authorization: `Bearer ${token}`, // Thêm token vào header
+                },
+            });
         return response.data;
     } catch (error: any) {
         console.error("❌ Lỗi khi gọi API:", error.message);
