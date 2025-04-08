@@ -47,7 +47,7 @@ const CommentInput = forwardRef<HTMLInputElement, CommentInputProps>(({ post, on
 
 	const handleSubmit = async () => {
 		if (!comment.trim()) return; // Không gửi nếu comment rỗng
-		
+
 		const postId = post?.postId;
 		setLoading(true);
 		try {
@@ -135,12 +135,12 @@ const CommentInput = forwardRef<HTMLInputElement, CommentInputProps>(({ post, on
 				/>
 				{/* Nút Đăng chỉ hiển thị khi có nội dung */}
 				{comment && (
-					<p
-						className="ml-4 text-blue-600 font-bold text-lg text-center "
+					<div
+						className="ml-4 text-blue-600 font-bold text-lg text-center"
 						onClick={handleSubmit}
 					>
 						{t('send')}
-					</p>
+					</div>
 				)}
 
 				{/* Hiển thị Emoji Picker */}

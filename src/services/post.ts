@@ -128,10 +128,13 @@ export const deletePostService = async (postId: number) => {
   try {
     const formData = new FormData();
     formData.append("postUpdateRequest", JSON.stringify({ visibility: "DELETE" }));
-
+    const token = localStorage.getItem("token");
     const response = await fetch(`http://localhost:9999/api/posts/${postId}`, {
       method: "PUT",
       body: formData,
+      headers: {
+      Authorization: `Bearer ${token}`,
+  },
     });
 
     if (!response.ok) {

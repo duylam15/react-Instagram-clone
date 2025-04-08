@@ -27,7 +27,6 @@
         "@mui/material": "^6.1.6",
         "@popperjs/core": "^2.11.8",
         "@reduxjs/toolkit": "^2.6.1",
-        "@rollup/rollup-darwin-arm64": "^4.39.0",
         "@stomp/stompjs": "^7.1.0",
         "@swc/core": "^1.11.16",
         "@tailwindcss/vite": "^4.0.9",

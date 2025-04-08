@@ -46,7 +46,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	const [isOpenPut, setIsOpenPut] = useState(false);
 	const { t } = useTranslation();
 	const [isModalOpenPut, setIsModalOpenPut] = useState(false);
-	const [images, setImages] = useState<string[]>([]);
+	const [images, setImages] = useState<any>();
 	const [comment, setComment] = useState("");
 	const [showPicker, setShowPicker] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -58,7 +58,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 
 	useEffect(() => {
 		if (post?.postMedia) {
-			const mediaUrls = post.postMedia.map(media => media.mediaUrl);
+			const mediaUrls = post.postMedia.map(media => media);
 			setImages(mediaUrls);
 		}
 		if (post?.content) {
@@ -66,7 +66,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	}, [post]);  // Chạy khi `post` thay đổi
 
-
+	console.log("pxxxosts", images)
 
 	const handleDelete = async (postId: number) => {
 		try {
@@ -78,8 +78,6 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			alert(error.message || "Lỗi khi xóa bài viết!");
 		}
 	};
-
-
 
 	const postId = post?.postId
 	const token = localStorage.getItem('token');
@@ -138,14 +136,27 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	}, [userId]);
 
 	// Xóa ảnh
-	const handleRemoveImage = (index: number) => {
-		setImages(images.filter((_, i) => i !== index));
+	const handleRemoveImage = async (postMediaId: number) => {
+		try {
+			const token = localStorage.getItem('token');
+			const response = await axios.delete(`http://localhost:9999/api/post-medias/${postMediaId}`, {
+				headers: {
+					Authorization: `Bearer ${token}`, // Thêm token vào header
+				},
+			});
+			onRefresh();
+			console.log(`Đã xoá ảnh có ID: ${postMediaId}`, response.data);
+		} catch (error) {
+			console.error('Lỗi khi xoá ảnh:', error);
+			alert('Xoá ảnh thất bại. Vui lòng thử lại.');
+		}
 	};
+
 
 	// Thêm ảnh mới
 	const handleAddImage = (file: File) => {
 		const imageUrl = URL.createObjectURL(file);
-		setImages((prev) => [...prev, imageUrl]);
+		setImages((prev: any) => [...prev, imageUrl]);
 	};
 
 	const handlePostUpdate = async () => {
@@ -196,7 +207,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 						},
 					}
 				);
-	
+
 				const replyComment = {
 					...response.data.data,
 					userName: localStorage.getItem("userName") || "User",
@@ -239,7 +250,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			}
 		}
 	};
-	
+
 
 	const handleReplyClick = (commentId: number) => {
 		setParentCommentId(commentId);
@@ -325,10 +336,10 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 										<div className="w-full h-full relative">
 											<Carousel infinite={false}
 												arrows >
-												{images.map((img, index) => (
+												{images.map((img: any, index: any) => (
 													<img
 														key={index}
-														src={img}
+														src={img?.mediaUrl}
 														alt="Selected"
 														className="h-[83vh] w-[70%]  object-cover rounded-bl-xl"
 													/>
@@ -342,6 +353,39 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 											</button>
 										</div>
 									)}
+								</div>
+								{/* Khu vực comment */}
+								<div className="bg-gray-600 h-full w-[50%] rounded-br-xl  overflow-auto">
+									<div className="comment p-3">
+										<div className="flex items-center justify-start">
+											<img src="/public/images/uifaces-popular-image (7).jpg" alt=""
+												className="w-[50px] h-[50px] rounded-full" />
+											<div className="text-white">UserName</div>
+										</div>
+										<div className="input-post mt-3">
+											<div className="flex items-center py-2">
+												<textarea
+													placeholder={t('Comment')}
+													className="w-full text-white outline-none  p-1"
+													value={comment}
+													onChange={(e) => setComment(e.target.value)}
+													style={{ color: "var(--text-color)" }}
+												></textarea>
+
+												{/* Nút mở Emoji Picker */}
+												<FaSmile
+													className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
+													onClick={() => setShowPicker(!showPicker)}
+												/>
+												{/* Hiển thị Emoji Picker */}
+												{showPicker && (
+													<div className=" absolute bottom-0 right-54 z-10">
+														<Picker data={data} onEmojiSelect={handleEmojiSelect} />
+													</div>
+												)}
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -371,15 +415,15 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 										nextArrow={<CustomNextArrow />}
 										slidesToShow={2}
 									>
-										{images.map((img, index) => (
+										{images.map((img: any, index: any) => (
 											<div key={index} className="relative">
-												<img src={img} alt="Selected" className="w-[100px] h-[100px] object-cover rounded" />
-												<button
-													className="absolute top-2 right-8 bg-red-500 text-white p-1 rounded opacity-80 hover:opacity-100 transition"
-													onClick={() => handleRemoveImage(index)}
+												<img src={img?.mediaUrl} alt="Selected" className="w-[100px] h-[100px] object-cover rounded" />
+												<div
+													className="absolute top-2 right-8 bg-gray-500 text-white p-1 rounded opacity-80 hover:opacity-100 transition"
+													onClick={() => handleRemoveImage(img?.postMediaId)}
 												>
 													Xóa
-												</button>
+												</div>
 											</div>
 										))}
 									</Carousel>
@@ -394,9 +438,9 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 											return false;
 										}}
 									>
-										<button className="w-24 h-24 rounded flex items-center justify-center gap-2">
+										<div className="w-24 h-24 rounded flex items-center justify-center gap-2 bg-gray-500">
 											+
-										</button>
+										</div>
 									</Upload>
 								</div>
 							</div>
