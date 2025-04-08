@@ -22,7 +22,8 @@ export default function Notifications() {
 	const [invites, setInvites] = useState<Invite[]>([]);
 	const [users, setUsers] = useState<User[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
-	const userId = 1; // Giả sử ID người dùng là 1, có thể lấy từ context hoặc Redux
+	const userId: any = localStorage.getItem('userId');
+
 	const navigate = useNavigate();
 
 	useEffect(() => {
