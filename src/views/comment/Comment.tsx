@@ -10,7 +10,6 @@ interface CommentSectionProps {
 }
 
 const CommentSection = ({ comments, post, onReplyClick }: CommentSectionProps) => {
-  // Lọc ra các comment gốc (không phải reply)
   const rootComments = comments.filter(comment => !comment.parentId);
 
   if (!rootComments || rootComments.length === 0) {
@@ -35,6 +34,7 @@ const CommentSection = ({ comments, post, onReplyClick }: CommentSectionProps) =
   );
 };
 
+
 interface CommentItemProps {
   comment: any;
   post: any;
@@ -45,17 +45,9 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
   const token = localStorage.getItem("token");
   const API_BACKEND = "http://localhost:9999/api/";
   const [liked, setLiked] = useState(false);
-  const [replies, setReplies] = useState<any[]>([]);
   const [showReplies, setShowReplies] = useState(false);
 
-  // Cập nhật replies khi comment thay đổi
-  useEffect(() => {
-    if (comment.replies && comment.replies.length > 0) {
-      setReplies(comment.replies);
-      setShowReplies(true);
-    }
-  }, [comment]);
-
+  // Nếu chưa có reply trong props và có số lượng reply (numberCommentChild), có thể fetch reply
   const fetchReplies = async () => {
     if (!post?.postId) return;
 
@@ -69,7 +61,8 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
         }
       );
       if (response.data.data) {
-        setReplies(response.data.data);
+        // Ta gán trực tiếp vào comment.replies (nếu cơ chế của bạn cho phép, hoặc bạn có thể truyền thông qua hàm callback update state từ component cha)
+        comment.replies = response.data.data;
         setShowReplies(true);
       }
     } catch (error) {
@@ -78,7 +71,8 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
   };
 
   const handleToggleReplies = () => {
-    if (!showReplies && replies.length === 0 && comment.numberCommentChild > 0) {
+    // Nếu chưa hiển thị và không có reply trong props mà comment báo có reply
+    if (!showReplies && (!comment.replies || comment.replies.length === 0) && comment.numberCommentChild > 0) {
       fetchReplies();
     }
     setShowReplies(!showReplies);
@@ -121,17 +115,17 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
         </button>
       </div>
 
-      {(comment.numberCommentChild > 0 || replies.length > 0) && (
+      {(comment.numberCommentChild > 0 || (comment.replies && comment.replies.length > 0)) && (
         <div className="ml-12">
           <button className="text-gray-500 text-sm underline" onClick={handleToggleReplies}>
-            {showReplies ? "Hide replies" : `View replies (${Math.max(comment.numberCommentChild, replies.length)})`}
+            {showReplies ? "Hide replies" : `View replies (${Math.max(comment.numberCommentChild, comment.replies?.length || 0)})`}
           </button>
         </div>
       )}
 
-      {showReplies && (
+      {showReplies && comment.replies && comment.replies.length > 0 && (
         <div className="ml-12 mt-2 border-l-2 border-gray-300 pl-4 w-full">
-          {(comment.replies || replies).map((reply: any) => (
+          {comment.replies.map((reply: any) => (
             <CommentItem 
               key={reply.commentId} 
               comment={reply} 
@@ -144,5 +138,6 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
     </div>
   );
 };
+
 
 export default CommentSection;
