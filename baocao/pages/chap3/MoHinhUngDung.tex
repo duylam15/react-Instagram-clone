@@ -1,33 +1,47 @@
 \noindent{\normalsize \textbf{Frontend:}}
 \begin{itemize}
     \item \textbf{ReactJS:} React là một thư viện JavaScript mã nguồn mở, được phát triển bởi Facebook vào năm 2013, nhằm xây dựng giao diện người dùng cho các ứng dụng web. React cho phép các lập trình viên phát triển các thành phần giao diện (components) một cách hiệu quả, dễ bảo trì và tái sử dụng. Với React, người dùng có thể trải nghiệm giao diện mượt mà và dễ dàng tương tác với ứng dụng.
+    
+    \includegraphics[width=\textwidth]{img/react.png}
 \end{itemize}
 
 \noindent{\normalsize \textbf{Backend:}}
 \begin{itemize}
     \item \textbf{Spring Boot} là một framework mã nguồn mở dựa trên nền tảng Spring Framework, được thiết kế để đơn giản hóa việc phát triển các ứng dụng Java, đặc biệt là các ứng dụng web và microservices. Spring Boot được Pivotal Software ra mắt lần đầu tiên vào năm 2014, với mục tiêu giảm thiểu cấu hình thủ công bằng cách cung cấp các tính năng tự động cấu hình (auto-configuration), các thư viện tích hợp sẵn, và khả năng chạy độc lập (embedded server). Framework này hỗ trợ nhiều tính năng như RESTful API, WebSocket, quản lý cơ sở dữ liệu (thông qua Spring Data JPA), và tích hợp với các dịch vụ bên thứ ba như RabbitMQ, Cloudinary. Spring Boot được sử dụng rộng rãi trong các dự án phát triển phần mềm doanh nghiệp, và tương thích với nhiều nền tảng như Windows, macOS, và Linux.
+
+    \includegraphics[width=\textwidth]{img/spring.png}
 \end{itemize}
 
 \noindent{\normalsize \textbf{Hệ quản trị cơ sở dữ liệu:}}
 \begin{itemize}
     \item \textbf{MySQL:} là một hệ thống quản trị cơ sở dữ liệu mã nguồn mở (Relational Database Management System, viết tắt là RDBMS), thuộc quyền sở hữu của Oracle, được sử dụng để quản lý và lưu trữ dữ liệu. Nó sử dụng SQL (Structured Query Language) làm ngôn ngữ chính để truy vấn và thao tác với cơ sở dữ liệu. MySQL phổ biến trong các ứng dụng web, đặc biệt là các ứng dụng sử dụng kiến trúc LAMP (Linux, Apache, MySQL, PHP/Python/Perl).Các ứng dụng web lớn nhất như Facebook, Twitter, YouTube, Google, và Yahoo! đều dùng MySQL cho mục đích lưu trữ dữ liệu. Nó đã tương thích với nhiều hạ tầng máy tính quan trọng như Linux, macOS, Microsoft Windows, và Ubuntu.
+
+    \includegraphics[width=\textwidth]{img/mysql.png}
 \end{itemize}
 
 \noindent{\normalsize \textbf{Giao thức truyền thông:}}
 \begin{itemize}
     \item \textbf{WebSocket:} là một giao thức truyền thông giúp cho việc thiết lập kênh truyền thông hai chiều giữa máy chủ và máy khách. WebSocket hoạt động bằng cách thiết lập kết nối HTTP liên tục với máy chủ và sau đó nâng cấp nó lên kết nối websocket hai chiều bằng cách gửi Upgrade header. WebSocket được hỗ trợ trong hầu hết các trình duyệt web hiện đại và cho các trình duyệt không hỗ trợ, chúng tôi có các thư viện cung cấp dự phòng cho các kỹ thuật khác như Comet và HTTP Long Polling.
+
+    \includegraphics[width=\textwidth]{img/websocket.png}
 \end{itemize}
 
 \noindent{\normalsize \textbf{Dịch vụ bên thứ ba:}}
 \begin{itemize}
     \item \textbf{Cloudinary:} Cloudinary là một nền tảng quản lý hình ảnh và video dựa trên đám mây (cloud-based media management platform), được thành lập vào năm 2011 tại Israel, nhằm hỗ trợ các nhà phát triển xử lý và phân phối nội dung truyền thông một cách hiệu quả. Nền tảng này cho phép tải lên, lưu trữ, tối ưu hóa và phân phối hình ảnh hoặc video thông qua mạng phân phối nội dung (CDN), giúp tăng tốc độ tải và cải thiện trải nghiệm người dùng. Cloudinary tự động điều chỉnh kích thước, nén, và chuyển đổi định dạng hình ảnh (như WebP, AVIF) để phù hợp với thiết bị, đồng thời cung cấp các tính năng như cắt, thêm hiệu ứng, hoặc chèn watermark. Được sử dụng rộng rãi trong các ứng dụng web và di động, Cloudinary là lựa chọn phổ biến cho các nền tảng mạng xã hội, thương mại điện tử như Shopify, và các công ty lớn như TED hay Bleacher Report. Nền tảng này tích hợp dễ dàng với nhiều công nghệ, bao gồm AWS S3, và hỗ trợ các SDK cho các ngôn ngữ lập trình như JavaScript, Python, và Java.
+
+    \includegraphics[width=\textwidth]{img/cloudinary.png}
 \end{itemize}
 
 \begin{itemize}
     \item \textbf{AWS S3:} AWS S3 (Amazon Simple Storage Service) là một dịch vụ lưu trữ đối tượng (object storage) dựa trên đám mây, được Amazon Web Services (AWS) ra mắt vào năm 2006, nhằm cung cấp giải pháp lưu trữ dữ liệu an toàn, bền bỉ và có khả năng mở rộng cao. S3 cho phép người dùng lưu trữ bất kỳ loại dữ liệu nào, từ hình ảnh, video, đến tài liệu, dưới dạng các đối tượng (objects) trong các "bucket" (thùng chứa), với dung lượng tối đa lên đến 5TB cho mỗi đối tượng. Dịch vụ này đảm bảo độ bền 99.999999999% (11 số 9), nghĩa là dữ liệu hầu như không bao giờ bị mất, và có thể truy xuất từ bất kỳ đâu thông qua URL hoặc API. S3 được sử dụng rộng rãi trong các ứng dụng web, sao lưu dữ liệu, và phân tích big data, với các khách hàng lớn như Netflix, Airbnb, và NASA. Nó tích hợp chặt chẽ với các dịch vụ AWS khác như CloudFront (CDN), Lambda, và Athena, đồng thời hỗ trợ nhiều lớp lưu trữ (như Standard, Infrequent Access, Glacier) để tối ưu chi phí trên các nền tảng như Linux, Windows, và macOS.
+
+    \includegraphics[width=\textwidth]{img/aws.png}
 \end{itemize}
 
 \begin{itemize}
     \item \textbf{RabbitMQ:} RabbitMQ là một phần mềm mã nguồn mở hoạt động như một trình môi giới tin nhắn (message broker), được phát triển bởi Pivotal Software vào năm 2007, nhằm hỗ trợ giao tiếp bất đồng bộ giữa các ứng dụng hoặc dịch vụ. RabbitMQ triển khai giao thức AMQP (Advanced Message Queuing Protocol), cho phép nhận tin nhắn từ một ứng dụng (producer), lưu trữ chúng trong hàng đợi (queue), và chuyển tiếp đến ứng dụng khác (consumer) một cách đáng tin cậy. Phần mềm này đảm bảo tin nhắn không bị mất bằng cách lưu trữ chúng cho đến khi được xử lý, đồng thời hỗ trợ các giao thức khác như MQTT, STOMP, và WebSocket để phù hợp với nhiều loại ứng dụng. RabbitMQ được sử dụng rộng rãi trong các hệ thống phân tán, như xử lý thông báo, tác vụ nền, hoặc giao tiếp giữa các microservices, với các khách hàng lớn như Reddit, 9GAG, và Trello. Nó tương thích với nhiều nền tảng như Linux, Windows, và macOS, và có thể được triển khai trên các dịch vụ đám mây như Amazon MQ hoặc CloudAMQP.
+
+    \includegraphics[width=\textwidth]{img/rabitmq.png}
 \end{itemize}
 
