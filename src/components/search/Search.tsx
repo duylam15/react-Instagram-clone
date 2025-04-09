@@ -3,6 +3,7 @@ import { List, Spin, Pagination, Avatar } from "antd"; // Thêm Avatar
 import { LoadingOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 // --- Interfaces (giữ nguyên) ---
 interface Post {
@@ -52,7 +53,7 @@ export default function Search() {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [total, setTotal] = useState(0);
-
+    const navigate = useNavigate()
     const { t } = useTranslation();
 
     // Debounce API call
@@ -134,6 +135,10 @@ export default function Search() {
                 avatar={<Avatar src={user.urlAvatar} />}
                 title={<div className="font-medium text-[15px]" style={{ color: "var(--text-color)" }}>{user.firstName} {user.lastName}</div>}
                 description={<div className="text-sm text-gray-500">@{user.userName}</div>}
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  navigate(`/profile/${user.userId}`);
+                }}
             />
         </List.Item>
     );

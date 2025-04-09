@@ -3,6 +3,7 @@ import { Dropdown, Menu, Button, Modal, List, Avatar, Input } from "antd";
 import { UserOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons";
 import { deleteFriend, getListFriends, getListInviteReceived, getListInviteSent, updateInvite } from "../../services/friend/friend";
 import { getUserProfile } from "../../services/user/user";
+import { useNavigate } from "react-router-dom";
 
 const FriendsMenu = (data: { idProfileDangXem: any }) => {
 
@@ -11,6 +12,7 @@ const FriendsMenu = (data: { idProfileDangXem: any }) => {
   const [visibleModal, setVisibleModal] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Dữ liệu mẫu
   const [friends, setFriends] = useState([
@@ -95,7 +97,7 @@ const FriendsMenu = (data: { idProfileDangXem: any }) => {
     fetchListInviteReceived();
     fetchListInviteSent();
     console.log(friends.length + "------------------------------")
-  }, [loading]);
+  }, [data.idProfileDangXem]);
 
 
   const handleMenuClick = ({ key }) => {
@@ -202,57 +204,64 @@ const FriendsMenu = (data: { idProfileDangXem: any }) => {
       </div>
 
       {/* Danh sách */}
-      <List
-        dataSource={filterData(data)}
-        locale={{ emptyText: "Không tìm thấy kết quả" }}
-        renderItem={(item) => (
-          <List.Item
-            key={item.id}
-            actions={[
-              type === "sent" ? (
-                <Button
-                  type="text"
-                  style={{ color: "#1890ff", fontWeight: "bold" }}
-                  onClick={() => handleType(item.id, type)}
-                >
-                  Hủy yêu cầu
-                </Button>
-              ) : type === "received" ? (
-                <>
+      <div style={{ maxHeight: "725x", overflowY: "auto" }}>
+        <List
+          dataSource={filterData(data)}
+          locale={{ emptyText: "Không tìm thấy kết quả" }}
+          renderItem={(item) => (
+            <List.Item
+              key={item.id}
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                navigate(`/profile/${item.id}`);
+              }}
+              actions={[
+                type === "sent" ? (
                   <Button
                     type="text"
                     style={{ color: "#1890ff", fontWeight: "bold" }}
-                    onClick={() => handleAccept(item.id, type)}
+                    onClick={() => handleType(item.id, type)}
                   >
-                    Đồng ý
+                    Hủy yêu cầu
                   </Button>
+                ) : type === "received" ? (
+                  <>
+                    <Button
+                      type="text"
+                      style={{ color: "#1890ff", fontWeight: "bold" }}
+                      onClick={() => handleAccept(item.id, type)}
+                    >
+                      Đồng ý
+                    </Button>
+                    <Button
+                      type="text"
+                      style={{ color: "#ff4d4f", fontWeight: "bold" }}
+                      onClick={() => handleType(item.id, type)}
+                    >
+                      Từ chối
+                    </Button>
+                  </>
+                ) : (
                   <Button
                     type="text"
                     style={{ color: "#ff4d4f", fontWeight: "bold" }}
                     onClick={() => handleType(item.id, type)}
                   >
-                    Từ chối
+                    Xóa
                   </Button>
-                </>
-              ) : (
-                <Button
-                  type="text"
-                  style={{ color: "#ff4d4f", fontWeight: "bold" }}
-                  onClick={() => handleType(item.id, type)}
-                >
-                  Xóa
-                </Button>
-              )
-            ]}
-          >
-            <List.Item.Meta
-              style={{ paddingLeft: "10px" }}
-              avatar={<Avatar icon={<UserOutlined />} style={{ backgroundColor: "#1890ff" }} />}
-              title={<span style={{ fontWeight: "bold" }}>{item.name}</span>}
-            />
-          </List.Item>
-        )}
-      />
+                )
+              ]}
+            >
+              <List.Item.Meta
+                style={{ paddingLeft: "10px" }}
+                avatar={<Avatar icon={<UserOutlined />} style={{ backgroundColor: "#1890ff" }} />}
+                title={<span style={{ fontWeight: "bold" }}>{item.name}</span>}
+              />
+            </List.Item>
+          )}
+        />
+      </div>
+
     </Modal>
   );
 
