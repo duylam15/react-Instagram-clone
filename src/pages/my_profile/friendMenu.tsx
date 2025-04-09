@@ -3,6 +3,7 @@ import { Dropdown, Menu, Button, Modal, List, Avatar, Input } from "antd";
 import { UserOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons";
 import { deleteFriend, getListFriends, getListInviteReceived, getListInviteSent, updateInvite } from "../../services/friend/friend";
 import { getUserProfile } from "../../services/user/user";
+import { useNavigate } from "react-router-dom";
 
 const FriendsMenu = (data: { idProfileDangXem: any }) => {
 
@@ -11,6 +12,7 @@ const FriendsMenu = (data: { idProfileDangXem: any }) => {
   const [visibleModal, setVisibleModal] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Dữ liệu mẫu
   const [friends, setFriends] = useState([
@@ -95,7 +97,7 @@ const FriendsMenu = (data: { idProfileDangXem: any }) => {
     fetchListInviteReceived();
     fetchListInviteSent();
     console.log(friends.length + "------------------------------")
-  }, [loading]);
+  }, [data.idProfileDangXem]);
 
 
   const handleMenuClick = ({ key }) => {
@@ -208,6 +210,10 @@ const FriendsMenu = (data: { idProfileDangXem: any }) => {
         renderItem={(item) => (
           <List.Item
             key={item.id}
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              navigate(`/profile/${item.id}`);
+            }}
             actions={[
               type === "sent" ? (
                 <Button

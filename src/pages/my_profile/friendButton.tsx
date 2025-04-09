@@ -81,7 +81,7 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
 
   useEffect(() => {
     ChekcFriend();
-  }, [loading])
+  }, [loading , data.idUser1 , data.idUser2])
 
   const handleClick = () => {
 
