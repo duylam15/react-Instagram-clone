@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import { CChartLine, CChartBar } from '@coreui/react-chartjs';
-import { Card, Select, Spin, Table } from 'antd';
+import { Card, Select, Spin, DatePicker, Button, Table, message, Space, Typography } from 'antd';
 import './Thongke.scss';
+import { } from "antd";
+import dayjs from "dayjs";
+
+const { RangePicker } = DatePicker;
+const { Title, Text } = Typography;
 
 const { Option } = Select;
 
@@ -65,6 +70,72 @@ const Dashboard = () => {
   const weekList = Array.from({ length: 53 }, (_, i) => i + 1);
   const monthList = Array.from({ length: 12 }, (_, i) => i + 1);
 
+  const [dates, setDates] = useState([]);
+  const [data, setData] = useState([]);
+  const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const fetchStats = async () => {
+    if (!dates || dates.length !== 2) {
+      message.warning("Vui lòng chọn khoảng thời gian");
+      return;
+    }
+
+    const [start, end] = dates;
+    const startDate = dayjs(start).format("YYYY-MM-DD");
+    const endDate = dayjs(end).format("YYYY-MM-DD");
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token")
+      const response = await axios.get(
+        `http://localhost:9999/api/api/users/users/count?start=${startDate}&end=${endDate}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setData(response.data.data.users);
+      setCount(response.data.data.count);
+    } catch (error) {
+      message.error("Lỗi khi lấy dữ liệu thống kê");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const columns = [
+    {
+      title: "ID",
+      dataIndex: "userId",
+      key: "userId",
+    },
+    {
+      title: "Tên đăng nhập",
+      dataIndex: "userName",
+      key: "userName",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Họ và tên",
+      key: "fullName",
+      render: (_: any, record: any) => `${record.firstName || ""} ${record.lastName || ""}`,
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text: any) => dayjs(text).format("YYYY-MM-DD HH:mm"),
+    },
+  ];
+
   // Fetch dữ liệu người dùng mới
   useEffect(() => {
     const fetchGrowthData = async () => {
@@ -79,10 +150,10 @@ const Dashboard = () => {
             time: userTimeFrame === 'daily'
               ? item.date
               : userTimeFrame === 'weekly'
-              ? `Tuần ${item.week}, ${item.year}`
-              : userTimeFrame === 'monthly'
-              ? `${item.month}/${item.year}`
-              : item.year,
+                ? `Tuần ${item.week}, ${item.year}`
+                : userTimeFrame === 'monthly'
+                  ? `${item.month}/${item.year}`
+                  : item.year,
             value: item.count,
           }));
           setGrowthData(formattedData);
@@ -202,50 +273,35 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <h1>Trang Thống Kê</h1>
 
-      {/* Thống kê người dùng mới */}
-      <div className="stats-container">
-        <h2>Thống kê người dùng mới</h2>
-        <div className="filter-container">
-          <Select
-            value={userTimeFrame}
-            style={{ width: 120, marginRight: 10 }}
-            onChange={(value: string) => setUserTimeFrame(value)}
-          >
-            <Option value="daily">Ngày</Option>
-            <Option value="weekly">Tuần</Option>
-            <Option value="monthly">Tháng</Option>
-            <Option value="yearly">Năm</Option>
-          </Select>
-          <Select
-            value={userViewType}
-            style={{ width: 120 }}
-            onChange={(value: string) => setUserViewType(value)}
-          >
-            <Option value="Chart">Biểu đồ</Option>
-            <Option value="Table">Bảng</Option>
-          </Select>
+      <div style={{ padding: 24 }} className="bg-[#f0f0f0] mb-10 rounded-xl">
+        <Title level={3}>Thống kê người dùng mới</Title>
+        <Space style={{ marginBottom: 16 }}>
+          <RangePicker onChange={(dates: any) => setDates(dates)} />
+          <div className="mt-[-10px]">
+            <Button type="primary" onClick={fetchStats} loading={loading}>
+              Thống kê
+            </Button>
+          </div>
+        </Space>
+
+        <div style={{ marginBottom: 16 }}>
+          <Text strong>Tổng số người dùng: </Text>
+          <Text>{count}</Text>
         </div>
-        <Card className="data-container">
-          {userLoading ? (
-            <div className="loading-container">
-              <Spin />
-            </div>
-          ) : growthData.length === 0 ? (
-            <div className="no-data">Không có dữ liệu để hiển thị</div>
-          ) : userViewType === 'Chart' ? (
-            growthRateChart
-          ) : (
-            <Table
-              dataSource={growthData.map((item, index) => ({
-                key: index,
-                ...item,
-              }))}
-              columns={userColumns}
-              pagination={{ pageSize: 4, showSizeChanger: false }}
-            />
-          )}
-        </Card>
+
+        <Table
+          rowKey="userId"
+          columns={columns}
+          dataSource={data}
+          loading={loading}
+          pagination={{
+            pageSize: 2,
+            className: "custom-pagination"
+          }}
+        />
+
       </div>
+
 
       {/* Thống kê top 5 bài đăng */}
       <div className="stats-container">
@@ -327,6 +383,9 @@ const Dashboard = () => {
           )}
         </Card>
       </div>
+
+
+
     </div>
   );
 };
