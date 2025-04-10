@@ -23,6 +23,7 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 	const [loading, setLoading] = useState(false);
 	const { refreshTrigger, refresh } = useRefresh(); // Lấy giá trị từ context
 	const [isLoading, setIsLoading] = useState(false);
+	const userId = localStorage.getItem("userId")
 
 	// Chọn ảnh từ máy tính
 	const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +68,7 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 	const handlePostCreate = async () => {
 		try {
 			setLoading(true); // Bắt đầu loading
-			const data = await createPost(1, comment, images);
+			const data = await createPost(userId, comment, images);
 			message.success("✅ Post created successfully!");
 			console.log("✅ Post created:", data);
 			refresh()

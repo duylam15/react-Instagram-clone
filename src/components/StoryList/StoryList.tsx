@@ -59,7 +59,16 @@ const StoryList = () => {
 		const fetchPosts = async () => {
 			try {
 				const response: any = await getPosts();
-				setPosts(response?.data);
+				const currentUserId = localStorage.getItem("userId");
+
+				const filteredPosts = response?.data?.filter((post: any) => {
+					return (
+						post.visibility === "PUBLIC" ||
+						(post.visibility === "PRIVATE" && String(post.userId) === currentUserId)
+					);
+				});
+
+				setPosts(filteredPosts);
 			} catch (error) {
 				console.error("Không thể lấy bài viết:", error);
 			}
@@ -68,9 +77,8 @@ const StoryList = () => {
 		fetchPosts();
 	}, [refreshTrigger]);
 
-
-
-	console.log("postspostsposts", posts)
+	
+	console.log("Filtered posts:", posts);
 	return (
 		<div className="home">
 			<div

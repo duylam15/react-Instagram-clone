@@ -12,6 +12,7 @@ import data from "@emoji-mart/data";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { deletePostService, updatePost } from "../../services/post";
 import axios from "axios";
+import { useRefresh } from "../../contexts/RefreshContext";
 
 type PostMedia = {
 	mediaId: number;
@@ -55,6 +56,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	const [parentCommentId, setParentCommentId] = useState<number | null>(null);
 	const [username, setUsername] = useState("");
 	const [user, setUser] = useState<any>();
+	const { refreshTrigger, refresh } = useRefresh(); // Lấy giá trị từ context
 
 	useEffect(() => {
 		if (post?.postMedia) {
@@ -66,7 +68,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	}, [post]);  // Chạy khi `post` thay đổi
 
-	console.log("pxxxosts", images)
+	console.log("pxxxosts", post)
 
 	const handleDelete = async (postId: number) => {
 		try {
@@ -118,14 +120,13 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	useEffect(() => {
 		const fetchUserProfile = async () => {
 			const token = localStorage.getItem('token');
-			const userId = localStorage.getItem('userId');
 			try {
-				const response = await axios.get(`http://localhost:9999/api/api/users/${userId}`, {
+				const response = await axios.get(`http://localhost:9999/api/api/users/${post?.userId}`, {
 					headers: {
 						Authorization: `Bearer ${token}`, // Thêm token vào header
 					},
 				});
-				setUsername(response?.data?.data?.userName);
+				setUsername(`${response?.data?.data?.firstName} ${response?.data?.data?.lastName}`);
 				setUser(response?.data?.data);
 			} catch (error) {
 				console.error("Lỗi khi lấy thông tin profile:", error);
@@ -133,7 +134,9 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			}
 		};
 		fetchUserProfile();
-	}, [userId]);
+	}, [refreshTrigger, post?.userId]);
+
+	console.log("usernameusernamexx", user?.firstName)
 
 	// Xóa ảnh
 	const handleRemoveImage = async (postMediaId: number) => {
@@ -189,64 +192,64 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	// Hàm xử lý comment mới
 	const handleNewComment = async (newComment: any) => {
 		if (parentCommentId) {
-		  try {
-			const response = await axios.post(
-			  `http://localhost:9999/api/comments/reply/${parentCommentId}`,
-			  {
-				postId: post?.postId,
-				userId: localStorage.getItem("userId"),
-				content: newComment.content,
-				typeComment: "TEXT",
-				numberEmotion: 0,
-				numberCommentChild: 0,
-			  },
-			  {
-				headers: {
-				  Authorization: `Bearer ${localStorage.getItem("token")}`,
-				  "Content-Type": "application/json",
-				},
-			  }
-			);
-	  
-			const replyComment = {
-			  ...response.data.data,
-			  userName: localStorage.getItem("userName") || "User",
-			  authorAvatarUrl: localStorage.getItem("userAvatar") || "/default-avatar.png",
-			  createdAt: new Date().toISOString(),
-			  numberEmotion: 0,
-			  numberCommentChild: 0,
-			  parentId: parentCommentId,
-			};
-	  
-			// Chèn replyComment vào đúng vị trí trong mảng comments (dùng hàm đệ quy)
-			const updateCommentsRecursively = (list: any[]): any[] => {
-			  return list.map(comment => {
-				if (comment.commentId === parentCommentId) {
-				  return {
-					...comment,
-					numberCommentChild: (comment.numberCommentChild || 0) + 1,
-					replies: [...(comment.replies || []), replyComment],
-				  };
-				} else if (comment.replies && comment.replies.length > 0) {
-				  return {
-					...comment,
-					replies: updateCommentsRecursively(comment.replies),
-				  };
-				}
-				return comment;
-			  });
-			};
-	  
-			setComments(prev => updateCommentsRecursively(prev));
-			setParentCommentId(null); // Reset lại trạng thái reply
-		  } catch (error) {
-			console.error("Error replying to comment:", error);
-		  }
+			try {
+				const response = await axios.post(
+					`http://localhost:9999/api/comments/reply/${parentCommentId}`,
+					{
+						postId: post?.postId,
+						userId: localStorage.getItem("userId"),
+						content: newComment.content,
+						typeComment: "TEXT",
+						numberEmotion: 0,
+						numberCommentChild: 0,
+					},
+					{
+						headers: {
+							Authorization: `Bearer ${localStorage.getItem("token")}`,
+							"Content-Type": "application/json",
+						},
+					}
+				);
+
+				const replyComment = {
+					...response.data.data,
+					userName: localStorage.getItem("userName") || "User",
+					authorAvatarUrl: localStorage.getItem("userAvatar") || "/default-avatar.png",
+					createdAt: new Date().toISOString(),
+					numberEmotion: 0,
+					numberCommentChild: 0,
+					parentId: parentCommentId,
+				};
+
+				// Chèn replyComment vào đúng vị trí trong mảng comments (dùng hàm đệ quy)
+				const updateCommentsRecursively = (list: any[]): any[] => {
+					return list.map(comment => {
+						if (comment.commentId === parentCommentId) {
+							return {
+								...comment,
+								numberCommentChild: (comment.numberCommentChild || 0) + 1,
+								replies: [...(comment.replies || []), replyComment],
+							};
+						} else if (comment.replies && comment.replies.length > 0) {
+							return {
+								...comment,
+								replies: updateCommentsRecursively(comment.replies),
+							};
+						}
+						return comment;
+					});
+				};
+
+				setComments(prev => updateCommentsRecursively(prev));
+				setParentCommentId(null); // Reset lại trạng thái reply
+			} catch (error) {
+				console.error("Error replying to comment:", error);
+			}
 		} else {
-		  // Nếu là comment top-level, thêm vào cuối mảng
-		  setComments(prev => [...prev, newComment]);
+			// Nếu là comment top-level, thêm vào cuối mảng
+			setComments(prev => [...prev, newComment]);
 		}
-	  };
+	};
 
 
 	const handleReplyClick = (commentId: number) => {

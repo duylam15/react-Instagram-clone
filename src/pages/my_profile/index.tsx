@@ -15,7 +15,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export default function MyProfile() {
-  const [idDangNhap ,  setIdDangNhap]  = useState(Number(localStorage.getItem("userId")))
+  const [idDangNhap, setIdDangNhap] = useState(Number(localStorage.getItem("userId")))
 
 
   const location = useLocation();
@@ -23,7 +23,7 @@ export default function MyProfile() {
 
   useEffect(() => {
     const segments = location.pathname.split('/').filter(Boolean);
-    const lastSegment = segments.pop(); // lấy phần cuối cùng
+    const lastSegment: any = segments.pop(); // lấy phần cuối cùng
     const result = /^\d+$/.test(lastSegment) ? parseInt(lastSegment) : idDangNhap;
     setIdProfileDangXem(result);
   }, [location]);
@@ -34,6 +34,7 @@ export default function MyProfile() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
   const [username, setUsername] = useState("");
+  const [user, setUser] = useState("");
   const [avatar, setAvatar] = useState("/images/default-avatar.jpg");
 
   const [showEditOption, setShowEditOption] = useState(false);
@@ -50,7 +51,6 @@ export default function MyProfile() {
   const [postCount, setPostCount] = useState(0); // thêm dòng này
 
 
-
   // Lấy thông tin user
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -65,7 +65,8 @@ export default function MyProfile() {
             },
           }
         );
-        setUsername(response?.data?.data?.userName);
+        setUsername(`${response?.data?.data?.firstName} ${response?.data?.data?.lastName}`);
+        setUser(response?.data?.data)
         setAvatar(response.data.data.urlAvatar);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin profile:", error);
@@ -74,6 +75,8 @@ export default function MyProfile() {
     };
     fetchUserProfile();
   }, [id]);
+
+  console.log("useruseruser", user)
 
   // Mở/đóng modal hiển thị ảnh
   const handleImageClick = (post: any) => {
