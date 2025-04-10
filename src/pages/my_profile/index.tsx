@@ -1,5 +1,5 @@
-import { Carousel, Modal, Button, Upload } from "antd";
-import React, { useState, useEffect } from "react";
+import { Carousel, Modal, Button, Upload, Spin, message } from "antd";
+import React, { useState, useEffect, useRef } from "react";
 import CommentInput from "../../components/CommentInput/CommentInput";
 import { IconDots } from "../../components/icons/ic_dots";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -13,6 +13,12 @@ import { number } from "prop-types";
 import ChatAppGemini from "../../components/chatGemini";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { deletePostService, updatePost } from "../../services/post";
+import { useRefresh } from "../../contexts/RefreshContext";
+import { FaHeart, FaRegHeart, FaComment, FaPaperPlane, FaBookmark, FaRegBookmark, FaSmile } from "react-icons/fa";
+import Picker from "@emoji-mart/react";
+import data from "@emoji-mart/data";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
 export default function MyProfile() {
   const [idDangNhap, setIdDangNhap] = useState(Number(localStorage.getItem("userId")))
@@ -34,7 +40,7 @@ export default function MyProfile() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
   const [username, setUsername] = useState("");
-  const [user, setUser] = useState("");
+  const [user, setUser] = useState<any>();
   const [avatar, setAvatar] = useState("/images/default-avatar.jpg");
 
   const [showEditOption, setShowEditOption] = useState(false);
@@ -75,16 +81,24 @@ export default function MyProfile() {
     };
     fetchUserProfile();
   }, [id]);
+  const [images, setImages] = useState<any>();
 
   console.log("useruseruser", user)
 
+  const [postClick, setPostClick] = useState<any>()
   // Mở/đóng modal hiển thị ảnh
   const handleImageClick = (post: any) => {
     setSelectedImages(post.postMedia.map((media: any) => media.mediaUrl)); // Lấy danh sách ảnh của bài post
+    setPostClick(post)
+    setImages(post?.postMedia)
+    setComment(post?.content)
+    setVisibility(post?.visibility)
     setIsModalOpen(true);
   };
 
+  console.log("imagesimagesimages", images)
 
+  console.log("postClickpostClick", postClick)
   // Mở popup thay đổi avatar
   const handleOpenPop = () => setIsPopOpen(true);
   const handleClosePop = () => setIsPopOpen(false);
@@ -144,6 +158,7 @@ export default function MyProfile() {
     navigate('/edit-profile'); // Điều hướng đến trang chỉnh sửa thông tin cá nhân
   };
   const [posts, setPosts] = useState<string[]>([]);
+  const { refreshTrigger, refresh } = useRefresh(); // Lấy giá trị từ context
 
   useEffect(() => {
     const fetchUserPosts = async () => {
@@ -152,10 +167,15 @@ export default function MyProfile() {
       try {
         const response = await axios.get(`http://localhost:9999/api/posts/user/${id}`, {
           headers: {
-            Authorization: `Bearer ${token}`, // Thêm token vào header
+            Authorization: `Bearer ${token}`,
           },
         });
-        const posts = response.data.data.data; // Lấy mảng bài post
+
+        let posts = response?.data?.data?.data || [];
+
+        // ❌ Bỏ các bài viết có visibility là "DELETE"
+        posts = posts.filter((post: any) => post.visibility !== "DELETE");
+
         setPosts(posts);
         setPostCount(posts.length);
       } catch (error) {
@@ -164,9 +184,134 @@ export default function MyProfile() {
     };
 
     fetchUserPosts();
+  }, [refreshTrigger]);
+
+
+  console.log("postspostsxxxxxposts", posts)
+
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  console.log("postspostsposts", posts)
+
+  const handleDelete = async (postId: number) => {
+    console.log("postIdxxx", postId)
+    try {
+      const result = await deletePostService(postId);
+      alert(result.message);
+      setIsOpen(false);
+      refresh();
+    } catch (error: any) {
+      alert(error.message || "Lỗi khi xóa bài viết!");
+    }
+  };
+
+  const [isOpenPut, setIsOpenPut] = useState(false);
+  console.log("isOpenPutisOpenPut", isOpenPut)
+
+  const handleClose = () => {
+    setIsOpenPut(false)
+  };
+
+  const [loading, setLoading] = useState(false);
+  const [comment, setComment] = useState(postClick?.content);
+  const [visibility, setVisibility] = useState<any>(postClick?.visibility);
+
+  const handlePostUpdate = async () => {
+    // Check nếu thiếu thông tin thì return sớm
+    if (!comment?.trim() || images.length === 0 || !visibility) {
+      message.warning("⚠️ Không đủ thông tin để cập nhật bài viết");
+      return;
+    }
+
+    try {
+      setLoading(true); // Bắt đầu loading
+
+      const response = await updatePost(postClick?.postId, comment, images, visibility);
+
+      if (response?.data?.imageUrl) {
+        setImages([...images, response.data.imageUrl]);
+      }
+
+      console.log("✅ Phản hồi API:", response);
+      refresh();
+      handleClose();
+    } catch (error) {
+      console.error("❌ Lỗi khi cập nhật bài viết:", error);
+    } finally {
+      setLoading(false); // Kết thúc loading
+    }
+  };
+
+  const [isModalOpenPut, setIsModalOpenPut] = useState(false);
+
+  const handleRemoveImage = async (img: any) => {
+    if (img?.postMediaId) {
+      // Ảnh đã được upload lên server → gọi API xoá
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.delete(`http://localhost:9999/api/post-medias/${img.postMediaId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        refresh();
+        console.log(`✅ Đã xoá ảnh server ID: ${img.postMediaId}`, response.data);
+      } catch (error) {
+        console.error("❌ Lỗi khi xoá ảnh từ server:", error);
+        alert("Xoá ảnh thất bại. Vui lòng thử lại.");
+      }
+    } else {
+      // Ảnh local (chưa upload) → xoá khỏi state
+      setImages((prev: any[]) => prev.filter((i) => i !== img));
+      console.log("🗑️ Đã xoá ảnh local:", img);
+    }
+  };
+
+  const handleAddImage = (file: File) => {
+    const imageUrl = URL.createObjectURL(file);
+    const cleanUrl = imageUrl.replace("blob:", "");
+    console.log("imageUrlimageUrl", cleanUrl); // Không còn 'blob:' ở đầu nữa
+    setImages((prev: any) => [...prev, imageUrl]);
+  };
+
+
+  const [showOptions, setShowOptions] = useState(false);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowOptions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleSelect = (value: "PUBLIC" | "PRIVATE") => {
+    setVisibility(value);
+    setShowOptions(false);
+  };
+
+  const [showPicker, setShowPicker] = useState(false);
+
+  const handleEmojiSelect = (emoji: { native: string }) => {
+    setComment((prev: any) => prev + emoji.native); // Thêm emoji vào nội dung input
+    setShowPicker(false); // Ẩn picker sau khi chọn
+  };
 
   return (
     <div className="ml-25 min-h-[100vh] p-4 flex flex-col items-center">
@@ -333,17 +478,66 @@ export default function MyProfile() {
           {/* Comments bên phải */}
           <div className="w-1/2 flex flex-col justify-between">
             <div className="overflow-y-auto h-[400px]">
-              <div className="flex p-5  items-center gap-3 border-b border-gray-300 pb-3">
-                <img
-                  src="/public/images/uifaces-popular-image (11).jpg"
-                  alt="Avatar"
-                  className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
-                />
-                <span className="font-semibold text-gray-800">username</span>
+              <div className="flex p-3 justify-between  items-center gap-3 border-b border-gray-300 pb-3">
+                <div className="flex items-center justify-center gap-3">
+                  <img
+                    src={user?.urlAvatar}
+                    alt="Avatar"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
+                  />
+                  <span className="font-semibold" style={{ color: "var(--text-color)" }}>{username}</span>
+                </div>
+                <div className="relative inline-block" style={{
+                  color: "var(--text-color)",
+                  background: " var(--bg-color)"
+                }}>
+                  <div ref={menuRef}>
+                    <div className="relative w-[20px] h-[20px]" onClick={() => setIsOpen(!isOpen)} >
+                      <svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg" stroke="#c2c2c2"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5 10C6.10457 10 7 10.8954 7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10Z" fill="#c2c2c2"></path> <path d="M12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10Z" fill="#c2c2c2"></path> <path d="M21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12Z" fill="#c2c2c2"></path> </g></svg>
+                    </div>
+                    {isOpen && postClick?.userId?.toString() === userId && (
+                      <div
+                        className="absolute z-40 right-0 w-40 border rounded-lg shadow-lg flex flex-col text-center"
+                        style={{
+                          color: "var(--text-color)",
+                          background: "var(--bg-color)",
+                          lineHeight: 1,
+                          borderColor: "var(--white-to-gray)",
+                        }}
+                      >
+                        <p
+                          className="custom-hover cursor-pointer w-full text-center leading-[40px] m-0 rounded-t-lg"
+                          onClick={() => {
+                            if (postClick?.postId) {
+                              handleDelete(postClick?.postId);
+                              setIsModalOpen(false);
+                            }
+                          }}
+                        >
+                          Xóa
+                        </p>
+                        <p
+                          className="custom-hover cursor-pointer w-full text-center leading-[40px] m-0 rounded-b-lg"
+                          onClick={() => {
+                            if (postClick?.postId) {
+                              setIsOpenPut(true);
+                              setIsModalOpen(false);
+                            }
+                          }}
+
+                        >
+                          Sửa
+
+                        </p>
+
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              <div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
-                comment
+              <div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3 text-gray-400">
+                commentadadas
               </div>
             </div>
 
@@ -353,6 +547,203 @@ export default function MyProfile() {
           </div>
         </div>
       </Modal>
+
+      {/* Update Post */}
+      {isOpenPut && <div className="overlay" onClick={() => handleClose()}>
+        <div className="rounded-xl" onClick={(e) => e.stopPropagation()}>
+          {loading ? (
+            <Spin size="large" tip="Creating post..." />
+          ) : (
+            <div className="flex justify-between items-center flex-col mt-[-20px] w-[1000px] h-[90vh]  rounded-xl">
+
+              <div className="bg-black w-full text-white font-medium text-[20px] rounded-t-xl text-center p-2 flex justify-between items-center">
+                <div className="">
+                </div>
+                <div className="ml-30">
+                  Update post
+                </div>
+                <div className="" onClick={handlePostUpdate}>
+                  Update Post
+                </div>
+              </div>
+              <div className="flex w-full h-[90vh]">
+                {/* Khu vực hiển thị ảnh */}
+                <div className="bg-gray-700 h-full max-w-[60%] w-full rounded-bl-xl flex items-center justify-center flex-col">
+                  {1 && (
+                    <div className="w-full h-full relative">
+                      <Carousel infinite={false}
+                        arrows >
+                        {images?.map((img: any, index: any) => (
+                          <img
+                            key={index}
+                            src={img?.mediaUrl || img}
+                            alt="Selected"
+                            className="h-[83vh] w-[70%]  object-cover rounded-bl-xl"
+                          />
+                        ))}
+                      </Carousel>
+                      <button
+                        className="bg-black absolute bottom-5 right-10 shadow-md text-white pl-4 pr-4 rounded-xl"
+                        onClick={() => setIsModalOpenPut(true)}
+                      >
+                        Chỉnh sửa ảnh
+                      </button>
+                      {/* Modal chỉnh sửa ảnh */}
+                      {isModalOpenPut &&
+                        <div onClick={(e) => e.stopPropagation()} style={{ top: "20%" }}>
+                          <Modal
+                            open={isModalOpenPut}
+                            onCancel={() => setIsModalOpenPut(false)}
+                            footer={null}
+                            centered
+                            className="model_post"
+                            mask={false} // ❌ Tắt overlay
+                            style={{ top: "20%" }}
+                          >
+                            <div className="flex">
+                              {/* Danh sách ảnh hiện tại */}
+                              <div className="flex flex-wrap gap-3">
+                                {images && images.length > 0 ? (
+                                  <Carousel
+                                    dots={true}
+                                    className="w-[240px]"
+                                    arrows
+                                    prevArrow={<CustomPrevArrow />}
+                                    nextArrow={<CustomNextArrow />}
+                                    slidesToShow={2}
+                                  >
+                                    {images.map((img: any, index: number) => (
+                                      <div key={index} className="relative">
+                                        <img
+                                          src={img?.mediaUrl || img}
+                                          alt="Selected"
+                                          className="w-[100px] h-[100px] object-cover rounded"
+                                        />
+                                        <div
+                                          className="absolute top-1 right-6 bg-gray-500 text-white p-1 rounded opacity-80 hover:opacity-100 transition"
+                                          onClick={() => handleRemoveImage(img)}
+                                        >
+                                          Xóa
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </Carousel>
+                                ) : (
+                                  <div className="bg-black p-4 flex justify-center items-center rounded text-center text-sm text-white">
+                                    Không có hình ảnh nào
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Thêm ảnh mới */}
+                              <div className="ml-4">
+                                <Upload
+                                  showUploadList={false}
+                                  beforeUpload={(file) => {
+                                    handleAddImage(file);
+                                    return false;
+                                  }}
+                                >
+                                  <button className="w-24 h-24 rounded flex items-center justify-center gap-2 bg-black" >
+                                    <svg viewBox="0 0 20 20" width="40px" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#ccc"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill="#ccc" fill-rule="evenodd" d="M9 17a1 1 0 102 0v-6h6a1 1 0 100-2h-6V3a1 1 0 10-2 0v6H3a1 1 0 000 2h6v6z"></path> </g></svg>
+                                  </button>
+                                </Upload>
+                              </div>
+                            </div>
+                          </Modal>
+                        </div>
+                      }
+                    </div>
+                  )}
+                </div>
+                {/* Khu vực comment */}
+                <div className="bg-gray-600 h-full w-[50%] rounded-br-xl  overflow-auto">
+                  <div className="comment p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between">
+                        <img src={user?.urlAvatar} alt=""
+                          className="w-[50px] h-[50px] rounded-full" />
+                        <div className="text-white ml-4">{username}</div>
+                      </div>
+                      <div className="relative" onClick={() => setShowOptions((prev) => !prev)} ref={menuRef}>
+                        <svg viewBox="0 0 16 16" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ccc"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 8C4 9.10457 3.10457 10 2 10C0.895431 10 0 9.10457 0 8C0 6.89543 0.895431 6 2 6C3.10457 6 4 6.89543 4 8Z" fill="#ccc"></path> <path d="M10 8C10 9.10457 9.10457 10 8 10C6.89543 10 6 9.10457 6 8C6 6.89543 6.89543 6 8 6C9.10457 6 10 6.89543 10 8Z" fill="#ccc"></path> <path d="M14 10C15.1046 10 16 9.10457 16 8C16 6.89543 15.1046 6 14 6C12.8954 6 12 6.89543 12 8C12 9.10457 12.8954 10 14 10Z" fill="#ccc"></path> </g></svg>
+                        {showOptions && (
+                          <div className="absolute top-8 right-0 bg-black text-white rounded shadow-md z-50 w-32">
+                            <div
+                              onClick={() => handleSelect("PUBLIC")}
+                              className="flex items-center justify-between rounded p-2 hover:bg-gray-800 cursor-pointer"
+                            >
+                              <span>Public</span>
+                              {visibility === "PUBLIC" && (
+                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                              )}
+                            </div>
+                            <div
+                              onClick={() => handleSelect("PRIVATE")}
+                              className="flex items-center justify-between p-2 rounded hover:bg-gray-800 cursor-pointer"
+                            >
+                              <span>Private</span>
+                              {visibility === "PRIVATE" && (
+                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="input-post mt-3">
+                      <div className="flex items-center py-2">
+                        <textarea
+                          placeholder={t('Comment')}
+                          className="w-full text-white outline-none  p-1"
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                          style={{ color: "var(--text-color)" }}
+                        ></textarea>
+
+                        {/* Nút mở Emoji Picker */}
+                        <FaSmile
+                          className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
+                          onClick={() => setShowPicker(!showPicker)}
+                        />
+                        {/* Hiển thị Emoji Picker */}
+                        {showPicker && (
+                          <div className=" absolute bottom-0 right-54 z-10">
+                            <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+
+      </div >
+      }
     </div>
   );
 }
+
+
+
+const CustomPrevArrow = ({ onClick }: any) => (
+  <div
+    className="absolute top-1/2 -left-8 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
+    onClick={onClick}
+  >
+    <LeftOutlined onPointerEnterCapture={() => { }} onPointerLeaveCapture={() => { }} />
+  </div>
+);
+
+const CustomNextArrow = ({ onClick }: any) => (
+  <div
+    className="absolute top-1/2 -right-3 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
+    onClick={onClick}
+  >
+    <RightOutlined onPointerEnterCapture={() => { }} onPointerLeaveCapture={() => { }} />
+  </div>
+);
