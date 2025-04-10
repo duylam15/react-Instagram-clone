@@ -63,8 +63,8 @@ const StoryList = () => {
 
 				const filteredPosts = response?.data?.filter((post: any) => {
 					return (
-						post.visibility === "PUBLIC" ||
-						(post.visibility === "PRIVATE" && String(post.userId) === currentUserId)
+						post?.visibility === "PUBLIC" ||
+						(post?.visibility === "PRIVATE" && String(post?.userId) === currentUserId)
 					);
 				});
 
@@ -77,7 +77,7 @@ const StoryList = () => {
 		fetchPosts();
 	}, [refreshTrigger]);
 
-	
+
 	console.log("Filtered posts:", posts);
 	return (
 		<div className="home">

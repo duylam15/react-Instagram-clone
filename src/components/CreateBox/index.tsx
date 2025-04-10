@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Modal, Button, Carousel, Upload, message, Spin } from "antd";
 import { LeftOutlined, RightOutlined, UploadOutlined } from "@ant-design/icons";
 import "./createBox.css"
@@ -9,6 +9,7 @@ import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { createPost } from "../../services/post";
 import { useRefresh } from "../../contexts/RefreshContext";
+import { colors } from "@mui/material";
 
 interface CreateBoxProps {
 	onClose: () => void;
@@ -24,7 +25,23 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 	const { refreshTrigger, refresh } = useRefresh(); // Lấy giá trị từ context
 	const [isLoading, setIsLoading] = useState(false);
 	const userId = localStorage.getItem("userId")
+	const [username, setUsername] = useState("");
+	const [user, setUser] = useState<any>("");
+	const [showOptions, setShowOptions] = useState(false);
+	const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">("PUBLIC");
+	const menuRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+				setShowOptions(false);
+			}
+		};
 
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
 	// Chọn ảnh từ máy tính
 	const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files && event.target.files[0]) {
@@ -54,6 +71,40 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 		}
 	};
 
+	const handleSelect = (value: "PUBLIC" | "PRIVATE") => {
+		setVisibility(value);
+		setShowOptions(false);
+	};
+
+	console.log("visibilityvisibility", visibility)
+
+
+	useEffect(() => {
+		const fetchUserProfile = async () => {
+			const token = localStorage.getItem('token');
+			const userId = localStorage.getItem('userId');
+			try {
+				const response = await axios.get(
+					`http://localhost:9999/api/api/users/${userId}`,
+					{
+						headers: {
+							Authorization: `Bearer ${token}`, // Thêm token vào header
+						},
+					}
+				);
+				setUsername(`${response?.data?.data?.firstName} ${response?.data?.data?.lastName}`);
+				setUser(response?.data?.data)
+			} catch (error) {
+				console.error("Lỗi khi lấy thông tin profile:", error);
+				setUsername("User not found");
+			}
+		};
+		fetchUserProfile();
+	}, []);
+
+	console.log("userxx", user)
+
+
 	// Xóa ảnh
 	const handleRemoveImage = (index: number) => {
 		setImages(images.filter((_, i) => i !== index));
@@ -66,9 +117,13 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 	};
 
 	const handlePostCreate = async () => {
+		if (!comment?.trim() || images.length === 0 || !visibility) {
+			message.warning("⚠️ Không đủ thông tin để tạo bài viết");
+			return;
+		}
 		try {
 			setLoading(true); // Bắt đầu loading
-			const data = await createPost(userId, comment, images);
+			const data = await createPost(userId, comment, images, visibility);
 			message.success("✅ Post created successfully!");
 			console.log("✅ Post created:", data);
 			refresh()
@@ -85,6 +140,7 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 		setShowPicker(false); // Ẩn picker sau khi chọn
 	};
 
+
 	return (
 		<div className="overlay" onClick={onClose}>
 			<div className="rounded-xl" onClick={(e) => e.stopPropagation()}>
@@ -99,7 +155,7 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 								Create new post
 							</div>
 
-							<button className="rounded" onClick={handlePostCreate}>Create Post</button>
+							<button className="rounded backround" onClick={handlePostCreate}>Create Post</button>
 						</div>
 						<div className="flex w-full h-[90vh]">
 							{/* Khu vực hiển thị ảnh */}
@@ -123,6 +179,62 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 										>
 											Chỉnh sửa ảnh
 										</button>
+										{/* Modal chỉnh sửa ảnh */}
+										{isModalOpen && (
+											<div onClick={(e) => e.stopPropagation()} style={{ top: "20%" }}>
+												<Modal
+													open={isModalOpen}
+													onCancel={() => setIsModalOpen(false)}
+													footer={null}
+													centered
+													className="model_post"
+													mask={false} // ❌ Tắt overlay
+													style={{ top: "20%" }}
+												>
+													<div className="flex">
+														{/* Danh sách ảnh hiện tại */}
+														<div className="flex flex-wrap gap-3">
+															<Carousel
+																dots={true}
+																className="w-[240px]"
+																arrows
+																prevArrow={<CustomPrevArrow />}
+																nextArrow={<CustomNextArrow />}
+																slidesToShow={2}
+															>
+																{images.map((img, index) => (
+																	<div key={index} className="relative">
+																		<img src={img} alt="Selected" className="w-[100px] h-[100px] object-cover rounded" />
+																		<button
+																			className="absolute top-1 right-6 bg-red-500 text-white p-1 rounded opacity-80 hover:opacity-100 transition"
+																			onClick={() => handleRemoveImage(index)}
+																		>
+																			Xóa
+																		</button>
+																	</div>
+																))}
+															</Carousel>
+														</div>
+
+														{/* Thêm ảnh mới */}
+														<div className="ml-4">
+															<Upload
+																showUploadList={false}
+																beforeUpload={(file) => {
+																	handleAddImage(file);
+																	return false;
+																}}
+															>
+																<button className="w-24 h-24 rounded flex items-center justify-center gap-2">
+																	<svg viewBox="0 0 20 20" width="40px" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#ccc"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill="#ccc" fill-rule="evenodd" d="M9 17a1 1 0 102 0v-6h6a1 1 0 100-2h-6V3a1 1 0 10-2 0v6H3a1 1 0 000 2h6v6z"></path> </g></svg>
+																</button>
+															</Upload>
+														</div>
+													</div>
+												</Modal>
+											</div>
+										)
+										}
 									</div>
 								) : (
 									<>
@@ -160,10 +272,37 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 							{/* Khu vực comment */}
 							<div className="bg-gray-600 h-full w-[50%] rounded-br-xl  overflow-auto">
 								<div className="comment p-3">
-									<div className="flex items-center justify-start">
-										<img src="/public/images/uifaces-popular-image (7).jpg" alt=""
-											className="w-[50px] h-[50px] rounded-full" />
-										<div className="text-white">UserName</div>
+									<div className="flex items-center justify-between">
+										<div className="flex items-center justify-between">
+											<img src={user?.urlAvatar} alt=""
+												className="w-[50px] h-[50px] rounded-full" />
+											<div className="text-white ml-4">{username}</div>
+										</div>
+										<div className="relative" onClick={() => setShowOptions((prev) => !prev)} ref={menuRef}>
+											<svg viewBox="0 0 16 16" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ccc"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 8C4 9.10457 3.10457 10 2 10C0.895431 10 0 9.10457 0 8C0 6.89543 0.895431 6 2 6C3.10457 6 4 6.89543 4 8Z" fill="#ccc"></path> <path d="M10 8C10 9.10457 9.10457 10 8 10C6.89543 10 6 9.10457 6 8C6 6.89543 6.89543 6 8 6C9.10457 6 10 6.89543 10 8Z" fill="#ccc"></path> <path d="M14 10C15.1046 10 16 9.10457 16 8C16 6.89543 15.1046 6 14 6C12.8954 6 12 6.89543 12 8C12 9.10457 12.8954 10 14 10Z" fill="#ccc"></path> </g></svg>
+											{showOptions && (
+												<div className="absolute top-8 right-0 bg-black text-white rounded shadow-md z-50 w-32">
+													<div
+														onClick={() => handleSelect("PUBLIC")}
+														className="flex items-center justify-between rounded p-2 hover:bg-gray-800 cursor-pointer"
+													>
+														<span>Public</span>
+														{visibility === "PUBLIC" && (
+															<span className="w-2 h-2 bg-green-500 rounded-full"></span>
+														)}
+													</div>
+													<div
+														onClick={() => handleSelect("PRIVATE")}
+														className="flex items-center justify-between p-2 rounded hover:bg-gray-800 cursor-pointer"
+													>
+														<span>Private</span>
+														{visibility === "PRIVATE" && (
+															<span className="w-2 h-2 bg-green-500 rounded-full"></span>
+														)}
+													</div>
+												</div>
+											)}
+										</div>
 									</div>
 									<div className="input-post mt-3">
 										<div className="flex items-center py-2 relative">
@@ -218,61 +357,7 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 					</div>
 				)}
 			</div>
-			{/* Modal chỉnh sửa ảnh */}
-			{isModalOpen &&
-				<div onClick={(e) => e.stopPropagation()} style={{ top: "20%" }}>
-					<Modal
-						open={isModalOpen}
-						onCancel={() => setIsModalOpen(false)}
-						footer={null}
-						centered
-						className="model_post"
-						mask={false} // ❌ Tắt overlay
-						style={{ top: "20%" }}
-					>
-						<div className="flex">
-							{/* Danh sách ảnh hiện tại */}
-							<div className="flex flex-wrap gap-3">
-								<Carousel
-									dots={true}
-									className="w-[240px]"
-									arrows
-									prevArrow={<CustomPrevArrow />}
-									nextArrow={<CustomNextArrow />}
-									slidesToShow={2}
-								>
-									{images.map((img, index) => (
-										<div key={index} className="relative">
-											<img src={img} alt="Selected" className="w-[100px] h-[100px] object-cover rounded" />
-											<button
-												className="absolute top-2 right-8 bg-red-500 text-white p-1 rounded opacity-80 hover:opacity-100 transition"
-												onClick={() => handleRemoveImage(index)}
-											>
-												Xóa
-											</button>
-										</div>
-									))}
-								</Carousel>
-							</div>
 
-							{/* Thêm ảnh mới */}
-							<div className="ml-4">
-								<Upload
-									showUploadList={false}
-									beforeUpload={(file) => {
-										handleAddImage(file);
-										return false;
-									}}
-								>
-									<button className="w-24 h-24 rounded flex items-center justify-center gap-2">
-										+
-									</button>
-								</Upload>
-							</div>
-						</div>
-					</Modal>
-				</div>
-			}
 		</div >
 	);
 }

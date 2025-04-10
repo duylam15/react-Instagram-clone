@@ -30,7 +30,7 @@ export const getPosts = async () => {
   }
 };
 
-export const createPost = async (userId:any, comment:any, images:any) => {
+export const createPost = async (userId:any, comment:any, images:any, visibility:any) => {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -41,7 +41,7 @@ export const createPost = async (userId:any, comment:any, images:any) => {
     const postCreateRequest = {
       userId: userId,
       content: comment,
-      visibility: "PUBLIC",
+      visibility: visibility,
       typePost: "TEXT",
     };
     formData.append("postCreateRequest", JSON.stringify(postCreateRequest));
@@ -69,7 +69,7 @@ export const createPost = async (userId:any, comment:any, images:any) => {
   }
 };
 
-export const updatePost = async (postId: any, comment: any, images: any) => {
+export const updatePost = async (postId: any, comment: any, images: any, visibility:any) => {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -82,7 +82,7 @@ export const updatePost = async (postId: any, comment: any, images: any) => {
     const formData = new FormData();
     const postUpdateRequest = {
       content: comment || "",
-      visibility: "PRIVATE",
+      visibility: visibility,
     };
 
     formData.append("postUpdateRequest", JSON.stringify(postUpdateRequest));
