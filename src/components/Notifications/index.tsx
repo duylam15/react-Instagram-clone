@@ -4,6 +4,8 @@ import { getListInviteReceived } from "../../services/friend/friend";
 import { getUserById } from "../../services/user/user";
 import { useNavigate } from "react-router-dom";
 import { getListNotifyByIdReceiver, markReadNotifyByIdNotify } from "../../services/notity";
+import { useNotificationSocket } from "../../contexts/NotificationSocketContext";
+import { set } from "date-fns";
 
 interface Invite {
 	sender: number;
@@ -60,6 +62,25 @@ export default function Notifications() {
 
 	const navigate = useNavigate();
 
+	const { notificationsWebsocket, setNotificationsWebsocket } = useNotificationSocket();
+	console.log("notificationsWebsocket noty", notificationsWebsocket)
+	useEffect(() => {
+		if (!notificationsWebsocket || notificationsWebsocket.length === 0) return;
+	
+		setNotifications((prevNotifications) => {
+			// Lấy ra các object Notify từ notificationsWebsocket
+			const newNotifies = notificationsWebsocket
+				.map((item) => item.object)
+				.filter((newNotify) =>
+					!prevNotifications.some((existing) => existing.noticeId === newNotify.noticeId)
+				);
+	
+			// Thêm vào đầu mảng để hiện thông báo mới trước
+			return [...newNotifies, ...prevNotifications];
+		});
+	}, [notificationsWebsocket]);
+
+
 	useEffect(() => {
 		const fetchInvites = async () => {
 			try {
@@ -90,7 +111,9 @@ export default function Notifications() {
 	useEffect(() => {
 		const fetchNotifications = async () => {
 			try {
-				const response = await getListNotifyByIdReceiver(0, 99, 1);
+				const userId = localStorage.getItem("userId");
+				if (!userId) return;
+				const response = await getListNotifyByIdReceiver(0, 99, Number(userId));
 				console.log("response NOtigi", response)
 				if (response.statusCode === 200) {
 					setNotifications(response.data.data);
@@ -113,6 +136,11 @@ export default function Notifications() {
 		setNotifications((prev) =>
 			prev.map((notify) =>
 				notify.noticeId === notificationId ? { ...notify, isRead: true } : notify
+			)
+		);
+		setNotificationsWebsocket((prev) =>
+			prev.map((notify) =>
+				notify.object.noticeId === notificationId ? { ...notify, object: { ...notify.object, isRead: true } } : notify
 			)
 		);
 	}

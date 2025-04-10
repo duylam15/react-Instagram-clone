@@ -13,30 +13,38 @@ import "./scss/examples.scss";
 import { router } from "./routes";
 import store from "./store";
 import { RefreshProvider } from "./contexts/RefreshContext";
-
+import { NotificationSocketProvider } from "./contexts/NotificationSocketContext";
 // Lazy load layout của admin
 const DefaultLayoutAdmin = React.lazy(() => import("./layout/DefaultLayoutAdmin"));
-
 const App: React.FC = () => {
+
   return (
-    <RefreshProvider>
-      <ThemeProvider>
-        <RouterProvider router={router} />
-        <HashRouter>
-          <Suspense
-            fallback={
-              <div className="pt-3 text-center">
-                <CSpinner color="primary" variant="grow" />
-              </div>
-            }
-          >
-            <Routes>
-              <Route path="admin/*" element={<DefaultLayoutAdmin />} />
-            </Routes>
-          </Suspense>
-        </HashRouter>
-      </ThemeProvider>
-    </RefreshProvider>
+    <NotificationSocketProvider
+      userId={66}
+      onReceive={(notify) => console.log("🔔 " + notify.content)}
+    >
+      {/* App nội dung ở đây */}
+
+      <RefreshProvider>
+        <ThemeProvider>
+          <RouterProvider router={router} />
+          <HashRouter>
+            <Suspense
+              fallback={
+                <div className="pt-3 text-center">
+                  <CSpinner color="primary" variant="grow" />
+                </div>
+              }
+            >
+              <Routes>
+                <Route path="admin/*" element={<DefaultLayoutAdmin />} />
+              </Routes>
+            </Suspense>
+          </HashRouter>
+        </ThemeProvider>
+      </RefreshProvider>
+    </NotificationSocketProvider>
+
   );
 };
 

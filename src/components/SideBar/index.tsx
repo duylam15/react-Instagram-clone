@@ -1,6 +1,6 @@
 // React hooks
 import { useEffect, useState } from "react";
-
+import { motion } from "framer-motion";
 // React Router
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -39,6 +39,8 @@ import { InstagramLogo } from "../icons/ic_Instagram_logo_text";
 
 // Styles
 import styles from "./styles.module.css";
+import { useNotificationSocket } from "../../contexts/NotificationSocketContext";
+import { getListNotifyByIdReceiver, getListNotifyUnReadByIdReceiver } from "../../services/notity";
 
 
 export default function SideBar(): JSX.Element {
@@ -100,7 +102,40 @@ export default function SideBar(): JSX.Element {
 	};
 
 	const iconColor = theme === "dark" ? "white" : "black";
+	const [unRead, setUnRead] = useState(false);
 
+	const { notificationsWebsocket } = useNotificationSocket();
+	const unreadCount = notificationsWebsocket.filter((n) => !n.object.isRead).length;
+
+
+	useEffect(() => {
+		setUnRead(unreadCount > 0);
+	}, [notificationsWebsocket]);
+
+
+	useEffect(() => {
+		async function fetchNotifications() {
+			try {
+				const userId = localStorage.getItem("userId");
+				if (!userId) return;
+				const response = await getListNotifyUnReadByIdReceiver(0, 99, Number(userId));
+				console.log("response thong bao sidbar", response)
+				if (response.statusCode == 200 && response.data.totalElements == 0) {
+					console.log("khong co thong bao chua doc 11111111")
+					setUnRead(false);
+				} else {
+					console.log("co thong bao chua doc 11111111")
+					setUnRead(true);
+				}
+			} catch (error) {
+				console.error("Lỗi khi lấy danh sách thông báo:", error);
+			}
+		}
+		fetchNotifications();
+	}, []);
+
+	
+	console.log("Unread notifications count:", unreadCount);
 	return (
 		<div className={styles.sidebar} style={{ width: sidebarWidth, transition: "width 0.3s ease" }}>
 			<div className="logo">
@@ -146,13 +181,47 @@ export default function SideBar(): JSX.Element {
 
 				<div className={`${styles.hide_on_mobile}`}>
 					<NavItem
-						icon={<IconNofication color={iconColor} />}
+						icon={
+							<motion.div
+								animate={
+									unRead
+										? {
+											scale: [1, 1.2, 1],
+											rotate: [0, 10, -10, 0],
+										}
+										: {}
+								}
+								transition={{
+									repeat: unRead ? Infinity : 0,
+									repeatType: "loop",
+									duration: 0.6,
+									ease: "easeInOut",
+								}}
+								style={{ position: "relative", display: "inline-block" }}
+							>
+								<IconNofication color={iconColor} />
+								{unRead && (
+									<span
+										style={{
+											position: "absolute",
+											top: -2,
+											right: -2,
+											width: 8,
+											height: 8,
+											borderRadius: "50%",
+											backgroundColor: "red",
+										}}
+									></span>
+								)}
+							</motion.div>
+						}
 						activeIcon={<IconNoficationActive color={iconColor} />}
 						isActive={path === "notifications"}
 						title={sidebarWidth === "90px" ? "" : t("notifications")}
 						onClick={() => handleClickModal("notifications")}
 					/>
 				</div>
+
 				<NavItem
 					icon={<IconCreate color={iconColor} />}
 					activeIcon={<IconCreateActive color={iconColor} />}
