@@ -208,7 +208,7 @@ const Messages = () => {
 				)}
 			</div>
 			{/* <ChatAppGemini /> */}
-			<ImageCaptionUploader />
+			{/* <ImageCaptionUploader /> */}
 		</div>
 
 	);
