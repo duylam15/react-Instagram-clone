@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from 'axios';
 import { CChartLine, CChartBar } from '@coreui/react-chartjs';
 import { Card, Select, Spin, DatePicker, Button, Table, message, Space, Typography } from 'antd';
@@ -269,6 +269,120 @@ const Dashboard = () => {
     />
   );
 
+  const [postDateRange, setPostDateRange] = useState<any>([]);
+  const [postList, setPostList] = useState([]);
+  const [totalPostCount, setTotalPostCount] = useState(0);
+
+  const userFilters = useMemo(() => {
+    const labels = Array.from(
+      new Set(
+        data.map((item: any) => {
+          const fullName = `${item.user?.lastName || ''} ${item.user?.firstName || ''}`.trim();
+          const userName = item.user?.userName || '';
+          return fullName ? `${fullName} (${userName})` : userName;
+        })
+      )
+    );
+
+    return labels.map((label) => ({
+      text: label,
+      value: label,
+    }));
+  }, [data]);
+
+  const handlePostStats = async () => {
+    if (!postDateRange || postDateRange.length !== 2) {
+      message.error('Vui lòng chọn khoảng thời gian');
+      return;
+    }
+
+    const [start, end] = postDateRange;
+    const startDate = dayjs(start).format("YYYY-MM-DD");
+    const endDate = dayjs(end).format("YYYY-MM-DD");
+    const token = localStorage.getItem("token")
+    setPostLoading(true);
+    try {
+      const response = await axios.get('http://localhost:9999/api/posts/stats', {
+        params: { startDate, endDate },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+      );
+
+      setPostList(response?.data?.posts);
+      setTotalPostCount(response?.data?.count);
+    } catch (error) {
+      message.error('Lỗi khi lấy thống kê bài viết');
+    } finally {
+      setPostLoading(false);
+    }
+  };
+
+  console.log("postListpostList", postList)
+
+  const postColumns = [
+    {
+      title: 'ID',
+      dataIndex: 'postId',
+      key: 'postId',
+    },
+    {
+      title: 'Nội dung',
+      dataIndex: 'content',
+      key: 'content',
+      render: (text: string) => <span>{text?.slice(0, 100)}</span>,
+    },
+    {
+      title: 'Cảm xúc',
+      dataIndex: 'numberEmotion',
+      key: 'numberEmotion',
+      render: (value: number) => value ?? 0,
+    },
+    {
+      title: 'Bình luận',
+      dataIndex: 'numberComment',
+      key: 'numberComment',
+      render: (value: number) => value ?? 0,
+    },
+    {
+      title: 'Người đăng',
+      dataIndex: 'user',
+      key: 'user',
+      render: (user: any) => {
+        const fullName = `${user?.lastName || ''} ${user?.firstName || ''}`.trim();
+        return fullName || user?.userName || 'N/A';
+      },
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (date: string) => dayjs(date).format('HH:mm DD/MM/YYYY'),
+    },
+    {
+      title: 'Chế độ hiển thị',
+      dataIndex: 'visibility',
+      key: 'visibility',
+      filters: [
+        { text: 'Công khai', value: 'PUBLIC' },
+        { text: 'Riêng tư', value: 'PRIVATE' },
+      ],
+      onFilter: (value: any, record: any) => record.visibility === value,
+      render: (value: string) => {
+        switch (value) {
+          case 'PUBLIC':
+            return 'Công khai';
+          case 'PRIVATE':
+            return 'Riêng tư';
+          default:
+            return value;
+        }
+      },
+    }
+  ];
+
+
   return (
     <div className="dashboard-container">
       <h1>Trang Thống Kê</h1>
@@ -295,13 +409,37 @@ const Dashboard = () => {
           dataSource={data}
           loading={loading}
           pagination={{
-            pageSize: 2,
+            pageSize: 10,
             className: "custom-pagination"
           }}
         />
 
       </div>
 
+      <div style={{ padding: 24 }} className="bg-[#f0f0f0] mb-10 rounded-xl">
+        <Title level={3}>Thống kê bài viết</Title>
+        <Space style={{ marginBottom: 16 }}>
+          <RangePicker value={postDateRange} onChange={setPostDateRange} />
+          <Button type="primary" onClick={handlePostStats}>
+            Thống kê
+          </Button>
+        </Space>
+
+        <div style={{ marginBottom: 16 }}>
+          <strong>Tổng số bài viết:</strong> {totalPostCount}
+        </div>
+
+        <Table
+          columns={postColumns}
+          dataSource={postList}
+          rowKey="postId"
+          loading={postLoading}
+          pagination={{
+            pageSize: 10,
+            className: "custom-pagination"
+          }}
+        />
+      </div>
 
       {/* Thống kê top 5 bài đăng */}
       <div className="stats-container">
