@@ -46,6 +46,37 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
   const API_BACKEND = "http://localhost:9999/api/";
   const [liked, setLiked] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
+  const [likeCount, setLikeCount] = useState(comment.numberEmotion || 0);
+
+  const handleLike = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        console.error("User ID not found");
+        return;
+      }
+
+      await axios.post(
+        `${API_BACKEND}comment-emotions`,
+        {
+          userId: parseInt(userId),
+          commentId: comment.commentId,
+          emotion: "LIKE"
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Toggle trạng thái like và cập nhật số lượng like
+      setLiked(!liked);
+      setLikeCount((prev: number) => liked ? prev - 1 : prev + 1);
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
+  };
 
   // Nếu chưa có reply trong props và có số lượng reply (numberCommentChild), có thể fetch reply
   const fetchReplies = async () => {
@@ -96,7 +127,7 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
 
       <div className="flex items-center gap-5 ml-12 text-gray-500 text-sm">
         <span>{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}</span>
-        <span>{liked ? comment.numberEmotion + 1 : comment.numberEmotion} likes</span>
+        <span>{likeCount} likes</span>
         <button 
           className="px-3 py-1 bg-gray-100 rounded-full text-gray-700 hover:bg-gray-200 transition-colors duration-200"
           onClick={() => onReplyClick?.(comment.commentId)}
@@ -105,7 +136,7 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
         </button>
         <button
           className="flex items-center gap-1 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
-          onClick={() => setLiked(!liked)}
+          onClick={handleLike}
         >
           {liked ? (
             <FaHeart className="text-red-500 transform hover:scale-110 transition-transform duration-200" />
