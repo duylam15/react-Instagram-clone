@@ -24,31 +24,6 @@ interface TopPostResponseDTO {
   totalInteraction: number;
 }
 
-// Cột cho bảng thống kê người dùng mới
-const userColumns = [
-  { title: 'Thời gian', dataIndex: 'time', key: 'time' },
-  { title: 'Số lượng người dùng mới', dataIndex: 'value', key: 'value' },
-];
-
-// Cột cho bảng thống kê 3 bài đăng
-const postColumns = [
-  { title: 'ID Bài đăng', dataIndex: 'postId', key: 'postId' },
-  { title: 'Nội dung', dataIndex: 'content', key: 'content', render: (text: string) => text.length > 50 ? `${text.substring(0, 50)}...` : text },
-  { title: 'Người đăng', dataIndex: 'userName', key: 'userName', render: (_: any, record: TopPostResponseDTO) => `${record.userFirstName} ${record.userLastName}` },
-  { title: 'Thời gian tạo', dataIndex: 'createdAt', key: 'createdAt' },
-  { title: 'Cảm xúc', dataIndex: 'numberEmotion', key: 'numberEmotion' },
-  { title: 'Bình luận', dataIndex: 'numberComment', key: 'numberComment' },
-  { title: 'Chia sẻ', dataIndex: 'numberShare', key: 'numberShare' },
-  { title: 'Tổng tương tác', dataIndex: 'totalInteraction', key: 'totalInteraction' },
-];
-
-// Mảng màu cho các cột
-const colors = [
-  'hsl(16, 100%, 76%)', // Orange cho Cảm xúc
-  'hsl(217, 100%, 50%)', // Blue cho Bình luận
-  'hsl(0, 100%, 67%)',  // Pink cho Chia sẻ
-];
-
 const Dashboard = () => {
   // State cho thống kê người dùng mới
   const [userTimeFrame, setUserTimeFrame] = useState('monthly');
@@ -234,41 +209,6 @@ const Dashboard = () => {
     />
   );
 
-  // Biểu đồ cột cho top 5 bài đăng
-  const postChart = (
-    <CChartBar
-      data={{
-        labels: topPosts.map(post => `Post ${post.postId}`),
-        datasets: [
-          {
-            label: 'Cảm xúc',
-            data: topPosts.map(post => post.numberEmotion),
-            backgroundColor: colors[0],
-          },
-          {
-            label: 'Bình luận',
-            data: topPosts.map(post => post.numberComment),
-            backgroundColor: colors[1],
-          },
-          {
-            label: 'Chia sẻ',
-            data: topPosts.map(post => post.numberShare),
-            backgroundColor: colors[2],
-          },
-        ],
-      }}
-      options={{
-        plugins: {
-          legend: { display: true },
-        },
-        scales: {
-          x: { title: { display: true, text: 'Bài đăng' } },
-          y: { title: { display: true, text: 'Số lượng' } },
-        },
-      }}
-    />
-  );
-
   const [postDateRange, setPostDateRange] = useState<any>([]);
   const [postList, setPostList] = useState([]);
   const [totalPostCount, setTotalPostCount] = useState(0);
@@ -337,12 +277,14 @@ const Dashboard = () => {
       title: 'Cảm xúc',
       dataIndex: 'numberEmotion',
       key: 'numberEmotion',
+      sorter: (a: any, b: any) => (a.numberEmotion ?? 0) - (b.numberEmotion ?? 0),
       render: (value: number) => value ?? 0,
     },
     {
       title: 'Bình luận',
       dataIndex: 'numberComment',
       key: 'numberComment',
+      sorter: (a: any, b: any) => (a.numberComment ?? 0) - (b.numberComment ?? 0),
       render: (value: number) => value ?? 0,
     },
     {
@@ -379,7 +321,7 @@ const Dashboard = () => {
             return value;
         }
       },
-    }
+    },
   ];
 
 
@@ -440,90 +382,6 @@ const Dashboard = () => {
           }}
         />
       </div>
-
-      {/* Thống kê top 5 bài đăng */}
-      <div className="stats-container">
-        <h2>Thống kê top 5 bài đăng có lượt tương tác cao nhất</h2>
-        <div className="filter-container">
-          <Select
-            value={postTimeFrame}
-            style={{ width: 120, marginRight: 10 }}
-            onChange={(value: string) => {
-              setPostTimeFrame(value);
-              setWeek(null);
-              setMonth(null);
-            }}
-          >
-            <Option value="weekly">Tuần</Option>
-            <Option value="monthly">Tháng</Option>
-            <Option value="yearly">Năm</Option>
-          </Select>
-          {postTimeFrame === 'weekly' && (
-            <Select
-              value={week}
-              style={{ width: 120, marginRight: 10 }}
-              onChange={(value: number) => setWeek(value)}
-              placeholder="Chọn tuần"
-            >
-              {weekList.map((w) => (
-                <Option key={w} value={w}>Tuần {w}</Option>
-              ))}
-            </Select>
-          )}
-          {postTimeFrame === 'monthly' && (
-            <Select
-              value={month}
-              style={{ width: 120, marginRight: 10 }}
-              onChange={(value: number) => setMonth(value)}
-              placeholder="Chọn tháng"
-            >
-              {monthList.map((m) => (
-                <Option key={m} value={m}>Tháng {m}</Option>
-              ))}
-            </Select>
-          )}
-          <Select
-            value={year}
-            style={{ width: 120, marginRight: 10 }}
-            onChange={(value: number) => setYear(value)}
-          >
-            {yearList.map((y) => (
-              <Option key={y} value={y}>{y}</Option>
-            ))}
-          </Select>
-          <Select
-            value={postViewType}
-            style={{ width: 120 }}
-            onChange={(value: string) => setPostViewType(value)}
-          >
-            <Option value="Chart">Biểu đồ</Option>
-            <Option value="Table">Bảng</Option>
-          </Select>
-        </div>
-        <Card className="data-container">
-          {postLoading ? (
-            <div className="loading-container">
-              <Spin />
-            </div>
-          ) : topPosts.length === 0 ? (
-            <div className="no-data">Không có dữ liệu để hiển thị</div>
-          ) : postViewType === 'Chart' ? (
-            postChart
-          ) : (
-            <Table
-              dataSource={topPosts.map((item, index) => ({
-                key: index,
-                ...item,
-              }))}
-              columns={postColumns}
-              pagination={{ pageSize: 5, showSizeChanger: false }}
-            />
-          )}
-        </Card>
-      </div>
-
-
-
     </div>
   );
 };
