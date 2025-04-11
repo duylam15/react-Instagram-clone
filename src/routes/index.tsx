@@ -35,7 +35,7 @@ export const routes: Route[] = [
   { path: '/dashboard', name: 'Dashboard', element: <Dashboard /> },
   { path: '/user', name: 'User', element: <User /> },
   { path: '/post', name: 'Post', element: <Post /> }, // Now using the lazy-loaded Post
-  // { path: '/comment', name: 'Comment', element: <Comment /> },
+  { path: '/comment', name: 'Comment', element: <Comment /> },
   { path: '/conversation', name: 'Conversation', element: <Conversation /> },
   { path: '/message', name: 'Message', element: <Message /> },
   { path: '/friend', name: 'Friend', element: <Friend /> },
@@ -102,7 +102,7 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <Dashboard /> }, // Khi truy cập /admin/dashboard, cũng hiển thị Dashboard
       { path: 'user', element: <User /> },
       { path: 'post', element: <Post /> },
-      // { path: 'comment', element: <Comment /> },
+      { path: 'comment', element: <Comment /> },
       { path: 'conversation', element: <Conversation /> },
       { path: 'message', element: <Message /> },
       { path: 'friend', element: <Friend /> },
