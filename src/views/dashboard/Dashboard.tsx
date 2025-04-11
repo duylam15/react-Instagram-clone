@@ -10,6 +10,11 @@ const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
 
 const { Option } = Select;
+import { Pie } from '@ant-design/plots';
+import { Column } from '@ant-design/plots'; // OK
+import VisibilityPieChart from "./VisibilityPieChart";
+import { User, FileText, Heart, Wifi } from 'lucide-react';
+const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#8dd1e1'];
 
 // Interface cho TopPostResponseDTO
 interface TopPostResponseDTO {
@@ -36,14 +41,18 @@ const Dashboard = () => {
   const [week, setWeek] = useState<number | null>(null);
   const [month, setMonth] = useState<number | null>(null);
   const [year, setYear] = useState<number>(new Date().getFullYear());
-  const [postViewType, setPostViewType] = useState('Chart');
   const [topPosts, setTopPosts] = useState<TopPostResponseDTO[]>([]);
   const [postLoading, setPostLoading] = useState(false);
 
-  // Tạo danh sách năm, tuần, tháng
-  const yearList = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
-  const weekList = Array.from({ length: 53 }, (_, i) => i + 1);
-  const monthList = Array.from({ length: 12 }, (_, i) => i + 1);
+  const [visibilityStats, setVisibilityStats] = useState([]);
+  const [userStats, setUserStats] = useState([]);
+  const [topUserStats, setTopUserStats] = useState([]);
+  const [limit, setLimit] = useState(5);
+
+
+  console.log("visibilityStats", visibilityStats)
+  console.log("userStats", userStats)
+  console.log("topUserStats", topUserStats)
 
   const [dates, setDates] = useState([]);
   const [data, setData] = useState([]);
@@ -82,6 +91,29 @@ const Dashboard = () => {
     }
   };
 
+  useEffect(() => {
+    fetchAllStats();
+  }, [limit]);
+
+  const fetchAllStats = async () => {
+    setLoading(true);
+    try {
+      const [res1, res2, res3] = await Promise.all([
+        axios.get('http://localhost:9999/api/posts/visibility'),
+        axios.get('http://localhost:9999/api/posts/by-user'),
+        axios.get(`http://localhost:9999/api/posts/top-users?limit=${limit}`),
+      ]);
+      setVisibilityStats(res1?.data);
+      setUserStats(res2?.data);
+      setTopUserStats(res3?.data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+    setLoading(false);
+  };
+
+
+
   const columns = [
     {
       title: "ID",
@@ -111,125 +143,34 @@ const Dashboard = () => {
     },
   ];
 
-  // Fetch dữ liệu người dùng mới
-  useEffect(() => {
-    const fetchGrowthData = async () => {
-      setUserLoading(true);
-      try {
-        const endpoint = `http://localhost:9999/api/users/statistics/${userTimeFrame}`;
-        const response = await axios.get(endpoint);
-        if (response.data.statusCode === 204) {
-          setGrowthData([]);
-        } else {
-          const formattedData = response.data.data.map((item: any) => ({
-            time: userTimeFrame === 'daily'
-              ? item.date
-              : userTimeFrame === 'weekly'
-                ? `Tuần ${item.week}, ${item.year}`
-                : userTimeFrame === 'monthly'
-                  ? `${item.month}/${item.year}`
-                  : item.year,
-            value: item.count,
-          }));
-          setGrowthData(formattedData);
-        }
-      } catch (error) {
-        console.error('Error fetching user statistics:', error);
-        setGrowthData([]);
-      } finally {
-        setUserLoading(false);
-      }
-    };
-
-    fetchGrowthData();
-  }, [userTimeFrame]);
-
-  // Fetch dữ liệu top 5 bài đăng
-  useEffect(() => {
-    const fetchTopPosts = async () => {
-      setPostLoading(true);
-      try {
-        let endpoint = `http://localhost:9999/api/posts/statistics/top-interaction-by-timeframe?timeFrame=${postTimeFrame}`;
-        if (postTimeFrame === 'weekly' && week !== null) {
-          endpoint += `&week=${week}&year=${year}`;
-        } else if (postTimeFrame === 'monthly' && month !== null) {
-          endpoint += `&month=${month}&year=${year}`;
-        } else if (postTimeFrame === 'yearly') {
-          endpoint += `&year=${year}`;
-        }
-        const response = await axios.get(endpoint);
-        if (response.data.statusCode === 204) {
-          setTopPosts([]);
-        } else {
-          setTopPosts(response.data.data.slice(0, 5)); // Chỉ lấy top 3
-        }
-      } catch (error) {
-        console.error('Error fetching top posts:', error);
-        setTopPosts([]);
-      } finally {
-        setPostLoading(false);
-      }
-    };
-
-    if (
-      (postTimeFrame === 'weekly' && week !== null) ||
-      (postTimeFrame === 'monthly' && month !== null) ||
-      postTimeFrame === 'yearly'
-    ) {
-      fetchTopPosts();
-    } else {
-      setTopPosts([]);
-    }
-  }, [postTimeFrame, week, month, year]);
-
-  // Biểu đồ đường cho thống kê người dùng mới
-  const growthRateChart = (
-    <CChartLine
-      data={{
-        labels: growthData.map(item => item.time),
-        datasets: [
-          {
-            label: 'Số lượng người dùng mới',
-            data: growthData.map(item => item.value),
-            borderColor: 'hsl(217, 100%, 50%)',
-            fill: true,
-            backgroundColor: 'rgba(0, 123, 255, 0.2)',
-          },
-        ],
-      }}
-      options={{
-        plugins: {
-          legend: { display: true },
-        },
-        scales: {
-          x: { title: { display: true, text: 'Thời gian' } },
-          y: { title: { display: true, text: 'Số lượng' } },
-        },
-      }}
-    />
-  );
-
   const [postDateRange, setPostDateRange] = useState<any>([]);
   const [postList, setPostList] = useState([]);
   const [totalPostCount, setTotalPostCount] = useState(0);
 
-  const userFilters = useMemo(() => {
-    const labels = Array.from(
-      new Set(
-        data.map((item: any) => {
-          const fullName = `${item.user?.lastName || ''} ${item.user?.firstName || ''}`.trim();
-          const userName = item.user?.userName || '';
-          return fullName ? `${fullName} (${userName})` : userName;
-        })
-      )
-    );
+  console.log("postListpostListpostList", postList)
 
-    return labels.map((label) => ({
-      text: label,
-      value: label,
-    }));
-  }, [data]);
+  const [activeUserCount, setActiveUserCount] = useState()
+  const [userCount, setUserCount] = useState()
+  useEffect(() => {
+    const fetchActiveUsers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:9999/api/api/users/getdsusers?page=0&size=1000", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
+        const allUsers = res?.data?.data;
+        setUserCount(allUsers?.length)
+        const activeUsers = allUsers.filter((user: any) => user?.isOnline === true);
+        setActiveUserCount(activeUsers?.length);
+      } catch (error) {
+        console.error("Lỗi khi lấy người dùng đang hoạt động:", error);
+      }
+    };
+    fetchActiveUsers();
+  }, []);
   const handlePostStats = async () => {
     if (!postDateRange || postDateRange.length !== 2) {
       message.error('Vui lòng chọn khoảng thời gian');
@@ -258,6 +199,40 @@ const Dashboard = () => {
       setPostLoading(false);
     }
   };
+
+  const [interactionCount, setInteractionCount] = useState(0);
+  const [totalPosts, setTotalPosts] = useState(0);
+
+  useEffect(() => {
+    const fetchTotalInteractionsAndPosts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:9999/api/posts?page=0&size=1000", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const posts = res?.data?.data?.data; // Nested data
+        console.log("resresresxx", posts);
+
+        // Tổng số bài viết
+        setTotalPosts(posts.length);
+
+        // Tổng tương tác
+        const totalInteractions = posts.reduce((sum: number, post: any) => {
+          return sum + (post?.numberEmotion || 0) + (post?.numberComment || 0) + (post?.numberShare || 0);
+        }, 0);
+
+        setInteractionCount(totalInteractions);
+      } catch (error) {
+        console.error("Lỗi khi lấy số lượng tương tác và bài viết:", error);
+      }
+    };
+
+    fetchTotalInteractionsAndPosts();
+  }, []);
+
 
   console.log("postListpostList", postList)
 
@@ -327,8 +302,33 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <h1>Trang Thống Kê</h1>
-
+      <h1 className="flex items-start">Trang Thống Kê</h1>
+      <div className='flex justify-between items-center w-full mb-10 text-black'>
+        <Card className='card blue w-[220px] text-black' title='Số lượng người dùng' bordered>
+          <div className='card-wrap'>
+            <div>{userCount}</div>
+            <User />
+          </div>
+        </Card>
+        <Card className='card orange  w-[220px] text-black' title='Số lượng bài viết' bordered>
+          <div className='card-wrap'>
+            <div>{totalPosts}</div>
+            <FileText />
+          </div>
+        </Card>
+        <Card className='card pink  w-[220px] text-black' title='Số lượng tương tác' bordered>
+          <div className='card-wrap'>
+            <div>{interactionCount}</div>
+            <Heart />
+          </div>
+        </Card>
+        <Card className='card green  w-[220px] text-black' title='Số lượng người online' bordered>
+          <div className='card-wrap'>
+            <div> {activeUserCount}</div>
+            <Wifi />
+          </div>
+        </Card>
+      </div>
       <div style={{ padding: 24 }} className="bg-[#f0f0f0] mb-10 rounded-xl">
         <Title level={3}>Thống kê người dùng mới</Title>
         <Space style={{ marginBottom: 16 }}>
@@ -382,6 +382,71 @@ const Dashboard = () => {
           }}
         />
       </div>
+      <div className=" ">
+        <VisibilityPieChart data={visibilityStats} />
+      </div>
+
+      <Card
+        title="Bảng xếp hạng người đăng nhiều bài nhất"
+        style={{ marginTop: 24 }}
+      >
+        <Table
+          dataSource={topUserStats.map(([username, count]: any, index) => ({
+            key: username,
+            rank: index + 1,
+            username,
+            postCount: count,
+          }))}
+          columns={[
+            {
+              title: 'Hạng',
+              dataIndex: 'rank',
+              key: 'rank',
+              render: (rank: number) => {
+                let color = '';
+                let icon = '';
+
+                switch (rank) {
+                  case 1:
+                    color = '#FFD700'; // vàng
+                    icon = '🥇';
+                    break;
+                  case 2:
+                    color = '#C0C0C0'; // bạc
+                    icon = '🥈';
+                    break;
+                  case 3:
+                    color = '#CD7F32'; // đồng
+                    icon = '🥉';
+                    break;
+                  default:
+                    color = '#888'; // xám cho các hạng còn lại
+                    break;
+                }
+
+                return (
+                  <span style={{ color, fontWeight: 'bold' }}>
+                    {icon} #{rank}
+                  </span>
+                );
+              },
+            },
+            {
+              title: 'Tên người dùng',
+              dataIndex: 'username',
+              key: 'username',
+            },
+            {
+              title: 'Số bài đăng',
+              dataIndex: 'postCount',
+              key: 'postCount',
+            },
+          ]}
+          pagination={false}
+          bordered
+        />
+      </Card>
+
     </div>
   );
 };
