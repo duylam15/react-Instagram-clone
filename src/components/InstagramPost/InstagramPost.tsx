@@ -16,6 +16,7 @@ import { useRefresh } from "../../contexts/RefreshContext";
 import "./InstagramPost.css"
 import { getListFriends } from "../../services/friend/friend";
 import { useNavigate } from "react-router-dom";
+import { CustomNextArrow, CustomPrevArrow } from "./handle";
 
 type PostMedia = {
 	mediaId: number;
@@ -43,25 +44,61 @@ interface InstagramPostProps {
 }
 
 const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
+	// 📌 State quản lý UI chung
 	const [liked, setLiked] = useState(false);
 	const [saved, setSaved] = useState(false);
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [isOpen, setIsOpen] = useState(false);
-	const [isOpenPut, setIsOpenPut] = useState(false);
-	const { t } = useTranslation();
-	const [isModalOpenPut, setIsModalOpenPut] = useState(false);
+	const [visibility, setVisibility] = useState<any>(post?.visibility);
 	const [images, setImages] = useState<any>();
 	const [comment, setComment] = useState("");
-	const [showPicker, setShowPicker] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const [comments, setComments] = useState<any[]>(post?.comments || []);
-	const commentInputRef = useRef<HTMLInputElement>(null);
-	const [parentCommentId, setParentCommentId] = useState<number | null>(null);
+
+	// 📌 State quản lý thông tin người dùng
 	const [username, setUsername] = useState("");
 	const [user, setUser] = useState<any>();
-	const { refreshTrigger, refresh } = useRefresh(); // Lấy giá trị từ context
+	const [listFriends, setListFriends] = useState<[]>(); // dùng để check isFriend
+
+	// 📌 State liên quan đến modal, picker, popup
+	const [isOpen, setIsOpen] = useState(false);
+	const [isOpenPut, setIsOpenPut] = useState(false);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isModalOpenPut, setIsModalOpenPut] = useState(false);
 	const [showOptions, setShowOptions] = useState(false);
-	const [visibility, setVisibility] = useState<any>(post?.visibility);
+	const [showPicker, setShowPicker] = useState(false);
+
+	// 📌 State comment dùng ở nhiều nơi
+	const [comments, setComments] = useState<any[]>(post?.comments || []);
+	const [parentCommentId, setParentCommentId] = useState<number | null>(null);
+
+	// 📌 Ref dùng nhiều nơi
+	const commentInputRef = useRef<HTMLInputElement>(null);
+	const menuRef = useRef<HTMLDivElement>(null);
+
+	// 📌 Hooks & biến dùng chung
+	const { t } = useTranslation();
+	const { refreshTrigger, refresh } = useRefresh();
+	const navigate = useNavigate();
+	const postId = post?.postId;
+	const token = localStorage.getItem('token');
+	const userId = localStorage.getItem('userId');
+	const isFriend = listFriends?.some((friend: any) => friend?.user_id?.toString() === post?.userId?.toString());
+
+	// Lấy danh sách bạn bè khi component mount
+	useEffect(() => {
+		const fetchListFriends = async () => {
+			const token = localStorage.getItem('token');
+			const userId: any = localStorage.getItem('userId');
+			try {
+				const response = await getListFriends({ idProfile: userId as number }, token);
+				console.log("danh sach ban be")
+				console.log(response)
+				setListFriends(response?.data?.data)
+			} catch (error) {
+			}
+		};
+		fetchListFriends()
+	}, [])
+
+	// Đóng menu tuỳ chọn khi click ra ngoài vùng menu
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -74,6 +111,8 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
 	}, []);
+
+	// Set lại ảnh và nội dung khi post thay đổi
 	useEffect(() => {
 		if (post?.postMedia) {
 			const mediaUrls = post.postMedia.map(media => media);
@@ -84,24 +123,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	}, [post]);  // Chạy khi `post` thay đổi
 
-	console.log("pxxxosts", post)
-
-	const handleDelete = async (postId: number) => {
-		try {
-			const result = await deletePostService(postId);
-			alert(result.message);
-			setIsOpen(false);
-			onRefresh();
-		} catch (error: any) {
-			alert(error.message || "Lỗi khi xóa bài viết!");
-		}
-	};
-
-	const postId = post?.postId
-	const token = localStorage.getItem('token');
-	const userId = localStorage.getItem('userId');
-
-	const menuRef = useRef<HTMLDivElement>(null);
+	// Đóng popup xác nhận xoá khi click ra ngoài
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -115,12 +137,27 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		};
 	}, []);
 
-	const handleSelect = (value: "PUBLIC" | "PRIVATE") => {
-		setVisibility(value);
-		setShowOptions(false);
-	};
+	// Lấy thông tin người đăng bài khi post.userId hoặc refreshTrigger thay đổi
+	useEffect(() => {
+		const fetchUserProfile = async () => {
+			const token = localStorage.getItem('token');
+			try {
+				const response = await axios.get(`http://localhost:9999/api/api/users/${post?.userId}`, {
+					headers: {
+						Authorization: `Bearer ${token}`, // Thêm token vào header
+					},
+				});
+				setUsername(`${response?.data?.data?.firstName} ${response?.data?.data?.lastName}`);
+				setUser(response?.data?.data);
+			} catch (error) {
+				console.error("Lỗi khi lấy thông tin profile:", error);
+				setUsername("User not found");
+			}
+		};
+		fetchUserProfile();
+	}, [refreshTrigger, post?.userId]);
 
-
+	// ❤️ Xử lý Like / Unlike bài viết
 	const handleLikeClick = async () => {
 		const token = localStorage.getItem('token');
 		const postId = post?.postId;
@@ -152,64 +189,12 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	};
 
-	// Lấy thông tin user
-	useEffect(() => {
-		const fetchUserProfile = async () => {
-			const token = localStorage.getItem('token');
-			try {
-				const response = await axios.get(`http://localhost:9999/api/api/users/${post?.userId}`, {
-					headers: {
-						Authorization: `Bearer ${token}`, // Thêm token vào header
-					},
-				});
-				setUsername(`${response?.data?.data?.firstName} ${response?.data?.data?.lastName}`);
-				setUser(response?.data?.data);
-			} catch (error) {
-				console.error("Lỗi khi lấy thông tin profile:", error);
-				setUsername("User not found");
-			}
-		};
-		fetchUserProfile();
-	}, [refreshTrigger, post?.userId]);
-
-	console.log("usernameusernamexx", user?.firstName)
-
-	// Xóa ảnh
-	const handleRemoveImage = async (img: any) => {
-		if (img?.postMediaId) {
-			// Ảnh đã được upload lên server → gọi API xoá
-			try {
-				const token = localStorage.getItem('token');
-				const response = await axios.delete(`http://localhost:9999/api/post-medias/${img.postMediaId}`, {
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				});
-				onRefresh();
-				console.log(`✅ Đã xoá ảnh server ID: ${img.postMediaId}`, response.data);
-			} catch (error) {
-				console.error("❌ Lỗi khi xoá ảnh từ server:", error);
-				alert("Xoá ảnh thất bại. Vui lòng thử lại.");
-			}
-		} else {
-			// Ảnh local (chưa upload) → xoá khỏi state
-			setImages((prev: any[]) => prev.filter((i) => i !== img));
-			console.log("🗑️ Đã xoá ảnh local:", img);
-		}
+	// 🔚 Đóng modal chỉnh sửa bài viết
+	const handleClose = () => {
+		setIsOpenPut(false)
 	};
 
-
-	// Thêm ảnh mới
-	const handleAddImage = (file: File) => {
-		const imageUrl = URL.createObjectURL(file);
-		const cleanUrl = imageUrl.replace("blob:", "");
-		console.log("imageUrlimageUrl", cleanUrl); // Không còn 'blob:' ở đầu nữa
-		setImages((prev: any) => [...prev, imageUrl]);
-	};
-
-
-	console.log("imagesimagesxx", images)
-
+	// 📝 Xử lý cập nhật bài viết
 	const handlePostUpdate = async () => {
 		// Check nếu thiếu thông tin thì return sớm
 		if (!post?.postId || !comment?.trim() || images.length === 0 || !visibility) {
@@ -236,17 +221,57 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	};
 
-
-	const handleEmojiSelect = (emoji: { native: string }) => {
-		setComment((prev) => prev + emoji.native); // Thêm emoji vào nội dung input
-		setShowPicker(false); // Ẩn picker sau khi chọn
+	// 📤 Thêm ảnh mới từ local vào bài viết
+	const handleAddImage = (file: File) => {
+		const imageUrl = URL.createObjectURL(file);
+		const cleanUrl = imageUrl.replace("blob:", "");
+		console.log("imageUrlimageUrl", cleanUrl); // Không còn 'blob:' ở đầu nữa
+		setImages((prev: any) => [...prev, imageUrl]);
 	};
 
-	const handleClose = () => {
-		setIsOpenPut(false)
+	// 🖼️ Xử lý xoá ảnh khỏi bài viết (có thể đã upload hoặc chỉ là ảnh local)
+	const handleRemoveImage = async (img: any) => {
+		if (img?.postMediaId) {
+			// Ảnh đã được upload lên server → gọi API xoá
+			try {
+				const token = localStorage.getItem('token');
+				const response = await axios.delete(`http://localhost:9999/api/post-medias/${img.postMediaId}`, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+				onRefresh();
+				console.log(`✅ Đã xoá ảnh server ID: ${img.postMediaId}`, response.data);
+			} catch (error) {
+				console.error("❌ Lỗi khi xoá ảnh từ server:", error);
+				alert("Xoá ảnh thất bại. Vui lòng thử lại.");
+			}
+		} else {
+			// Ảnh local (chưa upload) → xoá khỏi state
+			setImages((prev: any[]) => prev.filter((i) => i !== img));
+			console.log("🗑️ Đã xoá ảnh local:", img);
+		}
 	};
 
-	// Hàm xử lý comment mới
+	// 👁️ Chọn chế độ hiển thị bài viết (PUBLIC / PRIVATE)
+	const handleSelect = (value: "PUBLIC" | "PRIVATE") => {
+		setVisibility(value);
+		setShowOptions(false);
+	};
+
+	// 🗑️ Xử lý xoá bài viết
+	const handleDelete = async (postId: number) => {
+		try {
+			const result = await deletePostService(postId);
+			alert(result.message);
+			setIsOpen(false);
+			onRefresh();
+		} catch (error: any) {
+			alert(error.message || "Lỗi khi xóa bài viết!");
+		}
+	};
+
+	// 💬 Gửi bình luận mới (cả comment chính và reply)
 	const handleNewComment = async (newComment: any) => {
 		if (parentCommentId) {
 			try {
@@ -308,7 +333,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	};
 
-
+	// 🧵 Click "Trả lời" → focus input và set trạng thái reply
 	const handleReplyClick = (commentId: number) => {
 		setParentCommentId(commentId);
 		if (commentInputRef.current) {
@@ -316,28 +341,11 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	};
 
-	const [listFriends, setListFriends] = useState<[]>()
-	useEffect(() => {
-		const fetchListFriends = async () => {
-			const token = localStorage.getItem('token');
-			const userId: any = localStorage.getItem('userId');
-			try {
-				const response = await getListFriends({ idProfile: userId as number }, token);
-				console.log("danh sach ban be")
-				console.log(response)
-				setListFriends(response?.data?.data)
-			} catch (error) {
-			}
-		};
-		fetchListFriends()
-	}, [])
-
-	const navigate = useNavigate()
-
-	console.log("listFriendslistFriendslistFriends", listFriends)
-	const isFriend = listFriends?.some((friend: any) => friend?.user_id?.toString() === post?.userId?.toString());
-	console.log("isFriend", isFriend)
-	console.log("isFriend", user)
+	// 😄 Xử lý khi chọn emoji từ emoji picker
+	const handleEmojiSelect = (emoji: { native: string }) => {
+		setComment((prev) => prev + emoji.native); // Thêm emoji vào nội dung input
+		setShowPicker(false); // Ẩn picker sau khi chọn
+	};
 
 	return (
 		<div className={`max-w-[470px] pt-0 border-b border-gray-600`}>
@@ -575,7 +583,6 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 
 			</div >
 			}
-
 			{/* Post Image or Video */}
 			<Carousel infinite={false} arrows className="ant-custom">
 				{post?.postMedia.map((postMedia: any) => {
@@ -598,6 +605,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					);
 				})}
 			</Carousel>
+
 			{/* Actions */}
 			<div className="flex justify-between pt-2">
 				<div className="flex items-center gap-4">
@@ -625,7 +633,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					parentCommentId={parentCommentId}
 				/>
 			</div>
-
+			
 			{/* Modal hiển thị hình ảnh + comments */}
 			<Modal open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={"70%"}
 				centered className="model-custom" height={"90%"}>
@@ -660,7 +668,8 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 
 								<div className="relative inline-block" style={{
 									color: "var(--text-color)",
-									background: " var(--bg-color)"	}}>
+									background: " var(--bg-color)"
+								}}>
 									<div ref={menuRef}>
 										<div className="relative w-[20px] h-[20px]" onClick={() => setIsOpen(!isOpen)} >
 											<svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg" stroke="#c2c2c2"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5 10C6.10457 10 7 10.8954 7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10Z" fill="#c2c2c2"></path> <path d="M12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10Z" fill="#c2c2c2"></path> <path d="M21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12Z" fill="#c2c2c2"></path> </g></svg>
@@ -749,20 +758,3 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 export default InstagramPost;
 
 
-const CustomPrevArrow = ({ onClick }: any) => (
-	<div
-		className="absolute top-1/2 -left-8 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
-		onClick={onClick}
-	>
-		<LeftOutlined onPointerEnterCapture={() => { }} onPointerLeaveCapture={() => { }} />
-	</div>
-);
-
-const CustomNextArrow = ({ onClick }: any) => (
-	<div
-		className="absolute top-1/2 -right-3 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
-		onClick={onClick}
-	>
-		<RightOutlined onPointerEnterCapture={() => { }} onPointerLeaveCapture={() => { }} />
-	</div>
-);

@@ -6,6 +6,7 @@ import { getListUserNoPage } from '../../services/user/user';
 import { getListFriends } from '../../services/friend/friend';
 import axios from 'axios';
 import OnlineBox from '../isOnline/isOnline';
+import { useNavigate } from 'react-router-dom';
 export default function SuggestFriend() {
 	const { t } = useTranslation();
 	const [userName, setUserName] = useState<string | null>("Name");
@@ -129,13 +130,26 @@ export default function SuggestFriend() {
 		fetchSuggestedFriends();
 	}, [listFriends, listUser, User]);
 
+	const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+	const handleLogoutClick = () => {
+		setIsLogoutModalOpen(true); // Mở modal khi click vào "switch"
+	};
+
+	const navigate = useNavigate();
+
+
 	return (
 		<div className='w-80 mt-6'>
 			<div className="flex items-center justify-between gap-20">
 				<Avatar height='h-12' width='w-12' userName={userName} active={userFirstName} avatar={User?.urlAvatar} />
-				<div className="font-medium text-[14px] leading-[100%] text-blue-400">
+				<div
+					className="font-medium text-[14px] leading-[100%] text-blue-400 cursor-pointer"
+					onClick={handleLogoutClick}
+				>
 					{t('switch')}
 				</div>
+
 			</div>
 
 			<div className='flex items-center justify-between mt-7'>
@@ -146,14 +160,49 @@ export default function SuggestFriend() {
 			<div className="cursor-pointer flex flex-col gap-4 mt-4 justify-between w-full">
 				{suggestedFriends.map((friend: any) => (
 					<div key={friend?.userId} className="flex items-center justify-between gap-20">
-						<Avatar height='h-12' width='w-12' userName={friend?.userName} avatar={friend?.urlAvatar} />
+						<Avatar height='h-12' friend={friend} width='w-12' userName={friend?.userName} avatar={friend?.urlAvatar} />
 						<div className="rounded-md font-medium text-[14px] leading-[100%] text-blue-400">
-							{t('follow')}
+
 						</div>
 					</div>
 				))}
 			</div>
-			<OnlineBox/>
+			<OnlineBox />
+			{isLogoutModalOpen && (
+				<div
+					onClick={() => setIsLogoutModalOpen(false)}
+					className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-5000">
+					<div className="p-6 rounded-lg shadow-xl"
+						style={{
+							background: 'var(--bg-color)',
+						}} >
+						<div className="text-[20px] font-bold mb-4">Bạn có chắc muốn đăng xuất?</div>
+						<div className="flex justify-end space-x-4"
+							style={{
+								background: 'var(--bg-color)',
+								color: 'var(--text-color)',
+							}}  >
+							<button
+								onClick={() => setIsLogoutModalOpen(false)}
+								className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+							>
+								Hủy
+							</button>
+							<button
+								onClick={() => {
+									localStorage.removeItem('userId');
+									localStorage.removeItem('token');
+									navigate('/login');
+								}}
+								className="px-4 py-2 rounded bg-red-500 hover:bg-red-600"
+							>
+								Đăng xuất
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
 		</div>
 	);
 }
