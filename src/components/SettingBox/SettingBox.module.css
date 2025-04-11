@@ -11,13 +11,39 @@
 }
 
 .box {
-    width: 240px;
-    padding: 20px;
-    position: absolute;
-    bottom: 60px;
-    left: 10px;
-    background: var(--bg-setting-box);
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-    text-align: center;
+  width: 240px;
+  padding: 16px;
+  position: absolute;
+  bottom: 60px;
+  left: 10px;
+  background: var(--bg-setting-box);
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text-color, #333);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.box div,
+.box select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+select option {
+  background: var(--bg-color);
+
+}
+
+.box div:hover,
+.box select:hover {
+  background: rgba(0, 0, 0, 0.05);
 }

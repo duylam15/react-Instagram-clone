@@ -35,7 +35,6 @@ type UserType = {
   firstName: string;
   lastName: string;
   email: string;
-  phoneNumber: string;
   isOnline: boolean;
   isActive: boolean;
 };
@@ -76,7 +75,6 @@ const User = () => {
     firstName: "",
     lastName: "",
     email: "",
-    phoneNumber: "",
     isOnline: false,
     isActive: false
   });
@@ -173,7 +171,6 @@ const User = () => {
       firstName: "",
       lastName: "",
       email: "",
-      phoneNumber: "",
       isOnline: false,
       isActive: false,
     });
@@ -186,16 +183,22 @@ const User = () => {
     if (editedUser) {
       const updateInfo = async () => {
         try {
-          const validate = await validateUser(editedUser);
-          console.log(validate)
-          console.log(editedUser)
-          if(validate.status == 400) {
-            showAlert("Có trường không hợp lê", "warning");
-            setErrors(validate.response.data)
-            return ;
-          }
+          // const validate = await validateUser(editedUser);
+          // console.log(validate)
+          // console.log(editedUser)
+          // if (validate.status == 400) {
+          //   showAlert("Có trường không hợp lê", "warning");
+          //   setErrors(validate.response.data)
+          //   return;
+          // }
           const response = await updateUser(editedUser);
-          
+          console.log(response)
+          if (response.status == 400) {
+            showAlert("Có trường không hợp lê", "warning");
+            setErrors(response.response.data.data)
+            return;
+          }
+
           setUsers((prevUsers) =>
             prevUsers.map((user) =>
               user.userId === editedUser.userId ? editedUser : user
@@ -216,22 +219,28 @@ const User = () => {
   const handleSaveNewUser = () => {
     if (newUser.userName && newUser.email) {
 
-      let { userId, ...data } = newUser;
+      let { userId, isOnline, isActive, ...data } = newUser;
       console.log(data)
       const createUser = async () => {
         try {
 
-          const validate = await validateUser(editedUser);
-          console.log(validate)
+          // const validate = await validateUser(data);
+          // console.log(validate)
 
-          if(validate.status == 400) {
-            showAlert("Có trường không hợp lê", "warning");
-            setErrors(validate.response.data)
-            return ;
-          }
+          // if (validate.status == 400) {
+          //   showAlert("Có trường không hợp lê", "warning");
+          //   setErrors(validate.response.data)
+          //   return;
+          // }
 
           const response = await addUser(data);
           console.log(response);
+
+          if (response.status == 400) {
+            showAlert("Có trường không hợp lê", "warning");
+            setErrors(response.response.data.data)
+            return;
+          }
 
           setUsers((prevUsers) => [...prevUsers, newUser]);
           setVisible(false);
@@ -267,6 +276,15 @@ const User = () => {
     ));
   };
 
+  const handleChangeRole = (userId: number) => {
+    console.log(userId)
+
+    //  khi nhấn vô role bất kì của user thì  chuyển đổi giữa admin  và user viết thêm code để change role theo id user 
+    // nhấn crtl + bấm chuột trái vào tên hàm  để đến nơi  hàm được gọi , sửa lại  code ở đó
+
+    setLoading(!loading);
+  }
+
   return (
     <>
       {alert && <AlertMessage message={alert.message} severity={alert.severity} />}
@@ -296,9 +314,9 @@ const User = () => {
                     <CTableHeaderCell>Họ</CTableHeaderCell>
                     <CTableHeaderCell>Tên</CTableHeaderCell>
                     <CTableHeaderCell>Email</CTableHeaderCell>
-                    <CTableHeaderCell>Số Điện Thoại</CTableHeaderCell>
                     <CTableHeaderCell>Trạng Thái</CTableHeaderCell>
                     <CTableHeaderCell>Khoá</CTableHeaderCell>
+                    <CTableHeaderCell>Role</CTableHeaderCell>
                     <CTableHeaderCell>Hành Động</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
@@ -309,7 +327,6 @@ const User = () => {
                       <CTableDataCell>{user.firstName}</CTableDataCell>
                       <CTableDataCell>{user.lastName}</CTableDataCell>
                       <CTableDataCell>{user.email}</CTableDataCell>
-                      <CTableDataCell>{user.phoneNumber}</CTableDataCell>
                       <CTableDataCell>
                         <CBadge color={user.isOnline ? "success" : "secondary"}>
                           {user.isOnline ? "Online" : "Offline"}
@@ -321,6 +338,13 @@ const User = () => {
                           onChange={() => handleToggleActive(user.userId, user.isActive)}
                         />
                       </CTableDataCell>
+                      <CTableDataCell>
+                        <span
+                          style={{ cursor: "pointer", color: "blue" }}
+                          onClick={() => handleChangeRole(user.userId)}
+                        >
+                          User{/* đang để cố định user , lấy danh sách  role rồi load lại thành động ,  đã có sẵn user.userId */}
+                        </span></CTableDataCell>
                       <CTableDataCell>
                         <CButton color="primary" size="sm" onClick={() => handleView(user)} className="me-2">
                           Xem
@@ -376,9 +400,9 @@ const User = () => {
                 <p><strong>Họ:</strong> {selectedUser.firstName}</p>
                 <p><strong>Tên:</strong> {selectedUser.lastName}</p>
                 <p><strong>Email:</strong> {selectedUser.email}</p>
-                <p><strong>Số điện thoại:</strong> {selectedUser.phoneNumber}</p>
                 <p><strong>Trạng thái:</strong> {selectedUser.isOnline ? "Online" : "Offline"}</p>
                 <p><strong>Khoá:</strong> {selectedUser.isActive ? "Hoạt động" : "Bị khoá"}</p>
+                <p><strong>Role:</strong> User</p>
               </div>
             ) : (
               // Form chỉnh sửa hoặc thêm người dùng, hiển thị thông báo lỗi dưới từng trường nếu có

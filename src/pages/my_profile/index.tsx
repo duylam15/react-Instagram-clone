@@ -19,14 +19,54 @@ import { FaHeart, FaRegHeart, FaComment, FaPaperPlane, FaBookmark, FaRegBookmark
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { CustomNextArrow, CustomPrevArrow } from "../../components/InstagramPost/handle";
 
 export default function MyProfile() {
-  const [idDangNhap, setIdDangNhap] = useState(Number(localStorage.getItem("userId")))
-
-
+  // Khai báo các hook context/router
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const location = useLocation();
-  const [idProfileDangXem, setIdProfileDangXem] = useState(idDangNhap);
+  const { id: urlId } = useParams();
+  const iconColor = theme === "dark" ? "white" : "black";
+  const { refreshTrigger, refresh } = useRefresh();
+  const menuRef = useRef<HTMLDivElement>(null);
 
+  // Xử lý ID đăng nhập / profile
+  const userId = localStorage.getItem("userId");
+  const idDangNhap = Number(userId);
+  const [idProfileDangXem, setIdProfileDangXem] = useState(idDangNhap);
+  const id = urlId || userId;
+
+  // Thông tin user
+  const [username, setUsername] = useState("");
+  const [user, setUser] = useState<any>();
+  const [avatar, setAvatar] = useState("/images/default-avatar.jpg");
+
+  // Modal, popup, image state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPopOpen, setIsPopOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [images, setImages] = useState<any>();
+
+  // Bài viết & chỉnh sửa
+  const [posts, setPosts] = useState<string[]>([]);
+  const [postCount, setPostCount] = useState(0);
+  const [postClick, setPostClick] = useState<any>();
+  const [comment, setComment] = useState(postClick?.content);
+  const [visibility, setVisibility] = useState<any>(postClick?.visibility);
+  const [loading, setLoading] = useState(false);
+
+  // Hiển thị và chọn
+  const [showEditOption, setShowEditOption] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenPut, setIsOpenPut] = useState(false);
+  const [isModalOpenPut, setIsModalOpenPut] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+
+  // Xác định idProfileDangXem từ URL
   useEffect(() => {
     const segments = location.pathname.split('/').filter(Boolean);
     const lastSegment: any = segments.pop(); // lấy phần cuối cùng
@@ -34,30 +74,7 @@ export default function MyProfile() {
     setIdProfileDangXem(result);
   }, [location]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPopOpen, setIsPopOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
-
-  const [username, setUsername] = useState("");
-  const [user, setUser] = useState<any>();
-  const [avatar, setAvatar] = useState("/images/default-avatar.jpg");
-
-  const [showEditOption, setShowEditOption] = useState(false);
-  const navigate = useNavigate();
-
-  const { id: urlId } = useParams();
-  const userId = localStorage.getItem('userId');
-
-  const id = urlId || userId;
-
-  const { theme } = useTheme();
-  const { t } = useTranslation();
-  const iconColor = theme === "dark" ? "white" : "black";
-  const [postCount, setPostCount] = useState(0); // thêm dòng này
-
-
-  // Lấy thông tin user
+  // Lấy thông tin người dùng từ API
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem('token');
@@ -81,85 +98,8 @@ export default function MyProfile() {
     };
     fetchUserProfile();
   }, [id]);
-  const [images, setImages] = useState<any>();
 
-  console.log("useruseruser", user)
-
-  const [postClick, setPostClick] = useState<any>()
-  // Mở/đóng modal hiển thị ảnh
-  const handleImageClick = (post: any) => {
-    setSelectedImages(post.postMedia.map((media: any) => media.mediaUrl)); // Lấy danh sách ảnh của bài post
-    setPostClick(post)
-    setImages(post?.postMedia)
-    setComment(post?.content)
-    setVisibility(post?.visibility)
-    setIsModalOpen(true);
-  };
-
-  console.log("imagesimagesimages", images)
-
-  console.log("postClickpostClick", postClick)
-  // Mở popup thay đổi avatar
-  const handleOpenPop = () => setIsPopOpen(true);
-  const handleClosePop = () => setIsPopOpen(false);
-
-  // Xử lý tải ảnh mới
-  const handleUpload = async (options: any) => {
-    const { file, onSuccess, onError } = options;
-    const formData = new FormData();
-    formData.append("avatar", file);
-
-    try {
-      const response = await axios.put(`http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-
-      setAvatar(response.data.data.urlAvatar);
-      handleClosePop();
-      onSuccess("Upload thành công");
-    } catch (error) {
-      console.error("Lỗi khi cập nhật avatar:", error);
-      onError(error);
-    }
-  };
-
-
-  // Gỡ ảnh hiện tại 
-  const handleRemoveAvatar = async () => {
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    try {
-      const response = await axios.delete(
-        `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Thêm token vào header
-        },
-      }
-      );
-
-
-      // Cập nhật avatar về mặc định
-      setAvatar("/images/default-avatar.jpg");
-
-      // Đóng popup nếu có
-      handleClosePop();
-    } catch (error: any) {
-      console.error("Lỗi khi gỡ avatar:", error);
-    }
-  };
-
-
-  //nhấn vào icon '...'
-  const handleIconClick = () => {
-    setShowEditOption(!showEditOption); // Hiển thị hoặc ẩn tùy chọn chỉnh sửa
-  };
-
-  const handleEditProfileClick = () => {
-    navigate('/edit-profile'); // Điều hướng đến trang chỉnh sửa thông tin cá nhân
-  };
-  const [posts, setPosts] = useState<string[]>([]);
-  const { refreshTrigger, refresh } = useRefresh(); // Lấy giá trị từ context
-
+  // Lấy danh sách bài viết của người dùng
   useEffect(() => {
     const fetchUserPosts = async () => {
       const token = localStorage.getItem('token');
@@ -186,11 +126,7 @@ export default function MyProfile() {
     fetchUserPosts();
   }, [refreshTrigger]);
 
-
-  console.log("postspostsxxxxxposts", posts)
-
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  // Đóng menu khi click ra ngoài (menuRef)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -204,7 +140,69 @@ export default function MyProfile() {
     };
   }, []);
 
+  // Đóng tùy chọn chỉnh sửa khi click ra ngoài (menuRef)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowOptions(false);
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Mở & đóng popup thay đổi avatar
+  const handleOpenPop = () => setIsPopOpen(true);
+  const handleClosePop = () => setIsPopOpen(false);
+
+  // Xử lý khi gỡ ảnh đại diện
+  const handleRemoveAvatar = async () => {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    try {
+      const response = await axios.delete(
+        `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Thêm token vào header
+        },
+      }
+      );
+
+
+      // Cập nhật avatar về mặc định
+      setAvatar("/images/default-avatar.jpg");
+
+      // Đóng popup nếu có
+      handleClosePop();
+    } catch (error: any) {
+      console.error("Lỗi khi gỡ avatar:", error);
+    }
+  };
+
+  // Xử lý khi click vào icon “...” (menu tùy chọn)
+  const handleIconClick = () => {
+    setShowEditOption(!showEditOption); // Hiển thị hoặc ẩn tùy chọn chỉnh sửa
+  };
+
+  // Điều hướng đến trang chỉnh sửa hồ sơ
+  const handleEditProfileClick = () => {
+    navigate('/edit-profile'); // Điều hướng đến trang chỉnh sửa thông tin cá nhân
+  };
+
+  // Xử lý khi click vào một bài viết (xem chi tiết)
+  const handleImageClick = (post: any) => {
+    setSelectedImages(post.postMedia.map((media: any) => media.mediaUrl)); // Lấy danh sách ảnh của bài post
+    setPostClick(post)
+    setImages(post?.postMedia)
+    setComment(post?.content)
+    setVisibility(post?.visibility)
+    setIsModalOpen(true);
+  };
+
+  // Xoá bài viết
   const handleDelete = async (postId: number) => {
     console.log("postIdxxx", postId)
     try {
@@ -217,17 +215,12 @@ export default function MyProfile() {
     }
   };
 
-  const [isOpenPut, setIsOpenPut] = useState(false);
-  console.log("isOpenPutisOpenPut", isOpenPut)
-
+  // Đóng popup cập nhật bài viết
   const handleClose = () => {
     setIsOpenPut(false)
   };
 
-  const [loading, setLoading] = useState(false);
-  const [comment, setComment] = useState(postClick?.content);
-  const [visibility, setVisibility] = useState<any>(postClick?.visibility);
-
+  // Cập nhật bài viết
   const handlePostUpdate = async () => {
     // Check nếu thiếu thông tin thì return sớm
     if (!comment?.trim() || images.length === 0 || !visibility) {
@@ -254,18 +247,19 @@ export default function MyProfile() {
     }
   };
 
-  const [isModalOpenPut, setIsModalOpenPut] = useState(false);
-
+  // Xoá ảnh trong bài viết
   const handleRemoveImage = async (img: any) => {
+    console.log("imgimgxx", img)
     if (img?.postMediaId) {
       // Ảnh đã được upload lên server → gọi API xoá
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.delete(`http://localhost:9999/api/post-medias/${img.postMediaId}`, {
+        const response = await axios.delete(`http://localhost:9999/api/post-medias/${img?.postMediaId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        setImages((prev: any[]) => prev.filter((i) => i !== img));
         refresh();
         console.log(`✅ Đã xoá ảnh server ID: ${img.postMediaId}`, response.data);
       } catch (error) {
@@ -279,6 +273,7 @@ export default function MyProfile() {
     }
   };
 
+  // Thêm ảnh vào bài viết (preview local)
   const handleAddImage = (file: File) => {
     const imageUrl = URL.createObjectURL(file);
     const cleanUrl = imageUrl.replace("blob:", "");
@@ -286,28 +281,13 @@ export default function MyProfile() {
     setImages((prev: any) => [...prev, imageUrl]);
   };
 
-
-  const [showOptions, setShowOptions] = useState(false);
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowOptions(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
+  // Chọn chế độ hiển thị của bài viết
   const handleSelect = (value: "PUBLIC" | "PRIVATE") => {
     setVisibility(value);
     setShowOptions(false);
   };
 
-  const [showPicker, setShowPicker] = useState(false);
-
+  // Thêm emoji vào nội dung bài viết
   const handleEmojiSelect = (emoji: { native: string }) => {
     setComment((prev: any) => prev + emoji.native); // Thêm emoji vào nội dung input
     setShowPicker(false); // Ẩn picker sau khi chọn
@@ -316,7 +296,7 @@ export default function MyProfile() {
   return (
     <div className="ml-25 min-h-[100vh] p-4 flex flex-col items-center">
       {/* Thông tin người dùng */}
-      <div className="flex items-center gap-30 mb-8">
+      <div className="flex items-center gap-4 mb-8">
         {/* Ảnh đại diện */}
         <div className="w-[168px] h-[168px] rounded-full overflow-hidden border-2 p-1.5 border-pink-500">
           <img
@@ -400,7 +380,6 @@ export default function MyProfile() {
         )}
       </div>
 
-
       {/* Modal Thay đổi avatar */}
       <Modal
         open={isPopOpen}
@@ -462,8 +441,7 @@ export default function MyProfile() {
         )}
       </Modal>
 
-
-      {/* Modal hiển thị ảnh */}
+      {/* Modal hiển thị ảnh và comments */}
       <Modal open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={"70%"} centered>
         <div className="flex">
           {/* Hình ảnh bên trái */}
@@ -729,21 +707,3 @@ export default function MyProfile() {
 }
 
 
-
-const CustomPrevArrow = ({ onClick }: any) => (
-  <div
-    className="absolute top-1/2 -left-8 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
-    onClick={onClick}
-  >
-    <LeftOutlined onPointerEnterCapture={() => { }} onPointerLeaveCapture={() => { }} />
-  </div>
-);
-
-const CustomNextArrow = ({ onClick }: any) => (
-  <div
-    className="absolute top-1/2 -right-3 transform -translate-y-1/2 bg-white text-gray p-2 rounded-[9999px] opacity-75 hover:opacity-100 transition flex items-center justify-center"
-    onClick={onClick}
-  >
-    <RightOutlined onPointerEnterCapture={() => { }} onPointerLeaveCapture={() => { }} />
-  </div>
-);

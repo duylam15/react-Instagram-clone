@@ -49,6 +49,7 @@ export const addUser = async (data: any) => {
 
 export const updateUser = async (data: any) => {
     try {
+        const token = localStorage.getItem('token');
         const dataSend = {        
             userName: data.userName,
             firstName: data.firstName,
@@ -57,7 +58,13 @@ export const updateUser = async (data: any) => {
             phoneNumber: data.phoneNumber};
         console.log("Gọi API...");
         console.log(`http://localhost:9999/api/api/users/${data.userId}`);
-        const response = await axios.put(`http://localhost:9999/api/api/users/${data.userId}`,dataSend);
+        const response = await axios.put(`http://localhost:9999/api/api/users/${data.userId}`,dataSend ,
+            {
+                headers: {
+                  Authorization: `Bearer ${token}`, // Thêm token vào header
+                },
+            }
+        );
         // console.log("Dữ liệu nhận được:", response.data);
         return response.data;
     } catch (error: any) {
@@ -70,9 +77,15 @@ export const updateUser = async (data: any) => {
 
 export const updateActive = async (data: any) => {
     try {
+        const token = localStorage.getItem('token');
         console.log("Gọi API...");
         const response = await axios.post(
-            `${API_URL_BASE}/api/api/users/active/${data.userId}?isActive=${data.isActive}`
+            `${API_URL_BASE}/api/api/users/active/${data.userId}?isActive=${data.isActive}`,
+            {
+                headers: {
+                  Authorization: `Bearer ${token}`, // Thêm token vào header
+                },
+            }
         );
         console.log("Dữ liệu nhận được:", response.data);
         return response.data;
