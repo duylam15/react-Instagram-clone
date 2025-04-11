@@ -162,90 +162,109 @@ export default function Search() {
     );
 
     return (
-        <div className="w-[400px] relative" style={{ background: "var(--bg-color)" }}>
-            <div className="text-[24px] font-medium mt-3 p-3">{t("search")}</div>
+        <div className="w-[400px] h-screen flex flex-col" style={{ background: "var(--bg-color)" }}>
+            <div className="text-[24px] font-medium p-3 border-b" style={{ borderColor: "var(--white-to-gray)" }}>{t("search")}</div>
 
             {/* Ô tìm kiếm */}
-            <div className="p-3 relative"> {/* Thêm relative để Spin định vị */}
+            <div className="p-3 relative sticky top-0 z-20" style={{ background: "var(--bg-color)" }}>
                 <input
                     className="custom-input border px-4 py-2 rounded-md focus:outline-none w-full"
                     placeholder={t("search")}
                     value={query}
                     onChange={(e) => {
                         setQuery(e.target.value);
-                        // setCurrentPage(1); // Reset về trang 1 ngay khi gõ, hoặc để useEffect xử lý
                     }}
-                    style={{ borderColor: "var(--white-to-gray)", paddingRight: '35px' }} // Thêm paddingRight để icon không che chữ
+                    style={{ borderColor: "var(--white-to-gray)", paddingRight: '35px' }}
                 />
                 {/* Icon Loading hoặc Clear */}
-                <div style={{ position: 'absolute', right: '25px', top: '50%', transform: 'translateY(-50%)', marginTop: '-2px' /* Điều chỉnh nhỏ */ }}>
-                    {loading && query ? ( // Chỉ hiển thị loading của input khi đang loading VÀ có query
-                         <Spin indicator={<LoadingOutlined style={{ fontSize: 18 }} spin />} size="small" />
+                <div style={{ position: 'absolute', right: '25px', top: '50%', transform: 'translateY(-50%)' }}>
+                    {loading && query ? (
+                         <Spin indicator={<LoadingOutlined style={{ fontSize: 18 }} spin onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} />} size="small" />
                     ) : query ? (
                          <CloseCircleOutlined
                              onClick={handleClear}
-                             style={{ cursor: "pointer", fontSize: 18, color: 'var(--text-color-secondary)' /* Thêm màu */}}
+                             style={{ cursor: "pointer", fontSize: 18, color: 'var(--text-color-secondary)' }}
+                             onPointerEnterCapture={() => {}}
+                             onPointerLeaveCapture={() => {}}
                          />
                      ) : null}
                  </div>
             </div>
 
             {/* Danh sách kết quả */}
-            {/* Chỉ hiển thị khu vực kết quả nếu có query */}
-            {query && (
-                <div className="absolute w-full rounded-md mt-1 z-10 max-h-[calc(100vh-200px)] overflow-y-auto shadow-lg" // Tăng max-height, thêm shadow
-                     style={{ background: "var(--bg-color)", border: '1px solid var(--border-color)' /* Thêm border */ }}>
-                    {/* === Cải thiện Loading State cho List === */}
-                    {loading ? (
-                        <div className="flex justify-center items-center h-[200px]"> {/* Container cho Spin */}
-                            <Spin size="large" />
-                        </div>
-                    ) : results.length > 0 ? (
-                        <>
-                            <List
-                                itemLayout="vertical" // Hoặc horizontal tùy ý
-                                dataSource={results}
-                                // Cung cấp key dựa trên ID của SearchResult nếu có, nếu không dùng index (cẩn thận)
-                                renderItem={(item, index) => (
-                                    // Quan trọng: Cần có key duy nhất cho mỗi SearchResult item
-                                    // Nếu API không trả về ID duy nhất cho SearchResult, dùng index + query làm key tạm thời
-                                    <div key={item.id || `${query}-${index}`}>
-                                        {/* Render users nếu có */}
-                                        {item.users && item.users.length > 0 && (
-                                            // Không cần List lồng nữa, trực tiếp render User items
-                                            <div>{item.users.map(renderUserItem)}</div>
-                                        )}
-                                        {/* Render posts nếu có */}
-                                        {item.posts && item.posts.length > 0 && (
-                                             // Không cần List lồng nữa, trực tiếp render Post items
-                                            <div>{item.posts.map(renderPostItem)}</div>
-                                        )}
+            <div className="flex-1 overflow-y-auto">
+                {query ? (
+                    <div className="h-full" style={{ background: "var(--bg-color)" }}>
+                        {loading ? (
+                            <div className="flex justify-center items-center h-[200px]">
+                                <Spin size="large" />
+                            </div>
+                        ) : results.length > 0 ? (
+                            <>
+                                <List
+                                    className="search-results-list"
+                                    itemLayout="vertical"
+                                    dataSource={results}
+                                    renderItem={(item, index) => (
+                                        <div key={item.id || `${query}-${index}`}>
+                                            {item.users && item.users.length > 0 && (
+                                                <div>
+                                                    {item.users.map(user => (
+                                                        <div 
+                                                            key={`user-${user.userId}`} 
+                                                            className="hover-effect !px-3 !py-2 cursor-pointer"
+                                                            onClick={() => navigate(`/profile/${user.userId}`)}
+                                                        >
+                                                            <List.Item.Meta
+                                                                avatar={<Avatar src={user.urlAvatar} />}
+                                                                title={<div className="font-medium text-[15px]" style={{ color: "var(--text-color)" }}>{user.firstName} {user.lastName}</div>}
+                                                                description={<div className="text-sm text-gray-500">@{user.userName}</div>}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {item.posts && item.posts.length > 0 && (
+                                                <div>{item.posts.map(renderPostItem)}</div>
+                                            )}
+                                        </div>
+                                    )}
+                                />
+                                {total > pageSize && (
+                                    <div className="sticky bottom-0 p-2 border-t flex justify-between items-center" style={{ background: "var(--bg-color)", borderColor: "var(--white-to-gray)" }}>
+                                        <span className="text-xs text-gray-500 w-[25%]">
+                                            {Math.min((currentPage - 1) * pageSize + 1, total)}-
+                                            {Math.min(currentPage * pageSize, total)} / {total}
+                                        </span>
+                                        <Pagination
+                                            className="flex-1 flex justify-end"
+                                            current={currentPage}
+                                            total={total}
+                                            pageSize={pageSize}
+                                            onChange={(page) => {
+                                                setCurrentPage(page);
+                                                handleSearch(query, page, pageSize);
+                                            }}
+                                            size="small"
+                                            showSizeChanger={false}
+                                            showQuickJumper={false}
+                                            showTotal={() => null}
+                                        />
                                     </div>
                                 )}
-                            />
-                            {/* === Cải thiện Pagination === */}
-                            {total > pageSize && ( // Chỉ hiển thị pagination nếu tổng số kết quả lớn hơn kích thước trang
-                                <div className="sticky bottom-0 bg-white p-4 border-t">
-                                    <Pagination
-                                        current={currentPage}
-                                        total={total}
-                                        pageSize={pageSize}
-                                        onChange={(page) => {
-                                            setCurrentPage(page);
-                                            handleSearch(query, page, pageSize);
-                                        }}
-                                        showSizeChanger={false}
-                                        showQuickJumper={false}
-                                        showTotal={(total) => `Tổng ${total} kết quả`}
-                                    />
-                                </div>
-                            )}
-                        </>
-                    ) : (
-                        <p className="p-4 text-center text-gray-500">{t("no_results_found")}</p> // Giảm margin top, thêm padding
-                    )}
-                </div>
-            )}
+                            </>
+                        ) : (
+                            <div className="flex items-center justify-center h-[200px] text-gray-500">
+                                {t("no_results_found")}
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                        {t("enter_search_term")}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
