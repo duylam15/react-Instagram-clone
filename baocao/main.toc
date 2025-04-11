@@ -1,0 +1,21 @@
+\babel@toc {vietnamese}{}\relax 
+\contentsline {chapter}{\numberline {1}Lời cảm ơn}{3}{}%
+\contentsline {chapter}{\numberline {2}Giới thiệu}{4}{}%
+\contentsline {chapter}{\numberline {3}Lý do chọn đề tài}{5}{}%
+\contentsline {chapter}{\numberline {4}Yêu cầu chức năng}{6}{}%
+\contentsline {chapter}{\numberline {5}Yêu cầu phi chức năng}{7}{}%
+\contentsline {chapter}{\numberline {6}Cấu trúc mã nguồn}{8}{}%
+\contentsline {section}{\numberline {6.1}Mô hình ứng dụng}{8}{}%
+\contentsline {section}{\numberline {6.2}Công cụ}{13}{}%
+\contentsline {section}{\numberline {6.3}Kiến trúc phần mềm}{15}{}%
+\contentsline {chapter}{\numberline {7}Các tính năng được xây dựng}{18}{}%
+\contentsline {chapter}{\numberline {8}Sơ đồ ERD}{20}{}%
+\contentsline {section}{\numberline {8.1}Entity \texttt {User}}{20}{}%
+\contentsline {section}{\numberline {8.2}Entity \texttt {Conversation}}{21}{}%
+\contentsline {section}{\numberline {8.3}Entity \texttt {ConversationMember}}{21}{}%
+\contentsline {section}{\numberline {8.4}Entity \texttt {Post}}{22}{}%
+\contentsline {section}{\numberline {8.5}Entity \texttt {Message}}{22}{}%
+\contentsline {section}{\numberline {8.6}Entity \texttt {Comment}}{23}{}%
+\contentsline {section}{\numberline {8.7}Entity \texttt {Notification}}{23}{}%
+\contentsline {section}{\numberline {8.8}Entity \texttt {Friend}}{24}{}%
+\contentsline {section}{\numberline {8.9}Entity \texttt {PostEmotion}}{24}{}%

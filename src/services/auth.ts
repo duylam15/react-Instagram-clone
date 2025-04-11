@@ -12,7 +12,7 @@ interface RegisterData {
 const API_BACKEND = "http://localhost:9999/api/";
 
 export const callRegister = async (data: RegisterData) => {
-    return axios.post(`${API_BACKEND}auth/addNewUser`, {
+    return axios.post(`http://localhost:9999/api/auth/addNewUser`, {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,

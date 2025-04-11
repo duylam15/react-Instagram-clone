@@ -211,10 +211,6 @@ const FriendsMenu = (data: { idProfileDangXem: any }) => {
           renderItem={(item) => (
             <List.Item
               key={item.id}
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                navigate(`/profile/${item.id}`);
-              }}
               actions={[
                 type === "sent" ? (
                   <Button
@@ -255,7 +251,11 @@ const FriendsMenu = (data: { idProfileDangXem: any }) => {
               <List.Item.Meta
                 style={{ paddingLeft: "10px" }}
                 avatar={<Avatar icon={<UserOutlined />} style={{ backgroundColor: "#1890ff" }} />}
-                title={<span style={{ fontWeight: "bold" }}>{item.name}</span>}
+                title={<span
+                  style={{ cursor: "pointer" ,  fontWeight: "bold" }}
+                  onClick={() => {
+                    navigate(`/profile/${item.id}`);
+                  }}>{item.name}</span>}
               />
             </List.Item>
           )}
