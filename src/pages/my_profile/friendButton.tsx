@@ -106,6 +106,7 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
 
   const handleClickAccept = () => {
     UpdateInvite({ idUser1: data.idUser2, idUser2: data.idUser1, status: "ACCEPT" });
+    setLoading(!loading)
   }
 
   return (

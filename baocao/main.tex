@@ -7,6 +7,10 @@
 \usepackage{graphicx}
 \usepackage{array}
 \usepackage{longtable} 
+\usepackage{float}
+\usepackage{placeins} % ở đầu file, trước \begin{document}
+
+
 
 % Tùy chỉnh định dạng cho \part, \chapter, \section, \subsection
 \titleformat{\part}{\Huge\bfseries\center}{\thepart}{1em}{}
@@ -50,5 +54,13 @@
 
 \chapter{Sơ đồ ERD}
 \input{chapter/5_ERD.tex}
+
+\chapter{Kết quả đạt được}
+\input{chapter/ket_qua_dat_duoc.tex}
+
+\chapter{Hướng phát triền}
+\input{chapter/huong_phat_trien.tex}
+
+
 
 \end{document}

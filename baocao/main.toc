@@ -1,21 +1,46 @@
 \babel@toc {vietnamese}{}\relax 
-\contentsline {chapter}{\numberline {1}Lời cảm ơn}{3}{}%
-\contentsline {chapter}{\numberline {2}Giới thiệu}{4}{}%
-\contentsline {chapter}{\numberline {3}Lý do chọn đề tài}{5}{}%
-\contentsline {chapter}{\numberline {4}Yêu cầu chức năng}{6}{}%
-\contentsline {chapter}{\numberline {5}Yêu cầu phi chức năng}{7}{}%
-\contentsline {chapter}{\numberline {6}Cấu trúc mã nguồn}{8}{}%
-\contentsline {section}{\numberline {6.1}Mô hình ứng dụng}{8}{}%
-\contentsline {section}{\numberline {6.2}Công cụ}{13}{}%
-\contentsline {section}{\numberline {6.3}Kiến trúc phần mềm}{15}{}%
-\contentsline {chapter}{\numberline {7}Các tính năng được xây dựng}{18}{}%
-\contentsline {chapter}{\numberline {8}Sơ đồ ERD}{20}{}%
-\contentsline {section}{\numberline {8.1}Entity \texttt {User}}{20}{}%
-\contentsline {section}{\numberline {8.2}Entity \texttt {Conversation}}{21}{}%
-\contentsline {section}{\numberline {8.3}Entity \texttt {ConversationMember}}{21}{}%
-\contentsline {section}{\numberline {8.4}Entity \texttt {Post}}{22}{}%
-\contentsline {section}{\numberline {8.5}Entity \texttt {Message}}{22}{}%
-\contentsline {section}{\numberline {8.6}Entity \texttt {Comment}}{23}{}%
-\contentsline {section}{\numberline {8.7}Entity \texttt {Notification}}{23}{}%
-\contentsline {section}{\numberline {8.8}Entity \texttt {Friend}}{24}{}%
-\contentsline {section}{\numberline {8.9}Entity \texttt {PostEmotion}}{24}{}%
+\contentsline {chapter}{\numberline {1}Lời cảm ơn}{4}{}%
+\contentsline {chapter}{\numberline {2}Giới thiệu}{5}{}%
+\contentsline {chapter}{\numberline {3}Lý do chọn đề tài}{6}{}%
+\contentsline {chapter}{\numberline {4}Yêu cầu chức năng}{7}{}%
+\contentsline {chapter}{\numberline {5}Yêu cầu phi chức năng}{8}{}%
+\contentsline {chapter}{\numberline {6}Cấu trúc mã nguồn}{9}{}%
+\contentsline {section}{\numberline {6.1}Mô hình ứng dụng}{9}{}%
+\contentsline {section}{\numberline {6.2}Công cụ}{14}{}%
+\contentsline {section}{\numberline {6.3}Kiến trúc phần mềm}{16}{}%
+\contentsline {chapter}{\numberline {7}Các tính năng được xây dựng}{19}{}%
+\contentsline {chapter}{\numberline {8}Sơ đồ ERD}{21}{}%
+\contentsline {section}{\numberline {8.1}Entity \texttt {User}}{21}{}%
+\contentsline {section}{\numberline {8.2}Entity \texttt {Conversation}}{22}{}%
+\contentsline {section}{\numberline {8.3}Entity \texttt {ConversationMember}}{22}{}%
+\contentsline {section}{\numberline {8.4}Entity \texttt {Post}}{23}{}%
+\contentsline {section}{\numberline {8.5}Entity \texttt {Message}}{23}{}%
+\contentsline {section}{\numberline {8.6}Entity \texttt {Comment}}{24}{}%
+\contentsline {section}{\numberline {8.7}Entity \texttt {Notification}}{24}{}%
+\contentsline {section}{\numberline {8.8}Entity \texttt {Friend}}{25}{}%
+\contentsline {section}{\numberline {8.9}Entity \texttt {PostEmotion}}{25}{}%
+\contentsline {chapter}{\numberline {9}Kết quả đạt được}{26}{}%
+\contentsline {section}{\numberline {9.1}Đăng kí}{26}{}%
+\contentsline {section}{\numberline {9.2}Đăng nhập}{27}{}%
+\contentsline {section}{\numberline {9.3}Chức năng đăng bài viết}{28}{}%
+\contentsline {subsection}{\numberline {9.3.1}HÌnh ảnh}{28}{}%
+\contentsline {subsection}{\numberline {9.3.2}Video}{30}{}%
+\contentsline {section}{\numberline {9.4}Chức năng tương tác}{30}{}%
+\contentsline {subsection}{\numberline {9.4.1}Like}{30}{}%
+\contentsline {subsection}{\numberline {9.4.2}Comment}{32}{}%
+\contentsline {section}{\numberline {9.5}Chức năng quản lí bạn bè}{33}{}%
+\contentsline {subsection}{\numberline {9.5.1}Thêm bạn}{33}{}%
+\contentsline {subsection}{\numberline {9.5.2}Huỷ kết bạn}{34}{}%
+\contentsline {subsection}{\numberline {9.5.3}Danh sách bạn bè}{35}{}%
+\contentsline {section}{\numberline {9.6}Chức năng quản lí hồ sơ cá nhân}{36}{}%
+\contentsline {subsection}{\numberline {9.6.1}Cập nhật thông tin người dùng}{36}{}%
+\contentsline {subsection}{\numberline {9.6.2}Cập nhật ảnh đại diện}{38}{}%
+\contentsline {section}{\numberline {9.7}Trang Admin}{38}{}%
+\contentsline {subsection}{\numberline {9.7.1}quản lí user}{38}{}%
+\contentsline {subsection}{\numberline {9.7.2}quản lí post}{39}{}%
+\contentsline {section}{\numberline {9.8}Nhắn tin real time}{39}{}%
+\contentsline {section}{\numberline {9.9}Gọi real time}{41}{}%
+\contentsline {section}{\numberline {9.10}Thông báo}{43}{}%
+\contentsline {chapter}{\numberline {10}Hướng phát triền}{44}{}%
+\contentsline {section}{\numberline {10.1}Hạn chế}{44}{}%
+\contentsline {section}{\numberline {10.2}Hướng phát triển trong tương lai}{44}{}%

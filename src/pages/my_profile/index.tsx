@@ -311,12 +311,12 @@ export default function MyProfile() {
         <div className="relative flex flex-col gap-1">
           <div className="flex items-center gap-4 justify-center">
             <h2 className="text-xl font-normal">{username || "Loading..."}</h2>
-            <div
+            {/* <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[148px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
             >
               abc
-            </div>
+            </div> */}
             {idDangNhap != idProfileDangXem &&
               <FriendButton
                 idUser1={idDangNhap} /// id dang nhap
