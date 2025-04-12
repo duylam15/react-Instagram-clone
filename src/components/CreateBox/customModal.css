@@ -1,0 +1,33 @@
+/* CSS cho custom-modal */
+.custom-modal .ant-modal-content {
+    background-color: #fffaf0;
+    border: 1px solid #ffe7ba;
+    border-radius: 12px;
+    padding: 24px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  /* Nội dung mô tả */
+  .modal-description {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  /* Danh sách lỗi */
+  .modal-list {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  
+  .modal-list li {
+    margin-bottom: 8px;
+  }
+  
+  /* Lời nhắc ở cuối */
+  .modal-note {
+    margin-top: 24px;
+    font-style: italic;
+    color: #cf1322;
+    font-weight: 500;
+  }
