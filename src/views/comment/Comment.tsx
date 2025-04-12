@@ -48,6 +48,34 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
   const [showReplies, setShowReplies] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.numberEmotion || 0);
 
+  useEffect(() => {
+    const fetchLikedStatus = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        if (!userId) return;
+  
+        const response = await axios.get(
+          `${API_BACKEND}comments/checkExistedEmotion/${userId}/${comment.commentId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+  
+        setLiked(response.data?.data === true);
+      } catch (err) {
+        console.error("Error checking liked status:", err);
+      }
+    };
+  
+    if (comment?.commentId) {
+      fetchLikedStatus();
+    }
+  }, [comment?.commentId]); // 👈 chạy lại khi commentId thay đổi
+  
+  
+
   const handleLike = async () => {
     try {
       const userId = localStorage.getItem("userId");

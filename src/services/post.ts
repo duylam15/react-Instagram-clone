@@ -148,6 +148,32 @@ export const deletePostService = async (postId: number) => {
   }
 };
 
+export const checkContentPost = async (content: string) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("Token không tồn tại. Vui lòng đăng nhập lại.");
+    }
+
+    const response = await axios.post(
+      "http://localhost:9999/api/posts/check-fake-news-content",
+      { content },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi kiểm tra nội dung bài viết:", error);
+    message.error("Lỗi khi kiểm tra nội dung bài viết!");
+    throw error;
+  }
+}
+
 
 // export const createPost = async (postData: { title: string; content: string }) => {
 //   try {
