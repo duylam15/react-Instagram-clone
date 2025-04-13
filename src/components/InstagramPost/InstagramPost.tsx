@@ -358,6 +358,8 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 
 				setComments(prev => updateCommentsRecursively(prev));
 				setParentCommentId(null); // Reset lại trạng thái reply
+				refresh()
+
 			} catch (error) {
 				console.error("Error replying to comment:", error);
 			}
