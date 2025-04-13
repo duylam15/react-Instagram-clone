@@ -103,9 +103,9 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		const fetchLikeStatus = async () => {
 			const token = localStorage.getItem('token');
 			const userId = localStorage.getItem('userId');
-	
+
 			if (!post?.postId || !userId || !token) return;
-	
+
 			try {
 				const response = await axios.get(`http://localhost:9999/api/post_emotions/check-exist-post-emotion/post/${post.postId}/user/${userId}`, {
 					headers: {
@@ -117,7 +117,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 				console.error("Lỗi khi kiểm tra trạng thái like:", error);
 			}
 		};
-	
+
 		fetchLikeStatus();
 	}, [post]);
 
@@ -185,12 +185,12 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		const token = localStorage.getItem('token');
 		const postId = post?.postId;
 		const userId = localStorage.getItem('userId');
-	
+
 		if (!token || !userId || !postId) {
 			console.error("Thông tin cần thiết chưa có.");
 			return;
 		}
-	
+
 		try {
 			if (liked) {
 				// Unlike: Gửi DELETE request
@@ -231,7 +231,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	// 📝 Xử lý cập nhật bài viết
 	const handlePostUpdate = async () => {
 		// Check nếu thiếu thông tin thì return sớm
-		if (!post?.postId || !comment?.trim() || images.length === 0 || !visibility) {
+		if (!post?.postId || !comment?.trim() || !visibility) {
 			message.warning("⚠️ Không đủ thông tin để cập nhật bài viết");
 			return;
 		}
@@ -380,6 +380,8 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		setComment((prev) => prev + emoji.native); // Thêm emoji vào nội dung input
 		setShowPicker(false); // Ẩn picker sau khi chọn
 	};
+
+	console.log("postpostpost", post)
 
 	return (
 		<div className={`max-w-[470px] pt-0 border-b border-gray-600`}>

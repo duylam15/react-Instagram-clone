@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
+import { useRefresh } from "../../contexts/RefreshContext";
 
 interface CommentSectionProps {
   comments: any[];
@@ -23,9 +24,9 @@ const CommentSection = ({ comments, post, onReplyClick }: CommentSectionProps) =
   return (
     <div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
       {rootComments.map((comment: any, index: number) => (
-        <CommentItem 
-          key={comment.commentId || index} 
-          comment={comment} 
+        <CommentItem
+          key={comment.commentId || index}
+          comment={comment}
           post={post}
           onReplyClick={onReplyClick}
         />
@@ -47,13 +48,14 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
   const [liked, setLiked] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.numberEmotion || 0);
+  const { refreshTrigger, refresh } = useRefresh();
 
   useEffect(() => {
     const fetchLikedStatus = async () => {
       try {
         const userId = localStorage.getItem("userId");
         if (!userId) return;
-  
+
         const response = await axios.get(
           `${API_BACKEND}comments/checkExistedEmotion/${userId}/${comment.commentId}`,
           {
@@ -62,19 +64,19 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
             },
           }
         );
-  
+
         setLiked(response.data?.data === true);
       } catch (err) {
         console.error("Error checking liked status:", err);
       }
     };
-  
+
     if (comment?.commentId) {
       fetchLikedStatus();
     }
-  }, [comment?.commentId]); // 👈 chạy lại khi commentId thay đổi
-  
-  
+  }, [comment?.commentId, refreshTrigger]); // 👈 chạy lại khi commentId thay đổi
+
+
 
   const handleLike = async () => {
     try {
@@ -156,13 +158,13 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
       <div className="flex items-center gap-5 ml-12 text-gray-500 text-sm">
         <span>{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}</span>
         <span>{likeCount} likes</span>
-        <button 
+        <div
           className="px-3 py-1 bg-gray-100 rounded-full text-gray-700 hover:bg-gray-200 transition-colors duration-200"
           onClick={() => onReplyClick?.(comment.commentId)}
         >
           Reply
-        </button>
-        <button
+        </div>
+        <div
           className="flex items-center gap-1 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
           onClick={handleLike}
         >
@@ -171,23 +173,23 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
           ) : (
             <FaRegHeart className="text-gray-500 transform hover:scale-110 transition-transform duration-200" />
           )}
-        </button>
+        </div>
       </div>
 
       {(comment.numberCommentChild > 0 || (comment.replies && comment.replies.length > 0)) && (
         <div className="ml-12">
-          <button className="text-gray-500 text-sm underline" onClick={handleToggleReplies}>
+          <div className="text-gray-500 text-sm underline" onClick={handleToggleReplies}>
             {showReplies ? "Hide replies" : `View replies (${Math.max(comment.numberCommentChild, comment.replies?.length || 0)})`}
-          </button>
+          </div>
         </div>
       )}
 
       {showReplies && comment.replies && comment.replies.length > 0 && (
         <div className="ml-12 mt-2 border-l-2 border-gray-300 pl-4 w-full">
           {comment.replies.map((reply: any) => (
-            <CommentItem 
-              key={reply.commentId} 
-              comment={reply} 
+            <CommentItem
+              key={reply.commentId}
+              comment={reply}
               post={post}
               onReplyClick={onReplyClick}
             />

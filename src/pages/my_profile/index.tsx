@@ -20,6 +20,7 @@ import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { CustomNextArrow, CustomPrevArrow } from "../../components/InstagramPost/handle";
+import { formatTimeAgo } from "../../utils/date";
 
 export default function MyProfile() {
   // Khai báo các hook context/router
@@ -58,6 +59,7 @@ export default function MyProfile() {
   const [visibility, setVisibility] = useState<any>(postClick?.visibility);
   const [loading, setLoading] = useState(false);
 
+  console.log("postClickpostClickx", postClick)
   // Hiển thị và chọn
   const [showEditOption, setShowEditOption] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -223,7 +225,7 @@ export default function MyProfile() {
   // Cập nhật bài viết
   const handlePostUpdate = async () => {
     // Check nếu thiếu thông tin thì return sớm
-    if (!comment?.trim() || images.length === 0 || !visibility) {
+    if (!comment?.trim() || !visibility) {
       message.warning("⚠️ Không đủ thông tin để cập nhật bài viết");
       return;
     }
@@ -456,66 +458,69 @@ export default function MyProfile() {
           {/* Comments bên phải */}
           <div className="w-1/2 flex flex-col justify-between">
             <div className="overflow-y-auto h-[400px]">
-              <div className="flex p-3 justify-between  items-center gap-3 border-b border-gray-300 pb-3">
-                <div className="flex items-center justify-center gap-3">
-                  <img
-                    src={user?.urlAvatar}
-                    alt="Avatar"
-                    className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
-                  />
-                  <span className="font-semibold" style={{ color: "var(--text-color)" }}>{username}</span>
-                </div>
-                <div className="relative inline-block" style={{
-                  color: "var(--text-color)",
-                  background: " var(--bg-color)"
-                }}>
-                  <div ref={menuRef}>
-                    <div className="relative w-[20px] h-[20px]" onClick={() => setIsOpen(!isOpen)} >
-                      <svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg" stroke="#c2c2c2"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5 10C6.10457 10 7 10.8954 7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10Z" fill="#c2c2c2"></path> <path d="M12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10Z" fill="#c2c2c2"></path> <path d="M21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12Z" fill="#c2c2c2"></path> </g></svg>
-                    </div>
-                    {isOpen && postClick?.userId?.toString() === userId && (
-                      <div
-                        className="absolute z-40 right-0 w-40 border rounded-lg shadow-lg flex flex-col text-center"
-                        style={{
-                          color: "var(--text-color)",
-                          background: "var(--bg-color)",
-                          lineHeight: 1,
-                          borderColor: "var(--white-to-gray)",
-                        }}
-                      >
-                        <p
-                          className="custom-hover cursor-pointer w-full text-center leading-[40px] m-0 rounded-t-lg"
-                          onClick={() => {
-                            if (postClick?.postId) {
-                              handleDelete(postClick?.postId);
-                              setIsModalOpen(false);
-                            }
-                          }}
-                        >
-                          Xóa
-                        </p>
-                        <p
-                          className="custom-hover cursor-pointer w-full text-center leading-[40px] m-0 rounded-b-lg"
-                          onClick={() => {
-                            if (postClick?.postId) {
-                              setIsOpenPut(true);
-                              setIsModalOpen(false);
-                            }
-                          }}
+              <div className="flex flex-col p-3 justify-between  items-start gap-3 border-b border-gray-300 pb-3">
+                <div className="flex justify-between w-full items-center">
+                  <div className="flex items-center justify-center gap-3">
+                    <img
+                      src={user?.urlAvatar}
+                      alt="Avatar"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
+                    />
+                    <span className="font-semibold" style={{ color: "var(--text-color)" }}>{username}</span>
+                    <span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>{formatTimeAgo(`${postClick?.createdAt}`, t)}  </span>
+                  </div>
 
-                        >
-                          Sửa
+                  <div className="relative inline-block" style={{
+                    color: "var(--text-color)",
+                    background: " var(--bg-color)"
+                  }}>
 
-                        </p>
-
+                    <div ref={menuRef}>
+                      <div className="relative w-[20px] h-[20px]" onClick={() => setIsOpen(!isOpen)} >
+                        <svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg" stroke="#c2c2c2"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5 10C6.10457 10 7 10.8954 7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10Z" fill="#c2c2c2"></path> <path d="M12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10Z" fill="#c2c2c2"></path> <path d="M21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12Z" fill="#c2c2c2"></path> </g></svg>
                       </div>
-                    )}
+                      {isOpen && postClick?.userId?.toString() === userId && (
+                        <div
+                          className="absolute z-40 right-0 w-40 border rounded-lg shadow-lg flex flex-col text-center"
+                          style={{
+                            color: "var(--text-color)",
+                            background: "var(--bg-color)",
+                            lineHeight: 1,
+                            borderColor: "var(--white-to-gray)",
+                          }}
+                        >
+                          <p
+                            className="custom-hover cursor-pointer w-full text-center leading-[40px] m-0 rounded-t-lg"
+                            onClick={() => {
+                              if (postClick?.postId) {
+                                handleDelete(postClick?.postId);
+                                setIsModalOpen(false);
+                              }
+                            }}
+                          >
+                            Xóa
+                          </p>
+                          <p
+                            className="custom-hover cursor-pointer w-full text-center leading-[40px] m-0 rounded-b-lg"
+                            onClick={() => {
+                              if (postClick?.postId) {
+                                setIsOpenPut(true);
+                                setIsModalOpen(false);
+                              }
+                            }}
+
+                          >
+                            Sửa
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
+                <span className="font-semibold" style={{ color: "var(--text-color)" }}>{postClick?.content}</span>
               </div>
-
               <div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3 text-gray-400">
-                commentadadas
+                comment
               </div>
             </div>
 
