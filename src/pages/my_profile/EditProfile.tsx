@@ -162,7 +162,7 @@ const EditProfile = () => {
   return (
 
     <div className='container'>
-      <h3 style={{ marginTop: '30px' }}>Chỉnh sửa thông tin cá nhân</h3>
+      <h3 style={{ marginTop: '35px' }}>Chỉnh sửa thông tin cá nhân</h3>
       <div className='form-container'>
         <form onSubmit={handleSave}>
           <div >
