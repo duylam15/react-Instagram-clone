@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import './edit.scss';
 import axios from 'axios'; // Đảm bảo axios được import đúng
 import { message } from 'antd';
+import { updateUser } from '../../services/user/user';  // Thêm dòng này vào đầu file
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -126,26 +127,26 @@ const EditProfile = () => {
 
   const handleSave = async (e: any) => {
     e.preventDefault();
+  
+    // Kiểm tra lỗi
     const hasErrors = Object.values(errors).some((error) => error);
     if (hasErrors) {
       return;
     }
-
+  
     try {
-      const idDangNhap = Number(localStorage.getItem("userId"))
-      const token = localStorage.getItem('token');
-      const result = await axios.put(`http://localhost:9999/api/api/users/${idDangNhap}`, user,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Thêm token vào header
-          },
-        }
-      );
-      message.success('Cập nhật thông tin cá nhân thành công');
-      console.error(result.status);
-      navigate('/profile');
-      if (result.status === 200) {
-
+      // Lấy userId từ state hoặc từ localStorage
+      const userId = Number(localStorage.getItem('userId'));
+      
+      // Gọi hàm updateUser từ services
+      const result = await updateUser({
+        userId,      // Tham số userId
+        ...user,     // Thêm các thông tin người dùng từ state
+      });
+  
+      // Kiểm tra kết quả trả về từ API
+      if (result && result.status === 200) {
+        message.success('Cập nhật thông tin cá nhân thành công');
         navigate('/profile');
       } else {
         message.error('Cập nhật thông tin không thành công');
@@ -155,7 +156,7 @@ const EditProfile = () => {
       message.error('Có lỗi xảy ra khi cập nhật thông tin!');
     }
   };
-
+  
   return (
 
     <div className='container'>

@@ -6,10 +6,9 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import ImageUploader from "../../components/Avatar/ImageUploader";
-import "./style.css"
+import "./style.css";
 import FriendsMenu from "./friendMenu";
 import FriendButton from "./friendButton";
-import { number } from "prop-types";
 import ChatAppGemini from "../../components/chatGemini";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -20,6 +19,8 @@ import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { CustomNextArrow, CustomPrevArrow } from "../../components/InstagramPost/handle";
+import { formatTimeAgo } from "../../utils/date";
+import CommentSection from "../../views/comment/Comment";
 
 export default function MyProfile() {
   // Khai báo các hook context/router
@@ -43,20 +44,27 @@ export default function MyProfile() {
   const [user, setUser] = useState<any>();
   const [avatar, setAvatar] = useState("/images/default-avatar.jpg");
 
-  // Modal, popup, image state
+  // Modal, image state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPopOpen, setIsPopOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [images, setImages] = useState<any>();
 
+  const token = localStorage.getItem('token');
+  console.error(token);
+  
+
   // Bài viết & chỉnh sửa
-  const [posts, setPosts] = useState<string[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [postCount, setPostCount] = useState(0);
   const [postClick, setPostClick] = useState<any>();
-  const [comment, setComment] = useState(postClick?.content);
+  const [comment, setComment] = useState(postClick?.content || "");
   const [visibility, setVisibility] = useState<any>(postClick?.visibility);
   const [loading, setLoading] = useState(false);
+
+  // Comment-related states
+  const [comments, setComments] = useState<any[]>([]);
+  const [parentCommentId, setParentCommentId] = useState<number | null>(null);
+  const commentInputRef = useRef<HTMLInputElement>(null);
 
   // Hiển thị và chọn
   const [showEditOption, setShowEditOption] = useState(false);
@@ -69,7 +77,7 @@ export default function MyProfile() {
   // Xác định idProfileDangXem từ URL
   useEffect(() => {
     const segments = location.pathname.split('/').filter(Boolean);
-    const lastSegment: any = segments.pop(); // lấy phần cuối cùng
+    const lastSegment: any = segments.pop();
     const result = /^\d+$/.test(lastSegment) ? parseInt(lastSegment) : idDangNhap;
     setIdProfileDangXem(result);
   }, [location]);
@@ -78,18 +86,17 @@ export default function MyProfile() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
       try {
         const response = await axios.get(
           `http://localhost:9999/api/api/users/${id}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Thêm token vào header
+              Authorization: `Bearer ${token}`,
             },
           }
         );
         setUsername(`${response?.data?.data?.firstName} ${response?.data?.data?.lastName}`);
-        setUser(response?.data?.data)
+        setUser(response?.data?.data);
         setAvatar(response.data.data.urlAvatar);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin profile:", error);
@@ -103,7 +110,6 @@ export default function MyProfile() {
   useEffect(() => {
     const fetchUserPosts = async () => {
       const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
       try {
         const response = await axios.get(`http://localhost:9999/api/posts/user/${id}`, {
           headers: {
@@ -112,10 +118,7 @@ export default function MyProfile() {
         });
 
         let posts = response?.data?.data?.data || [];
-
-        // ❌ Bỏ các bài viết có visibility là "DELETE"
         posts = posts.filter((post: any) => post.visibility !== "DELETE");
-
         setPosts(posts);
         setPostCount(posts.length);
       } catch (error) {
@@ -124,26 +127,13 @@ export default function MyProfile() {
     };
 
     fetchUserPosts();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, id]);
 
-  // Đóng menu khi click ra ngoài (menuRef)
+  // Đóng menu khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  // Đóng tùy chọn chỉnh sửa khi click ra ngoài (menuRef)
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowOptions(false);
       }
     };
@@ -154,61 +144,38 @@ export default function MyProfile() {
     };
   }, []);
 
-  // Mở & đóng popup thay đổi avatar
-  const handleOpenPop = () => setIsPopOpen(true);
-  const handleClosePop = () => setIsPopOpen(false);
-
-  // Xử lý khi gỡ ảnh đại diện
-  const handleRemoveAvatar = async () => {
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    try {
-      const response = await axios.delete(
-        `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`, {
-        headers: {
-          Authorization: `Bearer ${token}`, // Thêm token vào header
-        },
-      }
-      );
+  
 
 
-      // Cập nhật avatar về mặc định
-      setAvatar("/images/default-avatar.jpg");
 
-      // Đóng popup nếu có
-      handleClosePop();
-    } catch (error: any) {
-      console.error("Lỗi khi gỡ avatar:", error);
-    }
-  };
-
-  // Xử lý khi click vào icon “...” (menu tùy chọn)
+  // Xử lý khi click vào icon “...”
   const handleIconClick = () => {
-    setShowEditOption(!showEditOption); // Hiển thị hoặc ẩn tùy chọn chỉnh sửa
+    setShowEditOption(!showEditOption);
   };
 
   // Điều hướng đến trang chỉnh sửa hồ sơ
   const handleEditProfileClick = () => {
-    navigate('/edit-profile'); // Điều hướng đến trang chỉnh sửa thông tin cá nhân
+    navigate('/edit-profile');
   };
 
-  // Xử lý khi click vào một bài viết (xem chi tiết)
+  // Xử lý khi click vào một bài viết
   const handleImageClick = (post: any) => {
-    setSelectedImages(post.postMedia.map((media: any) => media.mediaUrl)); // Lấy danh sách ảnh của bài post
-    setPostClick(post)
-    setImages(post?.postMedia)
-    setComment(post?.content)
-    setVisibility(post?.visibility)
+    setPostClick(post);
+    setSelectedImages(post.postMedia.map((media: any) => media.mediaUrl));
+    setImages(post?.postMedia);
+    setComment(post?.content || "");
+    setVisibility(post?.visibility);
+    setComments(post?.comments || []);
     setIsModalOpen(true);
   };
 
   // Xoá bài viết
   const handleDelete = async (postId: number) => {
-    console.log("postIdxxx", postId)
     try {
       const result = await deletePostService(postId);
       alert(result.message);
       setIsOpen(false);
+      setIsModalOpen(false);
       refresh();
     } catch (error: any) {
       alert(error.message || "Lỗi khi xóa bài viết!");
@@ -217,41 +184,34 @@ export default function MyProfile() {
 
   // Đóng popup cập nhật bài viết
   const handleClose = () => {
-    setIsOpenPut(false)
+    setIsOpenPut(false);
   };
 
   // Cập nhật bài viết
   const handlePostUpdate = async () => {
-    // Check nếu thiếu thông tin thì return sớm
-    if (!comment?.trim() || images.length === 0 || !visibility) {
+    if (!comment?.trim() || !visibility) {
       message.warning("⚠️ Không đủ thông tin để cập nhật bài viết");
       return;
     }
 
     try {
-      setLoading(true); // Bắt đầu loading
-
+      setLoading(true);
       const response = await updatePost(postClick?.postId, comment, images, visibility);
-
       if (response?.data?.imageUrl) {
         setImages([...images, response.data.imageUrl]);
       }
-
-      console.log("✅ Phản hồi API:", response);
       refresh();
       handleClose();
     } catch (error) {
       console.error("❌ Lỗi khi cập nhật bài viết:", error);
     } finally {
-      setLoading(false); // Kết thúc loading
+      setLoading(false);
     }
   };
 
   // Xoá ảnh trong bài viết
   const handleRemoveImage = async (img: any) => {
-    console.log("imgimgxx", img)
     if (img?.postMediaId) {
-      // Ảnh đã được upload lên server → gọi API xoá
       try {
         const token = localStorage.getItem('token');
         const response = await axios.delete(`http://localhost:9999/api/post-medias/${img?.postMediaId}`, {
@@ -259,26 +219,21 @@ export default function MyProfile() {
             Authorization: `Bearer ${token}`,
           },
         });
-        setImages((prev: any[]) => prev.filter((i) => i !== img));
+        setImages((prev: any[]) => prev.filter((i) => i.postMediaId !== img.postMediaId));
         refresh();
-        console.log(`✅ Đã xoá ảnh server ID: ${img.postMediaId}`, response.data);
       } catch (error) {
         console.error("❌ Lỗi khi xoá ảnh từ server:", error);
         alert("Xoá ảnh thất bại. Vui lòng thử lại.");
       }
     } else {
-      // Ảnh local (chưa upload) → xoá khỏi state
       setImages((prev: any[]) => prev.filter((i) => i !== img));
-      console.log("🗑️ Đã xoá ảnh local:", img);
     }
   };
 
-  // Thêm ảnh vào bài viết (preview local)
+  // Thêm ảnh vào bài viết
   const handleAddImage = (file: File) => {
     const imageUrl = URL.createObjectURL(file);
-    const cleanUrl = imageUrl.replace("blob:", "");
-    console.log("imageUrlimageUrl", cleanUrl); // Không còn 'blob:' ở đầu nữa
-    setImages((prev: any) => [...prev, imageUrl]);
+    setImages((prev: any) => [...prev, { mediaUrl: imageUrl }]);
   };
 
   // Chọn chế độ hiển thị của bài viết
@@ -289,39 +244,180 @@ export default function MyProfile() {
 
   // Thêm emoji vào nội dung bài viết
   const handleEmojiSelect = (emoji: { native: string }) => {
-    setComment((prev: any) => prev + emoji.native); // Thêm emoji vào nội dung input
-    setShowPicker(false); // Ẩn picker sau khi chọn
+    setComment((prev: any) => (prev || "") + emoji.native);
+    setShowPicker(false);
   };
+
+  // Xử lý thêm bình luận mới
+  const handleNewComment = async (newComment: any) => {
+    if (parentCommentId) {
+      try {
+        const response = await axios.post(
+          `http://localhost:9999/api/comments/reply/${parentCommentId}`,
+          {
+            postId: postClick?.postId,
+            userId: localStorage.getItem("userId"),
+            content: newComment.content,
+            typeComment: "TEXT",
+            numberEmotion: 0,
+            numberCommentChild: 0,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const replyComment = {
+          ...response.data.data,
+          userName: localStorage.getItem("userName") || "User",
+          authorAvatarUrl: localStorage.getItem("userAvatar") || "/default-avatar.png",
+          createdAt: new Date().toISOString(),
+          numberEmotion: 0,
+          numberCommentChild: 0,
+          parentId: parentCommentId,
+        };
+
+        const updateCommentsRecursively = (list: any[]): any[] => {
+          return list.map(comment => {
+            if (comment.commentId === parentCommentId) {
+              return {
+                ...comment,
+                numberCommentChild: (comment.numberCommentChild || 0) + 1,
+                replies: [...(comment.replies || []), replyComment],
+              };
+            } else if (comment.replies && comment.replies.length > 0) {
+              return {
+                ...comment,
+                replies: updateCommentsRecursively(comment.replies),
+              };
+            }
+            return comment;
+          });
+        };
+
+        setComments(prev => updateCommentsRecursively(prev));
+        setParentCommentId(null);
+      } catch (error) {
+        console.error("Error replying to comment:", error);
+      }
+    } else {
+      setComments(prev => [...prev, {
+        ...newComment,
+        commentId: Date.now(),
+        userName: localStorage.getItem("userName") || "User",
+        authorAvatarUrl: localStorage.getItem("userAvatar") || "/default-avatar.png",
+        createdAt: new Date().toISOString(),
+        numberEmotion: 0,
+        numberCommentChild: 0,
+      }]);
+    }
+  };
+
+  // Xử lý khi click "Trả lời"
+  const handleReplyClick = (commentId: number) => {
+    setParentCommentId(commentId);
+    if (commentInputRef.current) {
+      commentInputRef.current.focus();
+    }
+  };
+
+  //avatar
+
+  const [isAvatarModalVisible, setAvatarModalVisible] = useState(false);
+  const [isImagePopVisible, setImagePopVisible] = useState(false);
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [profileAvatar, setProfileAvatar] = useState("/images/default-avatar.jpg");
+
+  // Mở/đóng popup thay đổi avatar
+
+  const closeAvatarModal = () => setImagePopVisible(false);
+const openAvatarModal = () => setImagePopVisible(true);
+
+// Sửa lại hàm onUploadSuccess trong component MyProfile
+const handleImageUpload = async (options: any) => {
+  const { file, onSuccess, onError } = options;
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const token = localStorage.getItem('token');
+  
+  try {
+    const response = await axios.put(
+      `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`,
+      formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+    // Cập nhật avatar mới
+    setProfileAvatar(response.data.data.urlAvatar);
+    closeAvatarModal();
+    onSuccess("Upload thành công");
+  } catch (error) {
+    console.error("Lỗi khi cập nhật avatar:", error);
+    onError(error);
+  }
+};
+
+
+  const handleRemoveAvatar = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      await axios.delete(`http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`,
+         {
+           headers: {
+             Authorization: `Bearer ${token}`,
+           },
+         });
+
+      setProfileAvatar("/images/default-avatar.jpg"); // Đặt lại avatar mặc định
+      closeAvatarModal();
+    } catch (error) {
+      console.error("Lỗi khi gỡ avatar:", error);
+    }
+  };
+  
+
+    // Xử lý khi gỡ ảnh đại diện
+  // const handleRemoveAvatar = async () => {
+  //   const token = localStorage.getItem('token');
+  //   try {
+  //     await axios.delete(
+  //       `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //     setAvatar("/images/default-avatar.jpg");
+  //     handleClosePop();
+  //   } catch (error: any) {
+  //     console.error("Lỗi khi gỡ avatar:", error);
+  //   }
+  // };
 
   return (
     <div className="ml-25 min-h-[100vh] p-4 flex flex-col items-center">
       {/* Thông tin người dùng */}
       <div className="flex items-center gap-4 mb-8">
-        {/* Ảnh đại diện */}
         <div className="w-[168px] h-[168px] rounded-full overflow-hidden border-2 p-1.5 border-pink-500">
-          <img
-            src={avatar}
-            alt="Avatar"
-            className="object-cover rounded-[99px]"
-            onClick={handleOpenPop}
-          />
+           <img src={profileAvatar} className="object-cover rounded-[99px]" alt="Avatar" onClick={openAvatarModal} />
         </div>
-
-        {/* Thông tin cá nhân */}
         <div className="relative flex flex-col gap-1">
           <div className="flex items-center gap-4 justify-center">
             <h2 className="text-xl font-normal">{username || "Loading..."}</h2>
-            {/* <div
-              className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[148px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
-              style={{ background: "var(--hover-color)" }}
-            >
-              abc
-            </div> */}
-            {idDangNhap != idProfileDangXem &&
+            {idDangNhap !== idProfileDangXem && (
               <FriendButton
-                idUser1={idDangNhap} /// id dang nhap
-                idUser2={idProfileDangXem} /// id profile dang xem
-              />}
+                idUser1={idDangNhap}
+                idUser2={idProfileDangXem}
+              />
+            )}
             <div
               className="bg-gray-200 px-4 py-1 rounded-md font-medium text-[14px] text-center w-[100px] h-[32px] leading-[100%] flex items-center justify-center text-black-600"
               style={{ background: "var(--hover-color)" }}
@@ -338,13 +434,12 @@ export default function MyProfile() {
               <p className="text-gray-600" onClick={handleIconClick}>
                 <IconDots color={iconColor} />
               </p>
-
               {showEditOption && (
                 <div className="absolute bg-white-100 p-2 text-center rounded-md shadow-lg mt-2 w-[230px] right-0 top-[14%] text-black">
                   <button
                     onClick={handleEditProfileClick}
-                    className="text-black font-medium text-[14px]  py-1 px-2 rounded-md"
-                    style={{ backgroundColor: '#ffff' }} // Màu nền cho nút
+                    className="text-black font-medium text-[14px] py-1 px-2 rounded-md"
+                    style={{ backgroundColor: '#ffff' }}
                   >
                     Chỉnh sửa thông tin cá nhân
                   </button>
@@ -352,15 +447,12 @@ export default function MyProfile() {
               )}
             </div>
           </div>
-
           <div className="flex gap-2 mt-2">
             <span className="font-light flex items-center gap-2">
               <strong className="font-bold">{postCount}</strong> {t("post")}
             </span>
             <span className="font-light flex items-center gap-2">
               <FriendsMenu idProfileDangXem={idProfileDangXem} />
-            </span>
-            <span className="font-light flex items-center gap-2">
             </span>
           </div>
           <p className="mt-2 text-sm">Bio của bạn có thể ở đây ✨</p>
@@ -369,7 +461,7 @@ export default function MyProfile() {
 
       {/* Danh sách ảnh từ bài viết */}
       <div className="grid grid-cols-3 gap-1">
-        {posts.map((post: any) =>
+        {posts.map((post: any) => (
           <div
             key={post?.postId}
             className="aspect-square h-[410px] w-[308px] cursor-pointer"
@@ -377,32 +469,25 @@ export default function MyProfile() {
           >
             <img src={post?.postMedia[0]?.mediaUrl} alt="Post" className="w-full h-full object-cover" />
           </div>
-        )}
+        ))}
       </div>
+
+      
 
       {/* Modal Thay đổi avatar */}
       <Modal
-        open={isPopOpen}
-        onCancel={handleClosePop}
-        footer={null}
-        centered
+        open={isImagePopVisible} onCancel={closeAvatarModal} footer={null}
         width={320}
         className="custom-modal custom-height-modal"
+        
       >
         <div className="flex flex-col items-center p-0">
           <h5 className="custom-btn text-center font-normal text-lg mt-4 mb-3">
             Thay đổi ảnh đại diện
           </h5>
-
           <div className="w-full h-[1px] bg-gray-300 my-1"></div>
-
-          {/* Tải ảnh lên */}
-          <ImageUploader onUploadSuccess={(url) => setAvatar(url)} onClose={handleClosePop} />
-
-
+            <ImageUploader onUploadSuccess={(url) => setProfileAvatar(url)} onClose={closeAvatarModal} />
           <div className="w-full h-[1px] bg-gray-300 my-1"></div>
-
-          {/* Gỡ ảnh hiện tại */}
           <Button
             type="text"
             danger
@@ -411,52 +496,32 @@ export default function MyProfile() {
           >
             Gỡ ảnh hiện tại
           </Button>
-
           <div className="w-full h-[1px] bg-gray-300 my-1"></div>
-
-          {/* Nút Hủy */}
           <Button
             className="border-0 custom-btn no-hover text-base font-medium w-full my-2"
-            onClick={handleClosePop}
+            onClick={closeAvatarModal}
           >
             Hủy
           </Button>
         </div>
       </Modal>
 
-      {/* Modal hiển thị ảnh chi tiết nếu cần */}
-      <Modal
-        open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        footer={null}
-        centered
-        width={800}
-      >
-        {selectedImage && (
-          <img
-            src={selectedImage}
-            alt="Preview"
-            style={{ width: "100%", height: "auto" }}
-          />
-        )}
-      </Modal>
-
       {/* Modal hiển thị ảnh và comments */}
-      <Modal open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={"70%"} centered>
-        <div className="flex">
+      <Modal open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={"70%"} centered className="model-custom" height={"90%"}>
+        <div className="flex w-full h-full">
           {/* Hình ảnh bên trái */}
-          <div className="w-[55%]">
-            <Carousel infinite={false} arrows>
+          <div className="w-[55%] h-[full] rounded-xl">
+            <Carousel infinite={false} arrows className="carousel-custom">
               {selectedImages.map((img, index) => (
-                <img key={index} src={img} alt="Post" className="w-full h-[90vh] object-cover" />
+                <img key={index} src={img} alt="Post" className="w-full h-[90vh] object-cover rounded-l-lg" />
               ))}
             </Carousel>
           </div>
 
           {/* Comments bên phải */}
-          <div className="w-1/2 flex flex-col justify-between">
+          <div className="w-1/2 flex flex-col justify-between h-full">
             <div className="overflow-y-auto h-[400px]">
-              <div className="flex p-3 justify-between  items-center gap-3 border-b border-gray-300 pb-3">
+              <div className="flex p-3 justify-between items-center gap-3 border-b pb-3" style={{ borderColor: "var(--white-to-gray)" }}>
                 <div className="flex items-center justify-center gap-3">
                   <img
                     src={user?.urlAvatar}
@@ -464,14 +529,22 @@ export default function MyProfile() {
                     className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
                   />
                   <span className="font-semibold" style={{ color: "var(--text-color)" }}>{username}</span>
+                  <span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>
+                    {formatTimeAgo(`${postClick?.createdAt}`, t)}
+                  </span>
                 </div>
-                <div className="relative inline-block" style={{
-                  color: "var(--text-color)",
-                  background: " var(--bg-color)"
-                }}>
+                <div className="relative inline-block" style={{ color: "var(--text-color)", background: "var(--bg-color)" }}>
                   <div ref={menuRef}>
-                    <div className="relative w-[20px] h-[20px]" onClick={() => setIsOpen(!isOpen)} >
-                      <svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg" stroke="#c2c2c2"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5 10C6.10457 10 7 10.8954 7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10Z" fill="#c2c2c2"></path> <path d="M12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10Z" fill="#c2c2c2"></path> <path d="M21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12Z" fill="#c2c2c2"></path> </g></svg>
+                    <div className="relative w-[20px] h-[20px]" onClick={() => setIsOpen(!isOpen)}>
+                      <svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg" stroke="#c2c2c2">
+                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                        <g id="SVGRepo_iconCarrier">
+                          <path d="M5 10C6.10457 10 7 10.8954 7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10Z" fill="#c2c2c2"></path>
+                          <path d="M12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10Z" fill="#c2c2c2"></path>
+                          <path d="M21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12Z" fill="#c2c2c2"></path>
+                        </g>
+                      </svg>
                     </div>
                     {isOpen && postClick?.userId?.toString() === userId && (
                       <div
@@ -488,7 +561,6 @@ export default function MyProfile() {
                           onClick={() => {
                             if (postClick?.postId) {
                               handleDelete(postClick?.postId);
-                              setIsModalOpen(false);
                             }
                           }}
                         >
@@ -502,61 +574,61 @@ export default function MyProfile() {
                               setIsModalOpen(false);
                             }
                           }}
-
                         >
                           Sửa
-
                         </p>
-
                       </div>
                     )}
                   </div>
                 </div>
               </div>
-
-              <div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3 text-gray-400">
-                commentadadas
+              <div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3">
+                <span className="font-semibold" style={{ color: "var(--text-color)" }}>{postClick?.content}</span>
+                <CommentSection
+                  comments={comments}
+                  post={postClick}
+                  onReplyClick={handleReplyClick}
+                />
               </div>
             </div>
-
-            <div className="pl-5 pr-5 border-t border-gray-300">
-              <CommentInput />
+            <div>
+              <div className="pl-5 pr-5 border-t" style={{ borderColor: "var(--white-to-gray)" }}>
+                <CommentInput
+                  post={postClick}
+                  onCommentAdded={handleNewComment}
+                  ref={commentInputRef}
+                  parentCommentId={parentCommentId}
+                />
+              </div>
             </div>
           </div>
         </div>
       </Modal>
 
       {/* Update Post */}
-      {isOpenPut && <div className="overlay" onClick={() => handleClose()}>
-        <div className="rounded-xl" onClick={(e) => e.stopPropagation()}>
-          {loading ? (
-            <Spin size="large" tip="Creating post..." />
-          ) : (
-            <div className="flex justify-between items-center flex-col mt-[-20px] w-[1000px] h-[90vh]  rounded-xl">
-
-              <div className="bg-black w-full text-white font-medium text-[20px] rounded-t-xl text-center p-2 flex justify-between items-center">
-                <div className="">
+      {isOpenPut && (
+        <div className="overlay" onClick={() => handleClose()}>
+          <div className="rounded-xl" onClick={(e) => e.stopPropagation()}>
+            {loading ? (
+              <Spin size="large" tip="Creating post..." />
+            ) : (
+              <div className="flex justify-between items-center flex-col mt-[-20px] w-[1000px] h-[90vh] rounded-xl">
+                <div className="bg-black w-full text-white font-medium text-[20px] rounded-t-xl text-center p-2 flex justify-between items-center">
+                  <div></div>
+                  <div className="ml-30">Update post</div>
+                  <div onClick={handlePostUpdate}>Update Post</div>
                 </div>
-                <div className="ml-30">
-                  Update post
-                </div>
-                <div className="" onClick={handlePostUpdate}>
-                  Update Post
-                </div>
-              </div>
-              <div className="flex w-full h-[90vh]">
-                {/* Khu vực hiển thị ảnh */}
-                <div className="bg-gray-700 h-full max-w-[60%] w-full rounded-bl-xl flex items-center justify-center flex-col">
-                  {1 && (
+                <div className="flex w-full h-[90vh]">
+                  {/* Khu vực hiển thị ảnh */}
+                  <div className="bg-gray-700 h-full max-w-[60%] w-full rounded-bl-xl flex items-center justify-center flex-col">
                     <div className="w-full h-full relative">
-                      <Carousel infinite={false}
-                        arrows >
+                      <Carousel infinite={false} arrows>
                         {images?.map((img: any, index: any) => (
                           <img
                             key={index}
                             src={img?.mediaUrl || img}
                             alt="Selected"
-                            className="h-[83vh] w-[70%]  object-cover rounded-bl-xl"
+                            className="h-[83vh] w-[70%] object-cover rounded-bl-xl"
                           />
                         ))}
                       </Carousel>
@@ -566,8 +638,7 @@ export default function MyProfile() {
                       >
                         Chỉnh sửa ảnh
                       </button>
-                      {/* Modal chỉnh sửa ảnh */}
-                      {isModalOpenPut &&
+                      {isModalOpenPut && (
                         <div onClick={(e) => e.stopPropagation()} style={{ top: "20%" }}>
                           <Modal
                             open={isModalOpenPut}
@@ -575,11 +646,10 @@ export default function MyProfile() {
                             footer={null}
                             centered
                             className="model_post"
-                            mask={false} // ❌ Tắt overlay
+                            mask={false}
                             style={{ top: "20%" }}
                           >
                             <div className="flex">
-                              {/* Danh sách ảnh hiện tại */}
                               <div className="flex flex-wrap gap-3">
                                 {images && images.length > 0 ? (
                                   <Carousel
@@ -612,8 +682,6 @@ export default function MyProfile() {
                                   </div>
                                 )}
                               </div>
-
-                              {/* Thêm ảnh mới */}
                               <div className="ml-4">
                                 <Upload
                                   showUploadList={false}
@@ -622,88 +690,93 @@ export default function MyProfile() {
                                     return false;
                                   }}
                                 >
-                                  <button className="w-24 h-24 rounded flex items-center justify-center gap-2 bg-black" >
-                                    <svg viewBox="0 0 20 20" width="40px" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#ccc"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill="#ccc" fill-rule="evenodd" d="M9 17a1 1 0 102 0v-6h6a1 1 0 100-2h-6V3a1 1 0 10-2 0v6H3a1 1 0 000 2h6v6z"></path> </g></svg>
+                                  <button className="w-24 h-24 rounded flex items-center justify-center gap-2 bg-black">
+                                    <svg viewBox="0 0 20 20" width="40px" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#ccc">
+                                      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                      <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                      <g id="SVGRepo_iconCarrier">
+                                        <path fill="#ccc" fill-rule="evenodd" d="M9 17a1 1 0 102 0v-6h6a1 1 0 100-2h-6V3a1 1 0 10-2 0v6H3a1 1 0 000 2h6v6z"></path>
+                                      </g>
+                                    </svg>
                                   </button>
                                 </Upload>
                               </div>
                             </div>
                           </Modal>
                         </div>
-                      }
+                      )}
                     </div>
-                  )}
-                </div>
-                {/* Khu vực comment */}
-                <div className="bg-gray-600 h-full w-[50%] rounded-br-xl  overflow-auto">
-                  <div className="comment p-3">
-                    <div className="flex items-center justify-between">
+                  </div>
+                  {/* Khu vực comment */}
+                  <div className="bg-gray-600 h-full w-[50%] rounded-br-xl overflow-auto">
+                    <div className="comment p-3">
                       <div className="flex items-center justify-between">
-                        <img src={user?.urlAvatar} alt=""
-                          className="w-[50px] h-[50px] rounded-full" />
-                        <div className="text-white ml-4">{username}</div>
-                      </div>
-                      <div className="relative" onClick={() => setShowOptions((prev) => !prev)} ref={menuRef}>
-                        <svg viewBox="0 0 16 16" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ccc"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 8C4 9.10457 3.10457 10 2 10C0.895431 10 0 9.10457 0 8C0 6.89543 0.895431 6 2 6C3.10457 6 4 6.89543 4 8Z" fill="#ccc"></path> <path d="M10 8C10 9.10457 9.10457 10 8 10C6.89543 10 6 9.10457 6 8C6 6.89543 6.89543 6 8 6C9.10457 6 10 6.89543 10 8Z" fill="#ccc"></path> <path d="M14 10C15.1046 10 16 9.10457 16 8C16 6.89543 15.1046 6 14 6C12.8954 6 12 6.89543 12 8C12 9.10457 12.8954 10 14 10Z" fill="#ccc"></path> </g></svg>
-                        {showOptions && (
-                          <div className="absolute top-8 right-0 bg-black text-white rounded shadow-md z-50 w-32">
-                            <div
-                              onClick={() => handleSelect("PUBLIC")}
-                              className="flex items-center justify-between rounded p-2 hover:bg-gray-800 cursor-pointer"
-                            >
-                              <span>Public</span>
-                              {visibility === "PUBLIC" && (
-                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                              )}
+                        <div className="flex items-center justify-between">
+                          <img src={user?.urlAvatar} alt="" className="w-[50px] h-[50px] rounded-full" />
+                          <div className="text-white ml-4">{username}</div>
+                        </div>
+                        <div className="relative" onClick={() => setShowOptions((prev) => !prev)} ref={menuRef}>
+                          <svg viewBox="0 0 16 16" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ccc">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                              <path d="M4 8C4 9.10457 3.10457 10 2 10C0.895431 10 0 9.10457 0 8C0 6.89543 0.895431 6 2 6C3.10457 6 4 6.89543 4 8Z" fill="#ccc"></path>
+                              <path d="M10 8C10 9.10457 9.10457 10 8 10C6.89543 10 6 9.10457 6 8C6 6.89543 6.89543 6 8 6C9.10457 6 10 6.89543 10 8Z" fill="#ccc"></path>
+                              <path d="M14 10C15.1046 10 16 9.10457 16 8C16 6.89543 15.1046 6 14 6C12.8954 6 12 8C12 9.10457 12.8954 10 14 10Z" fill="#ccc"></path>
+                            </g>
+                          </svg>
+                          {showOptions && (
+                            <div className="absolute top-8 right-0 bg-black text-white rounded shadow-md z-50 w-32">
+                              <div
+                                onClick={() => handleSelect("PUBLIC")}
+                                className="flex items-center justify-between rounded p-2 hover:bg-gray-800 cursor-pointer"
+                              >
+                                <span>Public</span>
+                                {visibility === "PUBLIC" && (
+                                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                )}
+                              </div>
+                              <div
+                                onClick={() => handleSelect("PRIVATE")}
+                                className="flex items-center justify-between p-2 rounded hover:bg-gray-800 cursor-pointer"
+                              >
+                                <span>Private</span>
+                                {visibility === "PRIVATE" && (
+                                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                )}
+                              </div>
                             </div>
-                            <div
-                              onClick={() => handleSelect("PRIVATE")}
-                              className="flex items-center justify-between p-2 rounded hover:bg-gray-800 cursor-pointer"
-                            >
-                              <span>Private</span>
-                              {visibility === "PRIVATE" && (
-                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                              )}
-                            </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="input-post mt-3">
-                      <div className="flex items-center py-2">
-                        <textarea
-                          placeholder={t('Comment')}
-                          className="w-full text-white outline-none  p-1"
-                          value={comment}
-                          onChange={(e) => setComment(e.target.value)}
-                          style={{ color: "var(--text-color)" }}
-                        ></textarea>
-
-                        {/* Nút mở Emoji Picker */}
-                        <FaSmile
-                          className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
-                          onClick={() => setShowPicker(!showPicker)}
-                        />
-                        {/* Hiển thị Emoji Picker */}
-                        {showPicker && (
-                          <div className=" absolute bottom-0 right-54 z-10">
-                            <Picker data={data} onEmojiSelect={handleEmojiSelect} />
-                          </div>
-                        )}
+                      <div className="input-post mt-3">
+                        <div className="flex items-center py-2">
+                          <textarea
+                            placeholder={t('Comment')}
+                            className="w-full text-white outline-none p-1"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            style={{ color: "var(--text-color)" }}
+                          ></textarea>
+                          <FaSmile
+                            className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
+                            onClick={() => setShowPicker(!showPicker)}
+                          />
+                          {showPicker && (
+                            <div className="absolute bottom-0 right-54 z-10">
+                              <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-
-
-      </div >
-      }
+      )}
     </div>
   );
 }
-
-
