@@ -29,7 +29,7 @@ const VideoCall: React.FC = () => {
     }
 
     // const generatedRoomID = getUrlParams("roomID") || Math.floor(Math.random() * 10000).toString();
-    
+
     const generatedUserName = getUrlParams("username") || `userName${generatedUserID}`;
     const storedUserReceiveID = localStorage.getItem("userReceiveId");
     const generatedReceiverID = storedUserReceiveID || "2";
@@ -49,9 +49,9 @@ const VideoCall: React.FC = () => {
 
     client.connect({ Authorization: `Bearer ${token}` },
       () => {
-      console.log("✅ Kết nối WebSocket thành công!");
-      setStompClient(client);
-    });
+        console.log("✅ Kết nối WebSocket thành công!");
+        setStompClient(client);
+      });
 
     client.onDisconnect = () => {
       console.log("🔴 WebSocket đã ngắt kết nối.");
@@ -68,10 +68,10 @@ const VideoCall: React.FC = () => {
   }, []);
   useEffect(() => {
     if (!roomID || !userID || !userName) return;
-  
+
     const appID = 1166743846;
     const serverSecret = "e42953fb46e3d9c91b3ad35d65721232";
-    console.log("akjfnijccfknasfian: "+roomID)
+    console.log("akjfnijccfknasfian: " + roomID)
     console.log(typeof roomID, roomID);
     const testToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
@@ -80,7 +80,7 @@ const VideoCall: React.FC = () => {
       userID,
       userName
     );
-  
+
     setKitToken(testToken);
   }, [roomID, userID, userName]);
 
@@ -109,19 +109,19 @@ const VideoCall: React.FC = () => {
       try {
         const callData = JSON.parse(stompMessage.body);
         console.log("📩 Nhận cuộc gọi:", callData);
-    
+
         if (callData.status === "accept") {
           setRoomID(callData.roomId); // Gán room ID từ cuộc gọi
           setIsOpen(true);
         } else if (callData.callerName) {
           antdMessage.info(`📞 ${callData.callerName} đang gọi cho bạn!`);
-          
+
           const acceptCall = window.confirm(`📞 ${callData.callerName} đang gọi. Chấp nhận?`);
-          
+
           if (acceptCall) {
             setRoomID(callData.roomId); // Gán room ID từ cuộc gọi
             setIsOpen(true);
-    
+
             // Gửi phản hồi chấp nhận cuộc gọi
             stompClient.publish({
               destination: `/queue/call/${callData.callerId}`,
@@ -160,12 +160,12 @@ const VideoCall: React.FC = () => {
   };
 
   return (
-    <>
+    <div className="flex justify-center items-center gap-2">
       <Button type="default" onClick={handleSubscribe} disabled={isSubscribed}>
         {isSubscribed ? "✅ Đã đăng ký WebSocket" : "📡 Đăng ký WebSocket"}
       </Button>
 
-      <Button type="primary" onClick={handleCall} className="mt-2" disabled={!isSubscribed}>
+      <Button type="primary" onClick={handleCall} disabled={!isSubscribed}>
         📞 Bắt đầu Video Call
       </Button>
 
@@ -178,7 +178,7 @@ const VideoCall: React.FC = () => {
       >
         <div ref={rootRef} style={{ width: "100%", height: "70vh" }} />
       </Modal>
-    </>
+    </div>
   );
 };
 

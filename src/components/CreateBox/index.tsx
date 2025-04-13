@@ -121,7 +121,7 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 	};
 
 	const handlePostCreate = async () => {
-		if (!comment?.trim() || images.length === 0 || !visibility) {
+		if (!comment?.trim() || !visibility) {
 			message.warning("⚠️ Không đủ thông tin để tạo bài viết");
 			return;
 		}
@@ -190,9 +190,9 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 				</p>
 
 				<ul className="modal-list">
-					{violationReasons.map((item, index) => (
+					{violationReasons.map((item: any, index: any) => (
 						<li key={index}>
-							<strong>{item.fakeNewsSign}:</strong> {item.reason}
+							<strong>{item?.fakeNewsSign}:</strong> {item?.reason}
 						</li>
 					))}
 				</ul>

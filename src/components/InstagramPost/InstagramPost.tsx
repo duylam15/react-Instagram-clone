@@ -17,6 +17,9 @@ import "./InstagramPost.css"
 import { getListFriends } from "../../services/friend/friend";
 import { useNavigate } from "react-router-dom";
 import { CustomNextArrow, CustomPrevArrow } from "./handle";
+import { set } from "date-fns";
+import { FaShareAlt } from 'react-icons/fa';
+import { MessageCircle, Send, Share2 } from "lucide-react";
 
 type PostMedia = {
 	mediaId: number;
@@ -98,6 +101,28 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		fetchListFriends()
 	}, [])
 
+	useEffect(() => {
+		const fetchLikeStatus = async () => {
+			const token = localStorage.getItem('token');
+			const userId = localStorage.getItem('userId');
+
+			if (!post?.postId || !userId || !token) return;
+
+			try {
+				const response = await axios.get(`http://localhost:9999/api/post_emotions/check-exist-post-emotion/post/${post.postId}/user/${userId}`, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+				setLiked(response.data.data); // true / false
+			} catch (error) {
+				console.error("Lỗi khi kiểm tra trạng thái like:", error);
+			}
+		};
+
+		fetchLikeStatus();
+	}, [post]);
+
 	// Đóng menu tuỳ chọn khi click ra ngoài vùng menu
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -169,25 +194,66 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 
 		try {
-			// Gửi yêu cầu POST lên server
-			await axios.post('http://localhost:9999/api/post_emotions', {
-				postId: postId,
-				userId: userId,
-				emotion: liked ? '' : '<3', // Nếu đã like thì bỏ (unlike), nếu chưa thì set cảm xúc <3
+			if (liked) {
+				// Unlike: Gửi DELETE request
+				await axios.delete(`http://localhost:9999/api/post_emotions`, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+					data: {
+						postId,
+						userId,
+					},
+				});
+				setLiked(false);
+			} else {
+				// Like: Gửi POST request
+				await axios.post('http://localhost:9999/api/post_emotions', {
+					postId,
+					userId,
+					emotion: '<3',
+				}, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+				setLiked(true);
+			}
+			onRefresh(); // cập nhật lại danh sách bài viết
+		} catch (error) {
+			console.error("Lỗi khi xử lý like/unlike:", error);
+		}
+	};
+
+	// ❤️ Xử lý Like / Unlike bài viết
+	const handleSharePost = async () => {
+		const token = localStorage.getItem('token');
+		const postId = post?.postId;
+		const userId = localStorage.getItem('userId');
+
+		if (!token || !userId || !postId) {
+			console.error("Thông tin cần thiết chưa có.");
+			return;
+		}
+
+		try {
+			await axios.post('http://localhost:9999/api/post-shares', {
+				postId,
+				userId,
+				"visibility": "PUBLIC"
 			}, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
 			});
-
-			// Chuyển đổi trạng thái liked
-			setLiked(!liked);
-			onRefresh();
-
+			message.success("Chia sẻ bài viết thành công!");
+			onRefresh(); // cập nhật lại danh sách bài viết
 		} catch (error) {
-			console.error("Lỗi khi gửi cảm xúc:", error);
+			message.error("Chia sẻ bài viết thất bại!");
+			console.error("Lỗi khi xử lý share bai viet:", error);
 		}
 	};
+
 
 	// 🔚 Đóng modal chỉnh sửa bài viết
 	const handleClose = () => {
@@ -197,7 +263,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 	// 📝 Xử lý cập nhật bài viết
 	const handlePostUpdate = async () => {
 		// Check nếu thiếu thông tin thì return sớm
-		if (!post?.postId || !comment?.trim() || images.length === 0 || !visibility) {
+		if (!post?.postId || !comment?.trim() || !visibility) {
 			message.warning("⚠️ Không đủ thông tin để cập nhật bài viết");
 			return;
 		}
@@ -324,6 +390,8 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 
 				setComments(prev => updateCommentsRecursively(prev));
 				setParentCommentId(null); // Reset lại trạng thái reply
+				refresh()
+
 			} catch (error) {
 				console.error("Error replying to comment:", error);
 			}
@@ -341,11 +409,13 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	};
 
-	// 😄 Xử lý khi chọn emoji từ emoji picker
+	// 😄 Xử lý khi chọn emoji từ emoji Picker
 	const handleEmojiSelect = (emoji: { native: string }) => {
 		setComment((prev) => prev + emoji.native); // Thêm emoji vào nội dung input
 		setShowPicker(false); // Ẩn picker sau khi chọn
 	};
+
+	console.log("postpostpost", post)
 
 	return (
 		<div className={`max-w-[470px] pt-0 border-b border-gray-600`}>
@@ -430,17 +500,28 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 								<div className="bg-gray-700 h-full max-w-[60%] w-full rounded-bl-xl flex items-center justify-center flex-col">
 									{1 && (
 										<div className="w-full h-full relative">
-											<Carousel infinite={false}
-												arrows >
-												{images.map((img: any, index: any) => (
-													<img
-														key={index}
-														src={img?.mediaUrl || img}
-														alt="Selected"
-														className="h-[83vh] w-[70%]  object-cover rounded-bl-xl"
-													/>
-												))}
+											<Carousel infinite={false} arrows>
+												{images.map((img: any, index: number) => {
+													const mediaUrl = img?.mediaUrl || img;
+													const isVideo = mediaUrl?.match(/\.(mp4|webm|ogg)$/i);
+													return isVideo ? (
+														<video
+															key={index}
+															src={mediaUrl}
+															controls
+															className="h-[83vh] w-[70%] object-cover rounded-bl-xl"
+														/>
+													) : (
+														<img
+															key={index}
+															src={mediaUrl}
+															alt="Selected"
+															className="h-[83vh] w-[70%] object-cover rounded-bl-xl"
+														/>
+													);
+												})}
 											</Carousel>
+
 											<button
 												className="bg-black absolute bottom-5 right-10 shadow-md text-white pl-4 pr-4 rounded-xl"
 												onClick={() => setIsModalOpenPut(true)}
@@ -609,19 +690,25 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			{/* Actions */}
 			<div className="flex justify-between pt-2">
 				<div className="flex items-center gap-4">
-					<p onClick={handleLikeClick} className="text-xl">
+					<p onClick={handleLikeClick} className="text-xl cursor-pointer">
 						{liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
 					</p>
-					<p className="text-xl"><FaComment /></p>
-					<p className="text-xl"><FaPaperPlane /></p>
+					<p className="text-xl cursor-pointer"><MessageCircle /></p>
+					<p onClick={handleSharePost} className="text-xl cursor-pointer">
+						<Send />
+					</p>
 				</div>
-				<p onClick={() => setSaved(!saved)} className="text-xl">
-					{saved ? <FaBookmark /> : <FaRegBookmark />}
-				</p>
+				<div className="flex items-center gap-4">
+					<p onClick={() => setSaved(!saved)} className="text-xl cursor-pointer">
+						{saved ? <FaBookmark /> : <FaRegBookmark />}
+					</p>
+
+				</div>
+
 			</div>
 			{/* Likes and Caption */}
 			<div className="">
-				<p className="font-semibold">{post?.numberComment} {t('likes')}</p>
+				<p className="font-semibold">{post?.numberEmotion} {t('likes')}</p>
 				<p><span className="font-semibold">{username}</span> {post?.content}</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>{t('view_more')} {post?.numberComment} {t('comment')} </p>
 			</div>
 			{/* Comment Input */}
@@ -633,7 +720,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					parentCommentId={parentCommentId}
 				/>
 			</div>
-			
+
 			{/* Modal hiển thị hình ảnh + comments */}
 			<Modal open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={"70%"}
 				centered className="model-custom" height={"90%"}>
@@ -641,15 +728,27 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					{/* Hình ảnh bên trái */}
 					<div className="w-[55%] h-[full] rounded-xl">
 						<Carousel infinite={false} arrows className="carousel-custom">
-							{post?.postMedia.map((postMedia: any) => (
-								<img
-									key={postMedia?.postMediaId}
-									src={postMedia?.mediaUrl}
-									alt="Post"
-									className="w-full h-[90vh] object-cover rounded-l-lg"
-								/>
-							))}
+							{post?.postMedia.map((postMedia: any) => {
+								const isVideo = postMedia.mediaUrl?.match(/\.(mp4|webm|ogg)$/i);
+
+								return isVideo ? (
+									<video
+										key={postMedia?.postMediaId}
+										src={postMedia?.mediaUrl}
+										controls
+										className="w-full h-[90vh] object-cover rounded-l-lg"
+									/>
+								) : (
+									<img
+										key={postMedia?.postMediaId}
+										src={postMedia?.mediaUrl}
+										alt="Post"
+										className="w-full h-[90vh] object-cover rounded-l-lg"
+									/>
+								);
+							})}
 						</Carousel>
+
 					</div>
 
 					{/* Comments bên phải */}

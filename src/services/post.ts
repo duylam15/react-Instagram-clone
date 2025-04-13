@@ -12,7 +12,7 @@ export const getPosts = async () => {
     }
     console.log(token)
 
-    const response = await axios.get("http://localhost:9999/api/posts", {
+    const response = await axios.get("http://localhost:9999/api/posts?page=0&size=1000 ", {
       headers: {
         Authorization: `Bearer ${token}`, // Sử dụng token từ localStorage
       },
