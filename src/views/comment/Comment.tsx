@@ -131,13 +131,20 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
     }
   };
 
-  const handleToggleReplies = () => {
-    // Nếu chưa hiển thị và không có reply trong props mà comment báo có reply
-    if (!showReplies && (!comment.replies || comment.replies.length === 0) && comment.numberCommentChild > 0) {
-      fetchReplies();
+
+  const handleToggleReplies = async () => {
+    if (!showReplies) {
+      // Nếu chưa hiển thị và chưa có replies => fetch
+      if ((!comment.replies || comment.replies.length === 0) && comment.numberCommentChild > 0) {
+        await fetchReplies(); // đợi fetch xong mới tiếp tục
+      } else {
+        setShowReplies(true);
+      }
+    } else {
+      setShowReplies(false); // đang hiển thị => ẩn đi
     }
-    setShowReplies(!showReplies);
   };
+
 
   return (
     <div className="flex flex-col items-start gap-3 w-full">
@@ -155,7 +162,7 @@ const CommentItem = ({ comment, post, onReplyClick }: CommentItemProps) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-5 ml-12 text-gray-500 text-sm">
+      <div className="flex items-center gap-2 ml-12 text-gray-500 text-sm">
         <span>{formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}</span>
         <span>{likeCount} likes</span>
         <div
