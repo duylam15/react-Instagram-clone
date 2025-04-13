@@ -3,6 +3,7 @@ import "./index.css"
 import InstagramPost from "../InstagramPost/InstagramPost";
 import { getPosts } from "../../services/post";
 import { useRefresh } from "../../contexts/RefreshContext";
+import ChatAppGemini from "../chatGemini";
 
 type PostMedia = {
 	mediaId: number;
@@ -106,6 +107,7 @@ const StoryList = () => {
 					<div key={index}><InstagramPost post={post} onRefresh={refresh} /></div>
 				))}
 			</div>
+			<ChatAppGemini/>
 		</div>
 	);
 };
