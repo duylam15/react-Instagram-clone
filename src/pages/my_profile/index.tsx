@@ -21,6 +21,7 @@ import data from "@emoji-mart/data";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { CustomNextArrow, CustomPrevArrow } from "../../components/InstagramPost/handle";
 import { formatTimeAgo } from "../../utils/date";
+import CommentSection from "../../views/comment/Comment";
 
 export default function MyProfile() {
   // Khai báo các hook context/router
@@ -167,10 +168,10 @@ export default function MyProfile() {
     try {
       const response = await axios.delete(
         `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`, {
-        headers: {
+          headers: {
           Authorization: `Bearer ${token}`, // Thêm token vào header
-        },
-      }
+          },
+        }
       );
 
 
@@ -460,69 +461,69 @@ export default function MyProfile() {
             <div className="overflow-y-auto h-[400px]">
               <div className="flex flex-col p-3 justify-between  items-start gap-3 border-b border-gray-300 pb-3">
                 <div className="flex justify-between w-full items-center">
-                  <div className="flex items-center justify-center gap-3">
-                    <img
-                      src={user?.urlAvatar}
-                      alt="Avatar"
-                      className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
-                    />
-                    <span className="font-semibold" style={{ color: "var(--text-color)" }}>{username}</span>
+                <div className="flex items-center justify-center gap-3">
+                  <img
+                    src={user?.urlAvatar}
+                    alt="Avatar"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-pink-500"
+                  />
+                  <span className="font-semibold" style={{ color: "var(--text-color)" }}>{username}</span>
                     <span className="font-normal text-[14px] text-gray-400" style={{ color: "var(--white-to-gray)" }}>{formatTimeAgo(`${postClick?.createdAt}`, t)}  </span>
-                  </div>
+                </div>
 
                   <div className="relative inline-block" style={{
                     color: "var(--text-color)",
                     background: " var(--bg-color)"
                   }}>
 
-                    <div ref={menuRef}>
+                  <div ref={menuRef}>
                       <div className="relative w-[20px] h-[20px]" onClick={() => setIsOpen(!isOpen)} >
                         <svg viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg" stroke="#c2c2c2"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5 10C6.10457 10 7 10.8954 7 12C7 13.1046 6.10457 14 5 14C3.89543 14 3 13.1046 3 12C3 10.8954 3.89543 10 5 10Z" fill="#c2c2c2"></path> <path d="M12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 10.8954 10 12 10Z" fill="#c2c2c2"></path> <path d="M21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12Z" fill="#c2c2c2"></path> </g></svg>
-                      </div>
-                      {isOpen && postClick?.userId?.toString() === userId && (
-                        <div
-                          className="absolute z-40 right-0 w-40 border rounded-lg shadow-lg flex flex-col text-center"
-                          style={{
-                            color: "var(--text-color)",
-                            background: "var(--bg-color)",
-                            lineHeight: 1,
-                            borderColor: "var(--white-to-gray)",
+                    </div>
+                    {isOpen && postClick?.userId?.toString() === userId && (
+                      <div
+                        className="absolute z-40 right-0 w-40 border rounded-lg shadow-lg flex flex-col text-center"
+                        style={{
+                          color: "var(--text-color)",
+                          background: "var(--bg-color)",
+                          lineHeight: 1,
+                          borderColor: "var(--white-to-gray)",
+                        }}
+                      >
+                        <p
+                          className="custom-hover cursor-pointer w-full text-center leading-[40px] m-0 rounded-t-lg"
+                          onClick={() => {
+                            if (postClick?.postId) {
+                              handleDelete(postClick?.postId);
+                                setIsModalOpen(false);
+                            }
                           }}
                         >
-                          <p
-                            className="custom-hover cursor-pointer w-full text-center leading-[40px] m-0 rounded-t-lg"
-                            onClick={() => {
-                              if (postClick?.postId) {
-                                handleDelete(postClick?.postId);
-                                setIsModalOpen(false);
-                              }
-                            }}
-                          >
-                            Xóa
-                          </p>
-                          <p
-                            className="custom-hover cursor-pointer w-full text-center leading-[40px] m-0 rounded-b-lg"
-                            onClick={() => {
-                              if (postClick?.postId) {
-                                setIsOpenPut(true);
-                                setIsModalOpen(false);
-                              }
-                            }}
+                          Xóa
+                        </p>
+                        <p
+                          className="custom-hover cursor-pointer w-full text-center leading-[40px] m-0 rounded-b-lg"
+                          onClick={() => {
+                            if (postClick?.postId) {
+                              setIsOpenPut(true);
+                              setIsModalOpen(false);
+                            }
+                          }}
 
-                          >
-                            Sửa
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                        >
+                          Sửa
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
+              </div>
                 <span className="font-semibold" style={{ color: "var(--text-color)" }}>{postClick?.content}</span>
               </div>
               <div className="pt-2 pl-5 pr-5 flex flex-col items-start gap-3 text-gray-400">
                 comment
-              </div>
             </div>
+              </div>
 
             <div className="pl-5 pr-5 border-t border-gray-300">
               <CommentInput />
@@ -533,13 +534,13 @@ export default function MyProfile() {
 
       {/* Update Post */}
       {isOpenPut && <div className="overlay" onClick={() => handleClose()}>
-        <div className="rounded-xl" onClick={(e) => e.stopPropagation()}>
-          {loading ? (
-            <Spin size="large" tip="Creating post..." />
-          ) : (
+          <div className="rounded-xl" onClick={(e) => e.stopPropagation()}>
+            {loading ? (
+              <Spin size="large" tip="Creating post..." />
+            ) : (
             <div className="flex justify-between items-center flex-col mt-[-20px] w-[1000px] h-[90vh]  rounded-xl">
 
-              <div className="bg-black w-full text-white font-medium text-[20px] rounded-t-xl text-center p-2 flex justify-between items-center">
+                <div className="bg-black w-full text-white font-medium text-[20px] rounded-t-xl text-center p-2 flex justify-between items-center">
                 <div className="">
                 </div>
                 <div className="ml-30">
@@ -548,11 +549,10 @@ export default function MyProfile() {
                 <div className="" onClick={handlePostUpdate}>
                   Update Post
                 </div>
-              </div>
-              <div className="flex w-full h-[90vh]">
-                {/* Khu vực hiển thị ảnh */}
-                <div className="bg-gray-700 h-full max-w-[60%] w-full rounded-bl-xl flex items-center justify-center flex-col">
-                  {1 && (
+                </div>
+                <div className="flex w-full h-[90vh]">
+                  {/* Khu vực hiển thị ảnh */}
+                  <div className="bg-gray-700 h-full max-w-[60%] w-full rounded-bl-xl flex items-center justify-center flex-col">
                     <div className="w-full h-full relative">
                       <Carousel infinite={false}
                         arrows >
@@ -637,72 +637,72 @@ export default function MyProfile() {
                         </div>
                       }
                     </div>
-                  )}
-                </div>
-                {/* Khu vực comment */}
+                      )}
+                    </div>
+                  {/* Khu vực comment */}
                 <div className="bg-gray-600 h-full w-[50%] rounded-br-xl  overflow-auto">
-                  <div className="comment p-3">
-                    <div className="flex items-center justify-between">
+                    <div className="comment p-3">
                       <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between">
                         <img src={user?.urlAvatar} alt=""
                           className="w-[50px] h-[50px] rounded-full" />
-                        <div className="text-white ml-4">{username}</div>
-                      </div>
-                      <div className="relative" onClick={() => setShowOptions((prev) => !prev)} ref={menuRef}>
+                          <div className="text-white ml-4">{username}</div>
+                        </div>
+                        <div className="relative" onClick={() => setShowOptions((prev) => !prev)} ref={menuRef}>
                         <svg viewBox="0 0 16 16" width="20px" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ccc"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4 8C4 9.10457 3.10457 10 2 10C0.895431 10 0 9.10457 0 8C0 6.89543 0.895431 6 2 6C3.10457 6 4 6.89543 4 8Z" fill="#ccc"></path> <path d="M10 8C10 9.10457 9.10457 10 8 10C6.89543 10 6 9.10457 6 8C6 6.89543 6.89543 6 8 6C9.10457 6 10 6.89543 10 8Z" fill="#ccc"></path> <path d="M14 10C15.1046 10 16 9.10457 16 8C16 6.89543 15.1046 6 14 6C12.8954 6 12 6.89543 12 8C12 9.10457 12.8954 10 14 10Z" fill="#ccc"></path> </g></svg>
-                        {showOptions && (
-                          <div className="absolute top-8 right-0 bg-black text-white rounded shadow-md z-50 w-32">
-                            <div
-                              onClick={() => handleSelect("PUBLIC")}
-                              className="flex items-center justify-between rounded p-2 hover:bg-gray-800 cursor-pointer"
-                            >
-                              <span>Public</span>
-                              {visibility === "PUBLIC" && (
-                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                              )}
+                          {showOptions && (
+                            <div className="absolute top-8 right-0 bg-black text-white rounded shadow-md z-50 w-32">
+                              <div
+                                onClick={() => handleSelect("PUBLIC")}
+                                className="flex items-center justify-between rounded p-2 hover:bg-gray-800 cursor-pointer"
+                              >
+                                <span>Public</span>
+                                {visibility === "PUBLIC" && (
+                                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                )}
+                              </div>
+                              <div
+                                onClick={() => handleSelect("PRIVATE")}
+                                className="flex items-center justify-between p-2 rounded hover:bg-gray-800 cursor-pointer"
+                              >
+                                <span>Private</span>
+                                {visibility === "PRIVATE" && (
+                                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                )}
+                              </div>
                             </div>
-                            <div
-                              onClick={() => handleSelect("PRIVATE")}
-                              className="flex items-center justify-between p-2 rounded hover:bg-gray-800 cursor-pointer"
-                            >
-                              <span>Private</span>
-                              {visibility === "PRIVATE" && (
-                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                              )}
-                            </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="input-post mt-3">
-                      <div className="flex items-center py-2">
-                        <textarea
-                          placeholder={t('Comment')}
+                      <div className="input-post mt-3">
+                        <div className="flex items-center py-2">
+                          <textarea
+                            placeholder={t('Comment')}
                           className="w-full text-white outline-none  p-1"
-                          value={comment}
-                          onChange={(e) => setComment(e.target.value)}
-                          style={{ color: "var(--text-color)" }}
-                        ></textarea>
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            style={{ color: "var(--text-color)" }}
+                          ></textarea>
 
                         {/* Nút mở Emoji Picker */}
-                        <FaSmile
-                          className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
-                          onClick={() => setShowPicker(!showPicker)}
-                        />
+                          <FaSmile
+                            className="text-gray-500 cursor-pointer w-[25px] h-[25px]"
+                            onClick={() => setShowPicker(!showPicker)}
+                          />
                         {/* Hiển thị Emoji Picker */}
-                        {showPicker && (
+                          {showPicker && (
                           <div className=" absolute bottom-0 right-54 z-10">
-                            <Picker data={data} onEmojiSelect={handleEmojiSelect} />
-                          </div>
-                        )}
+                              <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
 
       </div >
