@@ -17,6 +17,7 @@ import "./InstagramPost.css"
 import { getListFriends } from "../../services/friend/friend";
 import { useNavigate } from "react-router-dom";
 import { CustomNextArrow, CustomPrevArrow } from "./handle";
+import { set } from "date-fns";
 
 type PostMedia = {
 	mediaId: number;
@@ -98,6 +99,28 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		fetchListFriends()
 	}, [])
 
+	useEffect(() => {
+		const fetchLikeStatus = async () => {
+			const token = localStorage.getItem('token');
+			const userId = localStorage.getItem('userId');
+	
+			if (!post?.postId || !userId || !token) return;
+	
+			try {
+				const response = await axios.get(`http://localhost:9999/api/post_emotions/check-exist-post-emotion/post/${post.postId}/user/${userId}`, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+				setLiked(response.data.data); // true / false
+			} catch (error) {
+				console.error("Lỗi khi kiểm tra trạng thái like:", error);
+			}
+		};
+	
+		fetchLikeStatus();
+	}, [post]);
+
 	// Đóng menu tuỳ chọn khi click ra ngoài vùng menu
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -162,30 +185,41 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		const token = localStorage.getItem('token');
 		const postId = post?.postId;
 		const userId = localStorage.getItem('userId');
-
+	
 		if (!token || !userId || !postId) {
 			console.error("Thông tin cần thiết chưa có.");
 			return;
 		}
-
+	
 		try {
-			// Gửi yêu cầu POST lên server
-			await axios.post('http://localhost:9999/api/post_emotions', {
-				postId: postId,
-				userId: userId,
-				emotion: liked ? '' : '<3', // Nếu đã like thì bỏ (unlike), nếu chưa thì set cảm xúc <3
-			}, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			// Chuyển đổi trạng thái liked
-			setLiked(!liked);
-			onRefresh();
-
+			if (liked) {
+				// Unlike: Gửi DELETE request
+				await axios.delete(`http://localhost:9999/api/post_emotions`, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+					data: {
+						postId,
+						userId,
+					},
+				});
+				setLiked(false);
+			} else {
+				// Like: Gửi POST request
+				await axios.post('http://localhost:9999/api/post_emotions', {
+					postId,
+					userId,
+					emotion: '<3',
+				}, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+				setLiked(true);
+			}
+			onRefresh(); // cập nhật lại danh sách bài viết
 		} catch (error) {
-			console.error("Lỗi khi gửi cảm xúc:", error);
+			console.error("Lỗi khi xử lý like/unlike:", error);
 		}
 	};
 
@@ -609,7 +643,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			{/* Actions */}
 			<div className="flex justify-between pt-2">
 				<div className="flex items-center gap-4">
-					<p onClick={handleLikeClick} className="text-xl">
+					<p onClick={handleLikeClick} className="text-xl cursor-pointer">
 						{liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
 					</p>
 					<p className="text-xl"><FaComment /></p>
@@ -621,7 +655,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			</div>
 			{/* Likes and Caption */}
 			<div className="">
-				<p className="font-semibold">{post?.numberComment} {t('likes')}</p>
+				<p className="font-semibold">{post?.numberEmotion} {t('likes')}</p>
 				<p><span className="font-semibold">{username}</span> {post?.content}</p><p className="cursor-pointer text-blue-500 font-semibold" onClick={() => setIsModalOpen(true)}>{t('view_more')} {post?.numberComment} {t('comment')} </p>
 			</div>
 			{/* Comment Input */}
@@ -633,7 +667,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					parentCommentId={parentCommentId}
 				/>
 			</div>
-			
+
 			{/* Modal hiển thị hình ảnh + comments */}
 			<Modal open={isModalOpen} onCancel={() => setIsModalOpen(false)} footer={null} width={"70%"}
 				centered className="model-custom" height={"90%"}>
