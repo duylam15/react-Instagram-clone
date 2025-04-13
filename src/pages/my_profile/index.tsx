@@ -44,14 +44,11 @@ export default function MyProfile() {
   const [user, setUser] = useState<any>();
   const [avatar, setAvatar] = useState("/images/default-avatar.jpg");
 
-  // Modal, image state
+  // Modal, popup, image state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPopOpen, setIsPopOpen] = useState(false);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [images, setImages] = useState<any>();
-
-  const token = localStorage.getItem('token');
-  console.error(token);
-  
 
   // Bài viết & chỉnh sửa
   const [posts, setPosts] = useState<any[]>([]);
@@ -144,9 +141,28 @@ export default function MyProfile() {
     };
   }, []);
 
-  
+  // Mở & đóng popup thay đổi avatar
+  const handleOpenPop = () => setIsPopOpen(true);
+  const handleClosePop = () => setIsPopOpen(false);
 
-
+  // Xử lý khi gỡ ảnh đại diện
+  const handleRemoveAvatar = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      await axios.delete(
+        `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setAvatar("/images/default-avatar.jpg");
+      handleClosePop();
+    } catch (error: any) {
+      console.error("Lỗi khi gỡ avatar:", error);
+    }
+  };
 
   // Xử lý khi click vào icon “...”
   const handleIconClick = () => {
@@ -324,90 +340,17 @@ export default function MyProfile() {
     }
   };
 
-  //avatar
-
-  const [isAvatarModalVisible, setAvatarModalVisible] = useState(false);
-  const [isImagePopVisible, setImagePopVisible] = useState(false);
-  const [currentImage, setCurrentImage] = useState<string | null>(null);
-  const [profileAvatar, setProfileAvatar] = useState("/images/default-avatar.jpg");
-
-  // Mở/đóng popup thay đổi avatar
-
-  const closeAvatarModal = () => setImagePopVisible(false);
-const openAvatarModal = () => setImagePopVisible(true);
-
-// Sửa lại hàm onUploadSuccess trong component MyProfile
-const handleImageUpload = async (options: any) => {
-  const { file, onSuccess, onError } = options;
-  const formData = new FormData();
-  formData.append("avatar", file);
-
-  const token = localStorage.getItem('token');
-  
-  try {
-    const response = await axios.put(
-      `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`,
-      formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-    // Cập nhật avatar mới
-    setProfileAvatar(response.data.data.urlAvatar);
-    closeAvatarModal();
-    onSuccess("Upload thành công");
-  } catch (error) {
-    console.error("Lỗi khi cập nhật avatar:", error);
-    onError(error);
-  }
-};
-
-
-  const handleRemoveAvatar = async () => {
-    const token = localStorage.getItem('token');
-    try {
-      await axios.delete(`http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`,
-         {
-           headers: {
-             Authorization: `Bearer ${token}`,
-           },
-         });
-
-      setProfileAvatar("/images/default-avatar.jpg"); // Đặt lại avatar mặc định
-      closeAvatarModal();
-    } catch (error) {
-      console.error("Lỗi khi gỡ avatar:", error);
-    }
-  };
-  
-
-    // Xử lý khi gỡ ảnh đại diện
-  // const handleRemoveAvatar = async () => {
-  //   const token = localStorage.getItem('token');
-  //   try {
-  //     await axios.delete(
-  //       `http://localhost:9999/api/api/users/avatar/${idProfileDangXem}`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-  //     setAvatar("/images/default-avatar.jpg");
-  //     handleClosePop();
-  //   } catch (error: any) {
-  //     console.error("Lỗi khi gỡ avatar:", error);
-  //   }
-  // };
-
   return (
     <div className="ml-25 min-h-[100vh] p-4 flex flex-col items-center">
       {/* Thông tin người dùng */}
       <div className="flex items-center gap-4 mb-8">
         <div className="w-[168px] h-[168px] rounded-full overflow-hidden border-2 p-1.5 border-pink-500">
-           <img src={profileAvatar} className="object-cover rounded-[99px]" alt="Avatar" onClick={openAvatarModal} />
+          <img
+            src={avatar}
+            alt="Avatar"
+            className="object-cover rounded-[99px]"
+            onClick={handleOpenPop}
+          />
         </div>
         <div className="relative flex flex-col gap-1">
           <div className="flex items-center gap-4 justify-center">
@@ -467,26 +410,43 @@ const handleImageUpload = async (options: any) => {
             className="aspect-square h-[410px] w-[308px] cursor-pointer"
             onClick={() => handleImageClick(post)}
           >
-            <img src={post?.postMedia[0]?.mediaUrl} alt="Post" className="w-full h-full object-cover" />
+            {post?.postMedia?.length > 0 && post?.postMedia[0]?.mediaUrl ? (
+              /\.(mp4|webm|ogg)$/i.test(post.postMedia[0].mediaUrl) ? (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-700  text-xl">
+                  Video
+                </div>
+              ) : (
+                <img
+                  src={post.postMedia[0].mediaUrl}
+                  alt="Post"
+                  className="w-full h-full object-cover"
+                />
+              )
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-700 text-xl p-4 text-center">
+                Bài viết
+              </div>
+            )}
+
           </div>
         ))}
       </div>
 
-      
-
       {/* Modal Thay đổi avatar */}
       <Modal
-        open={isImagePopVisible} onCancel={closeAvatarModal} footer={null}
+        open={isPopOpen}
+        onCancel={handleClosePop}
+        footer={null}
+        centered
         width={320}
         className="custom-modal custom-height-modal"
-        
       >
         <div className="flex flex-col items-center p-0">
           <h5 className="custom-btn text-center font-normal text-lg mt-4 mb-3">
             Thay đổi ảnh đại diện
           </h5>
           <div className="w-full h-[1px] bg-gray-300 my-1"></div>
-            <ImageUploader onUploadSuccess={(url) => setProfileAvatar(url)} onClose={closeAvatarModal} />
+          <ImageUploader onUploadSuccess={(url) => setAvatar(url)} onClose={handleClosePop} />
           <div className="w-full h-[1px] bg-gray-300 my-1"></div>
           <Button
             type="text"
@@ -499,7 +459,7 @@ const handleImageUpload = async (options: any) => {
           <div className="w-full h-[1px] bg-gray-300 my-1"></div>
           <Button
             className="border-0 custom-btn no-hover text-base font-medium w-full my-2"
-            onClick={closeAvatarModal}
+            onClick={handleClosePop}
           >
             Hủy
           </Button>
@@ -512,10 +472,27 @@ const handleImageUpload = async (options: any) => {
           {/* Hình ảnh bên trái */}
           <div className="w-[55%] h-[full] rounded-xl">
             <Carousel infinite={false} arrows className="carousel-custom">
-              {selectedImages.map((img, index) => (
-                <img key={index} src={img} alt="Post" className="w-full h-[90vh] object-cover rounded-l-lg" />
-              ))}
+              {selectedImages.map((media, index) => {
+                const isVideo = typeof media === "string" && media.match(/\.(mp4|webm|ogg)$/i);
+
+                return isVideo ? (
+                  <video
+                    key={index}
+                    src={media}
+                    controls
+                    className="w-full h-[90vh] object-cover rounded-l-lg"
+                  />
+                ) : (
+                  <img
+                    key={index}
+                    src={media}
+                    alt="Post"
+                    className="w-full h-[90vh] object-cover rounded-l-lg"
+                  />
+                );
+              })}
             </Carousel>
+
           </div>
 
           {/* Comments bên phải */}

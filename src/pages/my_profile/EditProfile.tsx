@@ -28,11 +28,13 @@ const EditProfile = () => {
   }>({});
 
 
-  useEffect(() => {
+ useEffect(() => {
+  const id = localStorage.getItem("userId");
+  if (id) {
+    loadUser(Number(id));
+  }
+}, []);
 
-    loadUser(1);
-
-  }, []);
 
   const loadUser = async (userId: any) => {
     try {
@@ -145,7 +147,7 @@ const EditProfile = () => {
       });
   
       // Kiểm tra kết quả trả về từ API
-      if (result && result.status === 200) {
+      if (result && result.statusCode === 200) {
         message.success('Cập nhật thông tin cá nhân thành công');
         navigate('/profile');
       } else {

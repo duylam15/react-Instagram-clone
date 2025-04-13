@@ -13,14 +13,21 @@ import Register from '../pages/register';
 import ForgotPassword from '../pages/forgotpassword';
 import EditProfile from '../pages/my_profile/EditProfile';
 import ProtectedRoute from './ProtectedRoute';
+import Dashboard from '../views/dashboard/Dashboard';
+import User from '../views/user/User';
+import Post from '../views/post/Post';
+import Conversation from '../views/conversation/Conversation';
+import Message from '../views/message/Message';
+import Friend from '../views/friend/Friend';
+import Comment from '../views/comment/Comment';
 
-const Dashboard = React.lazy(() => import('../views/dashboard/Dashboard'))
-const User = React.lazy(() => import('../views/user/User'))
-const Post = React.lazy(() => import('../views/post/Post'))
+// const Dashboard = React.lazy(() => import('../views/dashboard/Dashboard'))
+// const User = React.lazy(() => import('../views/user/User'))
+// const Post = React.lazy(() => import('../views/post/Post'))
 // const Comment = React.lazy(() => import('../views/comment/Comment'))
-const Conversation = React.lazy(() => import('../views/conversation/Conversation'))
-const Message = React.lazy(() => import('../views/message/Message'))
-const Friend = React.lazy(() => import('../views/friend/Friend'))
+// const Conversation = React.lazy(() => import('../views/conversation/Conversation'))
+// const Message = React.lazy(() => import('../views/message/Message'))
+// const Friend = React.lazy(() => import('../views/friend/Friend'))
 
 // Định nghĩa kiểu cho route
 interface Route {
@@ -35,7 +42,7 @@ export const routes: Route[] = [
   { path: '/dashboard', name: 'Dashboard', element: <Dashboard /> },
   { path: '/user', name: 'User', element: <User /> },
   { path: '/post', name: 'Post', element: <Post /> }, // Now using the lazy-loaded Post
-  { path: '/comment', name: 'Comment', element: <Comment /> },
+  // { path: '/comment', name: 'Comment', element: <Comment /> },
   { path: '/conversation', name: 'Conversation', element: <Conversation /> },
   { path: '/message', name: 'Message', element: <Message /> },
   { path: '/friend', name: 'Friend', element: <Friend /> },
@@ -102,7 +109,7 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <Dashboard /> }, // Khi truy cập /admin/dashboard, cũng hiển thị Dashboard
       { path: 'user', element: <User /> },
       { path: 'post', element: <Post /> },
-      { path: 'comment', element: <Comment /> },
+      // { path: 'comment', element: <Comment /> },
       { path: 'conversation', element: <Conversation /> },
       { path: 'message', element: <Message /> },
       { path: 'friend', element: <Friend /> },
