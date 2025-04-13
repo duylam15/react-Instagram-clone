@@ -377,7 +377,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	};
 
-	// 😄 Xử lý khi chọn emoji từ emoji picker
+	// 😄 Xử lý khi chọn emoji từ emoji Picker
 	const handleEmojiSelect = (emoji: { native: string }) => {
 		setComment((prev) => prev + emoji.native); // Thêm emoji vào nội dung input
 		setShowPicker(false); // Ẩn picker sau khi chọn
