@@ -378,7 +378,11 @@ export default function MyProfile() {
             className="aspect-square h-[410px] w-[308px] cursor-pointer"
             onClick={() => handleImageClick(post)}
           >
-            <img src={post?.postMedia[0]?.mediaUrl} alt="Post" className="w-full h-full object-cover" />
+            {post?.postMedia[0]?.mediaUrl ?
+              <img src={post?.postMedia[0]?.mediaUrl} alt="Post" className="w-full h-full object-cover" />
+              :
+              <div className="w-full h-[410px] border object-cover flex text-center justify-center items-center" >Bài viết</div>
+            }
           </div>
         )}
       </div>

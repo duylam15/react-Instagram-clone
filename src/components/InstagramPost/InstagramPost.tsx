@@ -18,6 +18,7 @@ import { getListFriends } from "../../services/friend/friend";
 import { useNavigate } from "react-router-dom";
 import { CustomNextArrow, CustomPrevArrow } from "./handle";
 import { set } from "date-fns";
+import { FaShareAlt } from 'react-icons/fa';
 
 type PostMedia = {
 	mediaId: number;
@@ -223,6 +224,37 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	};
 
+	// ❤️ Xử lý Like / Unlike bài viết
+	const handleSharePost = async () => {
+		const token = localStorage.getItem('token');
+		const postId = post?.postId;
+		const userId = localStorage.getItem('userId');
+
+		if (!token || !userId || !postId) {
+			console.error("Thông tin cần thiết chưa có.");
+			return;
+		}
+
+		try {
+			await axios.post('http://localhost:9999/api/post-shares', {
+				postId,
+				userId,
+				"visibility": "PUBLIC"
+			}, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+			setLiked(true);
+			message.success("Chia sẻ bài viết thành công!");
+			onRefresh(); // cập nhật lại danh sách bài viết
+		} catch (error) {
+			message.error("Chia sẻ bài viết thất bại!");
+			console.error("Lỗi khi xử lý share bai viet:", error);
+		}
+	};
+
+
 	// 🔚 Đóng modal chỉnh sửa bài viết
 	const handleClose = () => {
 		setIsOpenPut(false)
@@ -358,6 +390,8 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 
 				setComments(prev => updateCommentsRecursively(prev));
 				setParentCommentId(null); // Reset lại trạng thái reply
+				refresh()
+
 			} catch (error) {
 				console.error("Error replying to comment:", error);
 			}
@@ -375,7 +409,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 		}
 	};
 
-	// 😄 Xử lý khi chọn emoji từ emoji picker
+	// 😄 Xử lý khi chọn emoji từ emoji Picker
 	const handleEmojiSelect = (emoji: { native: string }) => {
 		setComment((prev) => prev + emoji.native); // Thêm emoji vào nội dung input
 		setShowPicker(false); // Ẩn picker sau khi chọn
@@ -648,12 +682,18 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					<p onClick={handleLikeClick} className="text-xl cursor-pointer">
 						{liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
 					</p>
-					<p className="text-xl"><FaComment /></p>
-					<p className="text-xl"><FaPaperPlane /></p>
+					<p className="text-xl cursor-pointer"><FaComment /></p>
+					<p className="text-xl cursor-pointer"><FaPaperPlane /></p>
 				</div>
-				<p onClick={() => setSaved(!saved)} className="text-xl">
-					{saved ? <FaBookmark /> : <FaRegBookmark />}
-				</p>
+				<div className="flex items-center gap-4">
+					<p onClick={() => setSaved(!saved)} className="text-xl cursor-pointer">
+						{saved ? <FaBookmark /> : <FaRegBookmark />}
+					</p>
+					<p onClick={handleSharePost} className="text-xl cursor-pointer">
+						<FaShareAlt />
+					</p>
+				</div>
+
 			</div>
 			{/* Likes and Caption */}
 			<div className="">

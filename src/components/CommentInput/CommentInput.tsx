@@ -4,6 +4,7 @@ import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import { useRefresh } from "../../contexts/RefreshContext";
 
 type PostMedia = {
 	mediaId: number;
@@ -37,7 +38,7 @@ const CommentInput = forwardRef<HTMLInputElement, CommentInputProps>(({ post, on
 	const [showPicker, setShowPicker] = useState(false);
 	const { t } = useTranslation();
 	const [loading, setLoading] = useState(false);
-
+	const { refreshTrigger, refresh } = useRefresh();
 	const userId = localStorage.getItem("userId");
 
 	const handleEmojiSelect = (emoji: { native: string }) => {
@@ -107,6 +108,7 @@ const CommentInput = forwardRef<HTMLInputElement, CommentInputProps>(({ post, on
 			}
 
 			setComment(""); // Reset ô nhập comment
+			refresh()
 		} catch (error) {
 			console.error("Error creating comment:", error);
 		} finally {

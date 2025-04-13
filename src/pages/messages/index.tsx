@@ -36,21 +36,49 @@ const Messages = () => {
 	const [selectedChat, setSelectedChat] = useState<Conversation | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
 	const token = localStorage.getItem("token");
+	const [username, setUsername] = useState("");
+	const [user, setUser] = useState<any>();
+	const [avatar, setAvatar] = useState("");
+
+	useEffect(() => {
+		const fetchUserProfile = async () => {
+			const token = localStorage.getItem('token');
+			const userId = localStorage.getItem('userId');
+			try {
+				const response = await axios.get(
+					`http://localhost:9999/api/api/users/${userId}`,
+					{
+						headers: {
+							Authorization: `Bearer ${token}`, // Thêm token vào header
+						},
+					}
+				);
+				setUsername(`${response?.data?.data?.firstName} ${response?.data?.data?.lastName}`);
+				setUser(response?.data?.data)
+				setAvatar(response.data.data.urlAvatar);
+			} catch (error) {
+				console.error("Lỗi khi lấy thông tin profile:", error);
+				setUsername("User not found");
+			}
+		};
+		fetchUserProfile();
+	}, [userId]);
+
 	useEffect(() => {
 		console.log("đang vô set user receive id");
 		if (selectedChat) {
 			console.log(selectedChat);
-		  const chat = conversations.find((c) => c.idConversation === selectedChat.idConversation);
-		  if (chat) {
-			localStorage.setItem("userReceiveId", `${selectedChat.idUserReceive}`);
-		  }
+			const chat = conversations.find((c) => c.idConversation === selectedChat.idConversation);
+			if (chat) {
+				localStorage.setItem("userReceiveId", `${selectedChat.idUserReceive}`);
+			}
 		}
-	  }, [selectedChat, conversations]);
+	}, [selectedChat, conversations]);
 	useEffect(() => {
 		const socket = new SockJS("http://localhost:9999/api/ws");
 		const stompClient = Stomp.over(socket);
 		stompClient.connect(
-			{Authorization: `Bearer ${token}`},
+			{ Authorization: `Bearer ${token}` },
 			() => {
 				console.log("Connected to WebSocket Server");
 
@@ -67,7 +95,7 @@ const Messages = () => {
 					subscription.unsubscribe();
 				};
 			},
-			(error : unknown) => {
+			(error: unknown) => {
 				console.error("Connection error:", error);
 			}
 		);
@@ -112,14 +140,13 @@ const Messages = () => {
 		}
 	};
 
-
 	console.log("messages", messages)
 
 	return (
 		<div className="flex w-[92%] h-[100vh] ml-20" style={{ borderColor: "var(--white-to-gray)" }}>
 			{/* Sidebar danh sách chat */}
 			<div className="w-[550px] border-r overflow-y-auto" style={{ borderColor: "var(--white-to-gray)" }}>
-				<h2 className="p-4 pt-6 text-2xl font-bold">Username</h2>
+				<h2 className="p-4 pt-6 text-2xl font-bold">{username}</h2>
 				<h2 className="p-4 pt-6 font-bold">{t("messages")}</h2>
 				{conversations.length === 0 ? (
 					<p className="p-4 text-gray-500">Không có cuộc trò chuyện nào.</p>
@@ -127,7 +154,7 @@ const Messages = () => {
 					conversations.map((chat) => (
 						<div
 							key={chat.idConversation}
-							className={`flex items-center p-3 cursor-pointer hover:bg-gray-100 ${selectedChat?.idConversation === chat.idConversation ? "bg-gray-300" : ""}`}
+							className={`flex items-center p-3 cursor-pointer hover:bg-blue-400 rounded-xl ${selectedChat?.idConversation === chat.idConversation ? "bg-blue-400 " : ""}`}
 							style={{
 								color: "var(--text-color)",
 								borderColor: "var(--white-to-gray)",
@@ -136,10 +163,10 @@ const Messages = () => {
 						>
 							<img src={chat.img || "/default-avatar.png"} alt="Avatar" className="w-12 h-12 rounded-full mr-3" />
 							<div>
-								<p className="font-normal" style={{ color: "var(--text-color)" }}>
+								<p className="font-normal " style={{ color: "var(--text-color)" }}>
 									{chat.firstNameReceiver} {chat.lastNameReceiver}
 								</p>
-								<p className="text-sm text-gray-500">
+								<p className="text-sm">
 									{chat.listMessageDTO && chat.listMessageDTO.length > 0 ? chat.listMessageDTO[0]?.content : "Chưa có tin nhắn"}
 								</p>
 							</div>
@@ -153,19 +180,24 @@ const Messages = () => {
 				{selectedChat ? (
 					<div className="flex flex-col h-full">
 						{/* Header khung chat */}
-						<div className="p-4 border-b flex items-center" style={{ borderColor: "var(--white-to-gray)" }}>
-							<img
-								src={
-									conversations.find((chat) => chat.idConversation === selectedChat?.idConversation)?.img ||
-									"/default-avatar.png"
-								}
-								alt="Avatar"
-								className="w-10 h-10 rounded-full mr-3"
-							/>
-							<p className="font-semibold">
-								{conversations.find((chat) => chat.idConversation === selectedChat?.idConversation)?.firstNameReceiver}{" "}
-								{conversations.find((chat) => chat.idConversation === selectedChat?.idConversation)?.lastNameReceiver}
-							</p>
+						<div className="p-4 border-b flex items-center justify-between" style={{ borderColor: "var(--white-to-gray)" }}>
+							<div className="flex items-center justify-center gap-3">
+								<img
+									src={
+										conversations.find((chat) => chat.idConversation === selectedChat?.idConversation)?.img ||
+										"/default-avatar.png"
+									}
+									alt="Avatar"
+									className="w-10 h-10 rounded-full mr-3"
+								/>
+								<div className="font-semibold">
+									{conversations.find((chat) => chat.idConversation === selectedChat?.idConversation)?.firstNameReceiver}{" "}
+									{conversations.find((chat) => chat.idConversation === selectedChat?.idConversation)?.lastNameReceiver}
+								</div>
+							</div>
+							<div className="flex justify-end" >
+								<VideoCall />
+							</div>
 						</div>
 
 						{/* Nội dung tin nhắn */}
@@ -174,32 +206,27 @@ const Messages = () => {
 								<p className="text-center text-gray-500">Chưa có tin nhắn nào.</p>
 							) : (
 								messages.map((msg, index) => (
-									<p
+									<div
 										key={index}
-										className={`p-2 pl-4 rounded-3xl max-w-xs mb-2 ${msg.idSender === userId ? "ml-auto bg-blue-400 text-white" : "bg-gray-200"}`}
-										style={{
-											color: msg.idSender === userId ? "white" : "var(--text-color)",
-											background: msg.idSender === userId ? "var(--message-bg-color)" : "gray",
-											borderColor: "var(--white-to-gray)",
-										}}
+										className={`p-2 pl-4 rounded-3xl max-w-xs h-auto mb-2 break-words whitespace-pre-wrap ${msg.idSender === userId ? "ml-auto bg-blue-400 text-white" : "bg-gray-500 text-white"
+											}`}
 									>
 										{msg.content}
-									</p>
+									</div>
+
 								))
 							)}
 						</div>
 
 						{/* Input gửi tin nhắn */}
-						<div className="flex items-center rounded-full px-4 focus:outline-none ml-4 mr-4 mb-4 border" style={{ borderColor: "var(--white-to-gray)" }}>
+						<div className="flex items-center rounded-full px-4 focus:outline-none ml-4 mr-4 mb-2 border" style={{ borderColor: "var(--white-to-gray)" }}>
 							<MessageInput
 								conversationId={selectedChat.idConversation}
 								senderId={userId}
 								onMessageSent={(newMessage) => setMessages([...messages, newMessage])}
 							/>
 						</div>
-						<div className="flex justify-end p-4">
-							<VideoCall />
-						</div>
+
 					</div>
 				) : (
 					<div className="flex items-center justify-center h-full text-gray-500">
