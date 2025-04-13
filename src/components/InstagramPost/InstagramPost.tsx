@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { CustomNextArrow, CustomPrevArrow } from "./handle";
 import { set } from "date-fns";
 import { FaShareAlt } from 'react-icons/fa';
+import { MessageCircle, Send, Share2 } from "lucide-react";
 
 type PostMedia = {
 	mediaId: number;
@@ -245,7 +246,6 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					Authorization: `Bearer ${token}`,
 				},
 			});
-			setLiked(true);
 			message.success("Chia sẻ bài viết thành công!");
 			onRefresh(); // cập nhật lại danh sách bài viết
 		} catch (error) {
@@ -500,17 +500,28 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 								<div className="bg-gray-700 h-full max-w-[60%] w-full rounded-bl-xl flex items-center justify-center flex-col">
 									{1 && (
 										<div className="w-full h-full relative">
-											<Carousel infinite={false}
-												arrows >
-												{images.map((img: any, index: any) => (
-													<img
-														key={index}
-														src={img?.mediaUrl || img}
-														alt="Selected"
-														className="h-[83vh] w-[70%]  object-cover rounded-bl-xl"
-													/>
-												))}
+											<Carousel infinite={false} arrows>
+												{images.map((img: any, index: number) => {
+													const mediaUrl = img?.mediaUrl || img;
+													const isVideo = mediaUrl?.match(/\.(mp4|webm|ogg)$/i);
+													return isVideo ? (
+														<video
+															key={index}
+															src={mediaUrl}
+															controls
+															className="h-[83vh] w-[70%] object-cover rounded-bl-xl"
+														/>
+													) : (
+														<img
+															key={index}
+															src={mediaUrl}
+															alt="Selected"
+															className="h-[83vh] w-[70%] object-cover rounded-bl-xl"
+														/>
+													);
+												})}
 											</Carousel>
+
 											<button
 												className="bg-black absolute bottom-5 right-10 shadow-md text-white pl-4 pr-4 rounded-xl"
 												onClick={() => setIsModalOpenPut(true)}
@@ -682,16 +693,16 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					<p onClick={handleLikeClick} className="text-xl cursor-pointer">
 						{liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
 					</p>
-					<p className="text-xl cursor-pointer"><FaComment /></p>
-					<p className="text-xl cursor-pointer"><FaPaperPlane /></p>
+					<p className="text-xl cursor-pointer"><MessageCircle /></p>
+					<p onClick={handleSharePost} className="text-xl cursor-pointer">
+						<Send />
+					</p>
 				</div>
 				<div className="flex items-center gap-4">
 					<p onClick={() => setSaved(!saved)} className="text-xl cursor-pointer">
 						{saved ? <FaBookmark /> : <FaRegBookmark />}
 					</p>
-					<p onClick={handleSharePost} className="text-xl cursor-pointer">
-						<FaShareAlt />
-					</p>
+
 				</div>
 
 			</div>
@@ -717,15 +728,27 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 					{/* Hình ảnh bên trái */}
 					<div className="w-[55%] h-[full] rounded-xl">
 						<Carousel infinite={false} arrows className="carousel-custom">
-							{post?.postMedia.map((postMedia: any) => (
-								<img
-									key={postMedia?.postMediaId}
-									src={postMedia?.mediaUrl}
-									alt="Post"
-									className="w-full h-[90vh] object-cover rounded-l-lg"
-								/>
-							))}
+							{post?.postMedia.map((postMedia: any) => {
+								const isVideo = postMedia.mediaUrl?.match(/\.(mp4|webm|ogg)$/i);
+
+								return isVideo ? (
+									<video
+										key={postMedia?.postMediaId}
+										src={postMedia?.mediaUrl}
+										controls
+										className="w-full h-[90vh] object-cover rounded-l-lg"
+									/>
+								) : (
+									<img
+										key={postMedia?.postMediaId}
+										src={postMedia?.mediaUrl}
+										alt="Post"
+										className="w-full h-[90vh] object-cover rounded-l-lg"
+									/>
+								);
+							})}
 						</Carousel>
+
 					</div>
 
 					{/* Comments bên phải */}

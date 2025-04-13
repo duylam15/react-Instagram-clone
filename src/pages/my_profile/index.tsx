@@ -410,7 +410,24 @@ export default function MyProfile() {
             className="aspect-square h-[410px] w-[308px] cursor-pointer"
             onClick={() => handleImageClick(post)}
           >
-            <img src={post?.postMedia[0]?.mediaUrl} alt="Post" className="w-full h-full object-cover" />
+            {post?.postMedia?.length > 0 && post?.postMedia[0]?.mediaUrl ? (
+              /\.(mp4|webm|ogg)$/i.test(post.postMedia[0].mediaUrl) ? (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-700  text-xl">
+                  Video
+                </div>
+              ) : (
+                <img
+                  src={post.postMedia[0].mediaUrl}
+                  alt="Post"
+                  className="w-full h-full object-cover"
+                />
+              )
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-700 text-xl p-4 text-center">
+                Bài viết
+              </div>
+            )}
+
           </div>
         ))}
       </div>
@@ -455,10 +472,27 @@ export default function MyProfile() {
           {/* Hình ảnh bên trái */}
           <div className="w-[55%] h-[full] rounded-xl">
             <Carousel infinite={false} arrows className="carousel-custom">
-              {selectedImages.map((img, index) => (
-                <img key={index} src={img} alt="Post" className="w-full h-[90vh] object-cover rounded-l-lg" />
-              ))}
+              {selectedImages.map((media, index) => {
+                const isVideo = typeof media === "string" && media.match(/\.(mp4|webm|ogg)$/i);
+
+                return isVideo ? (
+                  <video
+                    key={index}
+                    src={media}
+                    controls
+                    className="w-full h-[90vh] object-cover rounded-l-lg"
+                  />
+                ) : (
+                  <img
+                    key={index}
+                    src={media}
+                    alt="Post"
+                    className="w-full h-[90vh] object-cover rounded-l-lg"
+                  />
+                );
+              })}
             </Carousel>
+
           </div>
 
           {/* Comments bên phải */}
