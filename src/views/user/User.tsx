@@ -25,7 +25,7 @@ import {
   CPaginationItem,
   CPagination
 } from "@coreui/react";
-import { addUser, getListUser, getListUserByword, updateActive, updateUser, validateUser } from "../../services/user/user";
+import { addUser, getListUser, getListUserByword, getUserRole, updateActive, updateUser, updateUserRole, validateUser } from "../../services/user/user";
 import AlertMessage from "../../components/Notifications/alertMessage";
 
 type UserType = {
@@ -58,7 +58,7 @@ const User = () => {
     }, 3000);
   };
 
-
+  const [userRoles, setUserRoles] = useState<{ userId: number; role: string }[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<UserType[]>([]);
@@ -85,6 +85,17 @@ const User = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const pageSize = 10; // Số lượng người dùng mỗi trang
 
+
+  const userRole = async (idUser : number) => {
+    try{
+      const response = await getUserRole(idUser);
+      console.log(response?.data[0].name);
+      return response?.data[0].name
+    } catch (err) {
+      return "no role";
+    }
+  };
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -96,6 +107,20 @@ const User = () => {
         setUsers(response.data);
         setTotalPages(response.totalPage);
         setTotalUsers(response.totalElements);
+        const fetchRoles = async () => {
+          let roles: { userId: number; role: string }[] = [];
+          const rolePromises = response.data.map(async (user: any) => {
+            const role = await userRole(user.userId); // chờ kết quả Promise
+            return {
+              userId: user.userId,
+              role: role, // đã là string
+            };
+          });
+        
+          roles = await Promise.all(rolePromises);
+          setUserRoles(roles);
+        };
+        fetchRoles();
       } catch (err) {
         console.error("Lỗi khi tải dữ liệu người dùng:", err);
       }
@@ -103,6 +128,11 @@ const User = () => {
     if (searchTerm == "")
       fetchUsers();
   }, [currentPage, loading]);
+
+  const getRoleByUserId = (userId: number) => {
+    return userRoles.find(r => r.userId === userId)?.role || 'Chưa có role';
+  };
+  
 
   useEffect(() => {
     console.log(searchTerm);
@@ -123,6 +153,7 @@ const User = () => {
     };
     fetchUsers();
   }, [searchTerm, currentPage])
+
 
   const handleView = (user: UserType) => {
     setErrors((prevErrors) => {
@@ -276,9 +307,20 @@ const User = () => {
     ));
   };
 
+  const editRoleUser = async (userId :  number  , role : string) => {
+      const response = await updateUserRole(userId , role);
+      console.log("------------ up[ date role user")
+      console.log(response);
+  }
+
   const handleChangeRole = (userId: number) => {
     console.log(userId)
+    const role = getRoleByUserId(userId)
 
+    if(role == "USER")
+      editRoleUser(userId , "ADMIN")
+    else if(role == "ADMIN")
+      editRoleUser(userId , "USER")
     //  khi nhấn vô role bất kì của user thì  chuyển đổi giữa admin  và user viết thêm code để change role theo id user 
     // nhấn crtl + bấm chuột trái vào tên hàm  để đến nơi  hàm được gọi , sửa lại  code ở đó
 
@@ -322,6 +364,7 @@ const User = () => {
                 </CTableHead>
                 <CTableBody>
                   {users.map((user) => (
+                    
                     <CTableRow key={user.userId}>
                       <CTableDataCell>{user.userId}</CTableDataCell>
                       <CTableDataCell>{user.firstName}</CTableDataCell>
@@ -343,7 +386,7 @@ const User = () => {
                           style={{ cursor: "pointer", color: "blue" }}
                           onClick={() => handleChangeRole(user.userId)}
                         >
-                          User{/* đang để cố định user , lấy danh sách  role rồi load lại thành động ,  đã có sẵn user.userId */}
+                          {getRoleByUserId(user.userId)}{/* đang để cố định user , lấy danh sách  role rồi load lại thành động ,  đã có sẵn user.userId */}
                         </span></CTableDataCell>
                       <CTableDataCell>
                         <CButton color="primary" size="sm" onClick={() => handleView(user)} className="me-2">
@@ -402,7 +445,7 @@ const User = () => {
                 <p><strong>Email:</strong> {selectedUser.email}</p>
                 <p><strong>Trạng thái:</strong> {selectedUser.isOnline ? "Online" : "Offline"}</p>
                 <p><strong>Khoá:</strong> {selectedUser.isActive ? "Hoạt động" : "Bị khoá"}</p>
-                <p><strong>Role:</strong> User</p>
+                <p><strong>Role:</strong>{getRoleByUserId(selectedUser.userId)}</p>
               </div>
             ) : (
               // Form chỉnh sửa hoặc thêm người dùng, hiển thị thông báo lỗi dưới từng trường nếu có

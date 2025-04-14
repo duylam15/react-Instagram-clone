@@ -2,7 +2,7 @@ import axios from "axios";
 
 const API_URL_BASE = "http://localhost:9999"
 
-export const getListUser = async (data : {page : number , size : number}) => {
+export const getListUser = async (data: { page: number, size: number }) => {
     try {
         console.log("Gọi API...");
         console.log(data)
@@ -18,7 +18,7 @@ export const getListUser = async (data : {page : number , size : number}) => {
     }
 };
 
-export const getListUserByword = async (data : {keyword : string , page : number , size : number}) => {
+export const getListUserByword = async (data: { keyword: string, page: number, size: number }) => {
     try {
         console.log("Gọi API...");
         const response = await axios.get(
@@ -36,7 +36,7 @@ export const getListUserByword = async (data : {keyword : string , page : number
 export const addUser = async (data: any) => {
     try {
         console.log("Gọi API...");
-        const response = await axios.post(`http://localhost:9999/api/auth/addNewUser`,data);
+        const response = await axios.post(`http://localhost:9999/api/auth/addNewUser`, data);
         // console.log("Dữ liệu nhận được:", response.data);
         return response.data;
     } catch (error: any) {
@@ -50,18 +50,19 @@ export const addUser = async (data: any) => {
 export const updateUser = async (data: any) => {
     try {
         const token = localStorage.getItem('token');
-        const dataSend = {        
+        const dataSend = {
             userName: data.userName,
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
-            phoneNumber: data.phoneNumber};
+            phoneNumber: data.phoneNumber
+        };
         console.log("Gọi API...");
         console.log(`http://localhost:9999/api/api/users/${data.userId}`);
-        const response = await axios.put(`http://localhost:9999/api/api/users/${data.userId}`,dataSend ,
+        const response = await axios.put(`http://localhost:9999/api/api/users/${data.userId}`, dataSend,
             {
                 headers: {
-                  Authorization: `Bearer ${token}`, // Thêm token vào header
+                    Authorization: `Bearer ${token}`, // Thêm token vào header
                 },
             }
         );
@@ -83,7 +84,7 @@ export const updateActive = async (data: any) => {
             `${API_URL_BASE}/api/api/users/active/${data.userId}?isActive=${data.isActive}`,
             {
                 headers: {
-                  Authorization: `Bearer ${token}`, // Thêm token vào header
+                    Authorization: `Bearer ${token}`, // Thêm token vào header
                 },
             }
         );
@@ -99,14 +100,15 @@ export const updateActive = async (data: any) => {
 export const validateUser = async (data: any) => {
     try {
         console.log(data.userId)
-        const dataSend = {        
+        const dataSend = {
             userName: data.userName,
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
-            phoneNumber: data.phoneNumber};
+            phoneNumber: data.phoneNumber
+        };
         console.log("Gọi API...");
-        const response = await axios.post(`${API_URL_BASE}/api/api/users/validate?userId=${data.userId}`,dataSend);
+        const response = await axios.post(`${API_URL_BASE}/api/api/users/validate?userId=${data.userId}`, dataSend);
         console.log("Dữ liệu nhận được:", response.data);
         return response.data;
     } catch (error: any) {
@@ -116,7 +118,7 @@ export const validateUser = async (data: any) => {
     }
 };
 
-export const getUserProfile = async (data : {idUser : number}) => {
+export const getUserProfile = async (data: { idUser: number }) => {
     try {
         console.log("Gọi API...");
         console.log(data)
@@ -125,7 +127,7 @@ export const getUserProfile = async (data : {idUser : number}) => {
             `${API_URL_BASE}/api/api/users/${data.idUser}`,
             {
                 headers: {
-                  Authorization: `Bearer ${token}`, // Thêm token vào header
+                    Authorization: `Bearer ${token}`, // Thêm token vào header
                 },
             }
         );
@@ -139,14 +141,14 @@ export const getUserProfile = async (data : {idUser : number}) => {
 };
 
 
-export const getUserById = async (id: any) => { 
+export const getUserById = async (id: any) => {
     try {
-	    const userId: any = localStorage.getItem('userId');
-	    const token: any = localStorage.getItem('token');
+        const userId: any = localStorage.getItem('userId');
+        const token: any = localStorage.getItem('token');
         const response = await axios.get(`${API_URL_BASE}/api/api/users/${id}`,
-        {
+            {
                 headers: {
-                  Authorization: `Bearer ${token}`, // Thêm token vào header
+                    Authorization: `Bearer ${token}`, // Thêm token vào header
                 },
             });
         return response.data;
@@ -157,13 +159,47 @@ export const getUserById = async (id: any) => {
     }
 };
 
-export const getListUserNoPage = async (token:any) => { 
+export const getListUserNoPage = async (token: any) => {
     try {
-        const response = await axios.get(`${API_URL_BASE}/api/api/users/getdsusers`,{
-        headers: {
-            Authorization: `Bearer ${token}`, // Thêm token vào header
-        },
-    });
+        const response = await axios.get(`${API_URL_BASE}/api/api/users/getdsusers`, {
+            headers: {
+                Authorization: `Bearer ${token}`, // Thêm token vào header
+            },
+        });
+        return response;
+    } catch (error: any) {
+        console.error("❌ Lỗi khi gọi API:", error.message);
+        console.error("🛠 Chi tiết lỗi:", error);
+        return null;
+    }
+};
+
+export const getUserRole = async (userId: number) => {
+    try {
+        const token: any = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL_BASE}/api/api/users/roles/${userId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`, // Thêm token vào header
+            },
+        });
+        return response;
+    } catch (error: any) {
+        console.error("❌ Lỗi khi gọi API:", error.message);
+        console.error("🛠 Chi tiết lỗi:", error);
+        return null;
+    }
+};
+
+export const updateUserRole = async (userId: number, role: string) => {
+    try {
+        const token: any = localStorage.getItem('token');
+        const data = [role]
+        const response = await axios.put(`${API_URL_BASE}/api/api/users/roles/${userId}`,data,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`, // Thêm token vào header
+                },
+            });
         return response;
     } catch (error: any) {
         console.error("❌ Lỗi khi gọi API:", error.message);

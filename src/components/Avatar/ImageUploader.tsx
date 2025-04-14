@@ -19,7 +19,7 @@ interface ImageUploaderProps {
       try {
         setLoading(true);
         const response = await axios.put(
-          `http://localhost:9999/api/sapi/users/avatar/${userId}`,
+          `http://localhost:9999/api/api/users/avatar/${userId}`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
