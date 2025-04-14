@@ -33,6 +33,14 @@ export const callInfoUser = (token:any) => {
     });
 };
 
+export const callInforAdmin = (token : any) => {
+    return axios.get(`${API_BACKEND}auth/admin/adminProfile`, {
+        headers: {
+            Authorization: `Bearer ${token}`, // Thêm token vào header
+        },
+    });
+}
+
 export const callUserProfile = (id:any, token:any) => {
     console.log("token call", token);
     console.log("id call", id);
