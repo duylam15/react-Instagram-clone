@@ -1,4 +1,4 @@
-import { Upload, Button } from "antd";
+import { Upload, Button, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useState } from "react";
@@ -15,11 +15,11 @@ interface ImageUploaderProps {
       const { file, onSuccess, onError } = options;
       const formData = new FormData();
       formData.append("avatar", file);
-  
+  const userId = localStorage.getItem("userId");
       try {
         setLoading(true);
         const response = await axios.put(
-          "http://localhost:9999/api/users/avatar/1",
+          `http://localhost:9999/api/sapi/users/avatar/${userId}`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -54,5 +54,4 @@ interface ImageUploaderProps {
   };
   
 
-  
 export default ImageUploader;

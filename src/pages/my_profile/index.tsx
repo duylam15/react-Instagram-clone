@@ -386,10 +386,10 @@ export default function MyProfile() {
                 <IconDots color={iconColor} />
               </p>
               {showEditOption && (
-                <div className="absolute bg-white-100 p-2 text-center rounded-md shadow-lg mt-2 w-[230px] right-0 top-[14%] text-black">
+                <div className="absolute bg-white-100 p-2 text-center rounded-md shadow-lg mt-4 w-[230px] right-0 top-[14%] text-black">
                   <button
                     onClick={handleEditProfileClick}
-                    className="text-black font-medium text-[14px] py-1 px-2 rounded-md"
+                    className="text-black font-bold text-[14px] py-1 px-2 rounded-md border-none"
                     style={{ backgroundColor: '#ffff' }}
                   >
                     Chỉnh sửa thông tin cá nhân
