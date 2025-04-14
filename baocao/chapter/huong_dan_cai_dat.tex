@@ -1,0 +1,42 @@
+Để hệ thống hoạt động đầy đủ cả frontend và backend, thực hiện theo các bước sau:
+
+\begin{itemize}
+    \item \textbf{Bước 1: Tải source code từ GitHub}
+    \begin{itemize}
+        \item Backend: \texttt{https://github.com/LocNguyenSGU/SocialMedia}
+        \item Frontend: \texttt{https://github.com/duylam15/react-Instagram-clone}
+    \end{itemize}
+    
+    \item \textbf{Bước 2: Tạo cơ sở dữ liệu MySQL}
+    \begin{itemize}
+        \item Tạo database với tên \texttt{socialMedia} trong MySQL.
+        \item Đảm bảo các thông tin cấu hình như username/password được khai báo đúng trong file \texttt{application.properties} của backend.
+    \end{itemize}
+    
+    \item \textbf{Bước 3: Chạy Redis}
+    \begin{itemize}
+        \item Dùng Docker: \texttt{docker run -d -p 6379:6379 redis}
+    \end{itemize}
+    
+    \item \textbf{Bước 4: Chạy RabbitMQ}
+    \begin{itemize}
+        \item Dùng Docker: \\
+        \texttt{docker run -d --hostname rabbit --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management}
+        \item Truy cập giao diện RabbitMQ tại \texttt{http://localhost:15672} \\
+        Tài khoản mặc định: \texttt{guest / guest}
+    \end{itemize}
+    
+    \item \textbf{Bước 5: Chạy backend (Spring Boot)}
+    \begin{itemize}
+        \item Mở project bằng IntelliJ IDEA hoặc IDE tương tự.
+        \item Đảm bảo đã cài Java 21 trở lên.
+        \item Chạy file \texttt{SocialMediaApplication.java} để khởi động hệ thống backend.
+    \end{itemize}
+    
+    \item \textbf{Bước 6: Cài đặt và chạy frontend (ReactJS)}
+    \begin{itemize}
+        \item Mở thư mục frontend bằng VSCode.
+        \item Cài thư viện bằng lệnh: \texttt{npm install}
+        \item Sau khi cài xong, chạy project bằng: \texttt{npm run dev}
+    \end{itemize}
+\end{itemize}
