@@ -173,6 +173,7 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 		setShowPicker(false); // Ẩn picker sau khi chọn
 	};
 
+	console.log("imagesimagesimages", images)
 
 	return (
 		<>
@@ -223,14 +224,25 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 										<div className="w-full h-full relative">
 											<Carousel infinite={false}
 												arrows >
-												{images.map((img, index) => (
-													<img
-														key={index}
-														src={img}
-														alt="Selected"
-														className="h-[83vh] w-[70%]  object-cover rounded-bl-xl"
-													/>
-												))}
+												{images.map((media, index) => {
+													const isVideo = media.endsWith(".mp4") || media.endsWith(".webm") || media.endsWith(".ogg");
+													return isVideo ? (
+														<video
+															key={index}
+															src={media}
+															controls
+															className="h-[83vh] w-[70%] object-cover rounded-bl-xl"
+														/>
+													) : (
+														<img
+															key={index}
+															src={media}
+															alt="Selected"
+															className="h-[83vh] w-[70%] object-cover rounded-bl-xl"
+														/>
+													);
+												})}
+
 											</Carousel>
 											<button
 												className="bg-black absolute bottom-5 right-10 p-2 rounded-lg shadow-md"
@@ -250,9 +262,9 @@ export default function CreateBox({ onClose }: CreateBoxProps) {
 														mask={false} // ❌ Tắt overlay
 														style={{ top: "20%" }}
 													>
-														<div className="flex">
+														<div className=" list flex ">
 															{/* Danh sách ảnh hiện tại */}
-															<div className="flex flex-wrap gap-3">
+															<div className=" flex flex-wrap gap-3">
 																<Carousel
 																	dots={true}
 																	className="w-[240px]"

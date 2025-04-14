@@ -366,7 +366,7 @@ export default function MyProfile() {
               <FriendButton
                 idUser1={idDangNhap}
                 idUser2={idProfileDangXem}
-                OnReload = {reload}
+                OnReload={reload}
               />
             )}
             <div
@@ -403,7 +403,7 @@ export default function MyProfile() {
               <strong className="font-bold">{postCount}</strong> {t("post")}
             </span>
             <span className="font-light flex items-center gap-2">
-              <FriendsMenu idProfileDangXem={idProfileDangXem} key={refreshKey}/>
+              <FriendsMenu idProfileDangXem={idProfileDangXem} key={refreshKey} />
             </span>
           </div>
           <p className="mt-2 text-sm">Bio của bạn có thể ở đây ✨</p>
@@ -634,7 +634,7 @@ export default function MyProfile() {
                             mask={false}
                             style={{ top: "20%" }}
                           >
-                            <div className="flex">
+                            <div className="flex list">
                               <div className="flex flex-wrap gap-3">
                                 {images && images.length > 0 ? (
                                   <Carousel

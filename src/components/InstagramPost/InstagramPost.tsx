@@ -301,7 +301,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 			// Ảnh đã được upload lên server → gọi API xoá
 			try {
 				const token = localStorage.getItem('token');
-				const response = await axios.delete(`http://localhost:9999/api/post-medias/${img.postMediaId}`, {
+				const response = await axios.delete(`http://localhost:9999/api/post-medias/${img?.postMediaId}`, {
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
@@ -540,7 +540,7 @@ const InstagramPost = ({ post, onRefresh }: InstagramPostProps) => {
 														mask={false} // ❌ Tắt overlay
 														style={{ top: "20%" }}
 													>
-														<div className="flex">
+															<div className="flex list">
 															{/* Danh sách ảnh hiện tại */}
 															<div className="flex flex-wrap gap-3">
 																{images && images.length > 0 ? (
