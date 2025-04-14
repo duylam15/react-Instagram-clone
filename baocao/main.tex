@@ -1,16 +1,20 @@
 \documentclass[a4paper,12pt]{report}
-\usepackage[utf8]{inputenc} % Hỗ trợ mã hóa UTF-8
-\usepackage[T1]{fontenc} % Hỗ trợ font tiếng Việt
-\usepackage[vietnamese]{babel} % Hỗ trợ ngôn ngữ tiếng Việt
+
+\usepackage{fontspec} % cho phép dùng font hệ thống
+\usepackage{graphicx}
 \usepackage{titlesec}
 \usepackage{enumitem}
-\usepackage{graphicx}
 \usepackage{array}
 \usepackage{longtable} 
 \usepackage{float}
-\usepackage{placeins} % ở đầu file, trước \begin{document}
+\usepackage{placeins}
+\usepackage{geometry} % tuỳ chỉnh lề
+\geometry{margin=2.5cm}
 
-
+% Tiếng Việt
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+\setmainfont{Times New Roman}
 
 % Tùy chỉnh định dạng cho \part, \chapter, \section, \subsection
 \titleformat{\part}{\Huge\bfseries\center}{\thepart}{1em}{}
@@ -25,7 +29,6 @@
 
 \newpage
 
-\section*{MỤC LỤC}
 \tableofcontents % Tự động tạo mục lục
 
 \newpage
@@ -58,8 +61,11 @@
 \chapter{Kết quả đạt được}
 \input{chapter/ket_qua_dat_duoc.tex}
 
-\chapter{Hướng phát triền}
+\chapter{Hướng phát triển}
 \input{chapter/huong_phat_trien.tex}
+
+\chapter{Hướng dẫn cài đặt}
+\input{chapter/huong_dan_cai_dat.tex}
 
 
 
