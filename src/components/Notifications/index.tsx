@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { getListInviteReceived } from "../../services/friend/friend";
 import { getUserById } from "../../services/user/user";
 import { useNavigate } from "react-router-dom";
-import { getListNotifyByIdReceiver, markReadNotifyByIdNotify } from "../../services/notity";
+import { getListNotifyByIdReceiver, markAllReadNotifyByIdReceiver, markReadNotifyByIdNotify } from "../../services/notity";
 import { useNotificationSocket } from "../../contexts/NotificationSocketContext";
 import { set } from "date-fns";
 
@@ -66,7 +66,7 @@ export default function Notifications() {
 	console.log("notificationsWebsocket noty", notificationsWebsocket)
 	useEffect(() => {
 		if (!notificationsWebsocket || notificationsWebsocket.length === 0) return;
-	
+
 		setNotifications((prevNotifications) => {
 			// Lấy ra các object Notify từ notificationsWebsocket
 			const newNotifies = notificationsWebsocket
@@ -74,7 +74,7 @@ export default function Notifications() {
 				.filter((newNotify) =>
 					!prevNotifications.some((existing) => existing.noticeId === newNotify.noticeId)
 				);
-	
+
 			// Thêm vào đầu mảng để hiện thông báo mới trước
 			return [...newNotifies, ...prevNotifications];
 		});
@@ -145,10 +145,30 @@ export default function Notifications() {
 		);
 	}
 
+	const handleReadAll = async () => {
+		await markAllReadNotifyByIdReceiver(userId);
+
+		// Cập nhật state notifications: set tất cả isRead = true
+		setNotifications((prev) =>
+			prev.map((notify) => ({
+				...notify,
+				isRead: true
+			}))
+		);
+
+		// Xét mảng WebSocket về rỗng luôn
+		setNotificationsWebsocket([]);
+	}
+
 
 	return (
 		<div className="w-[400px] relative" onClick={(e) => e.stopPropagation()}>
 			<div className="text-[24px] font-bold mt-3 p-4">{t("notifications")}</div>
+			<p className="flex justify-end !cursor-pointer font-medium mr-[20px] hover:!text-blue-500"
+				onClick={handleReadAll}
+			>
+				Read all
+			</p>
 			<div className="list-notify mt-4 h-[400px] overflow-y-auto scrollbar-hide">
 				{notifications.map((notify) => (
 					<div
