@@ -97,7 +97,7 @@ const FriendsMenu = (data: { idProfileDangXem: any  , key : any }) => {
     fetchListInviteReceived();
     fetchListInviteSent();
     console.log(friends.length + "------------------------------")
-  }, [data.idProfileDangXem , data.key]);
+  }, [data.idProfileDangXem ]);
 
   useEffect(() => {
     fetchListFriends();

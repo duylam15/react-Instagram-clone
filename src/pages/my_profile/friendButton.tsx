@@ -93,19 +93,15 @@ const FriendButton = (data: { idUser1: number, idUser2: number , OnReload : () =
     // so sánh với textButton để thực hiện nhiệm vụ
     if (textButton == statusButton.xoaban) {
       DeleteFriend();
-      data.OnReload();
     }
     if (textButton == statusButton.themban) {
       CreateInvite("SENT")
-      data.OnReload();
     }
     if (textButton == statusButton.tuchoi) {
       UpdateInvite({ idUser1: data.idUser2, idUser2: data.idUser1, status: "DENY" })
-      data.OnReload();
     }
     if (textButton == statusButton.huyloimoi) {
       UpdateInvite({ idUser1: data.idUser1, idUser2: data.idUser2, status: "CANCEL" })
-      data.OnReload();
     }
   };
 
