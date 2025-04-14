@@ -71,6 +71,13 @@ export default function MyProfile() {
   const [showOptions, setShowOptions] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
 
+  const [refreshKey, setRefreshKey] = useState(0); // load lại danh sách friend
+
+  const reload = () => {
+    setRefreshKey(refreshKey + 1); // thay đổi key để trigger re-render
+    console.log("dang reload");
+  }
+
   // Xác định idProfileDangXem từ URL
   useEffect(() => {
     const segments = location.pathname.split('/').filter(Boolean);
@@ -359,6 +366,7 @@ export default function MyProfile() {
               <FriendButton
                 idUser1={idDangNhap}
                 idUser2={idProfileDangXem}
+                OnReload = {reload}
               />
             )}
             <div
@@ -395,7 +403,7 @@ export default function MyProfile() {
               <strong className="font-bold">{postCount}</strong> {t("post")}
             </span>
             <span className="font-light flex items-center gap-2">
-              <FriendsMenu idProfileDangXem={idProfileDangXem} />
+              <FriendsMenu idProfileDangXem={idProfileDangXem} key={refreshKey}/>
             </span>
           </div>
           <p className="mt-2 text-sm">Bio của bạn có thể ở đây ✨</p>

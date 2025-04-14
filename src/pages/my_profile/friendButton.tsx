@@ -2,7 +2,7 @@ import { Button } from "antd";
 import { useEffect, useState } from "react";
 import { checkFriend, checkSent, createInvite, deleteFriend, updateInvite } from "../../services/friend/friend";
 
-const FriendButton = (data: { idUser1: number, idUser2: number }) => {
+const FriendButton = (data: { idUser1: number, idUser2: number , OnReload : () => void }) => {
 
   const [loading, setLoading] = useState(false)
   const [textButton, setTextButton] = useState("")
@@ -81,6 +81,7 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
 
   useEffect(() => {
     ChekcFriend();
+    data.OnReload();
   }, [loading , data.idUser1 , data.idUser2])
 
   const handleClick = () => {
@@ -92,21 +93,26 @@ const FriendButton = (data: { idUser1: number, idUser2: number }) => {
     // so sánh với textButton để thực hiện nhiệm vụ
     if (textButton == statusButton.xoaban) {
       DeleteFriend();
+      data.OnReload();
     }
     if (textButton == statusButton.themban) {
       CreateInvite("SENT")
+      data.OnReload();
     }
     if (textButton == statusButton.tuchoi) {
       UpdateInvite({ idUser1: data.idUser2, idUser2: data.idUser1, status: "DENY" })
+      data.OnReload();
     }
     if (textButton == statusButton.huyloimoi) {
       UpdateInvite({ idUser1: data.idUser1, idUser2: data.idUser2, status: "CANCEL" })
+      data.OnReload();
     }
   };
 
   const handleClickAccept = () => {
     UpdateInvite({ idUser1: data.idUser2, idUser2: data.idUser1, status: "ACCEPT" });
     setLoading(!loading)
+    data.OnReload;
   }
 
   return (

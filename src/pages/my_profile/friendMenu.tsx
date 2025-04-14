@@ -5,7 +5,7 @@ import { deleteFriend, getListFriends, getListInviteReceived, getListInviteSent,
 import { getUserProfile } from "../../services/user/user";
 import { useNavigate } from "react-router-dom";
 
-const FriendsMenu = (data: { idProfileDangXem: any }) => {
+const FriendsMenu = (data: { idProfileDangXem: any  , key : any }) => {
 
   const idDangNhap = Number(localStorage.getItem("userId"))
   const idProfile = data.idProfileDangXem;
@@ -97,7 +97,19 @@ const FriendsMenu = (data: { idProfileDangXem: any }) => {
     fetchListInviteReceived();
     fetchListInviteSent();
     console.log(friends.length + "------------------------------")
-  }, [data.idProfileDangXem]);
+  }, [data.idProfileDangXem , data.key]);
+
+  useEffect(() => {
+    fetchListFriends();
+    fetchListInviteReceived();
+    fetchListInviteSent();
+    console.log(friends.length + "------------------------------")
+  }, [data.idProfileDangXem , data.key]);
+
+  useEffect(() => {
+    fetchListFriends();
+    console.log(friends.length + "------------------------------")
+  }, [loading]);
 
 
   const handleMenuClick = ({ key }) => {
@@ -151,6 +163,7 @@ const FriendsMenu = (data: { idProfileDangXem: any }) => {
       const response = await updateInvite({ idSender: id, idReceiver: idProfile, status: "ACCEPT" })
       console.log(response);
       setReceivedRequests((prevReceived) => prevReceived.filter(request => request.id !== id));
+      setLoading(!loading)
     } catch (error) {
 
     }

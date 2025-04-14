@@ -23,7 +23,7 @@ const App: React.FC = () => {
     >
       <RefreshProvider>
         <ThemeProvider>
-          <Suspense
+          <Suspense     
             fallback={
               <div className="pt-3 text-center">
                 <CSpinner color="primary" variant="grow" />
