@@ -217,7 +217,7 @@ const FriendsMenu = (data: { idProfileDangXem: any  , key : any }) => {
       </div>
 
       {/* Danh sách */}
-      <div style={{ maxHeight: "725x", overflowY: "auto" }}>
+      <div style={{ height  :  "500px", maxHeight: "725px", overflowY: "auto" }}>
         <List
           dataSource={filterData(data)}
           locale={{ emptyText: "Không tìm thấy kết quả" }}
