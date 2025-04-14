@@ -43,3 +43,16 @@ export const markReadNotifyByIdNotify = async (idNotify: number ) => {
         return null;
     }
 };
+
+export const markAllReadNotifyByIdReceiver = async (idUser: number ) => {
+    try {
+        const response = await axios.put(
+            `${API_URL_BASE}/api/notifies/receiver/${idUser}`
+        );
+        return response.data;
+    } catch (error: any) {
+        console.error("❌ Lỗi khi gọi API:", error.message);
+        console.error("🛠 Chi tiết lỗi:", error);
+        return null;
+    }
+};
