@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { notification } from "antd";
-import { callLogin, callInfoUser } from "../../services/auth";
+import { callLogin, callInfoUser, callInforAdmin } from "../../services/auth";
 import { FaFacebook } from "react-icons/fa";
 import "./login.css";
 
@@ -85,17 +85,32 @@ const Login = () => {
         console.log("Token saved:", token);
 
         // Lấy thông tin người dùng với token vừa lưu
-        const userInfo = await callInfoUser(token);
-
-        notification.success({
-          message: "Đăng nhập thành công!",
-          duration: 3,
-        });
-
-        console.log("User info:", userInfo.data); // Kiểm tra thông tin người dùng
-        navigate("/"); // Chuyển hướng sau khi đăng nhập
-      } else {
+        const [userResult, adminResult] = await Promise.allSettled([
+          callInfoUser(token),
+          callInforAdmin(token),
+        ]);
+    
+        if (userResult.status === "fulfilled") {
+          console.log("User info:", userResult.value.data);
+    
+          notification.success({
+            message: "Đăng nhập thành công!",
+            duration: 3,
+          });
+    
+          navigate("/");
+        } else if (adminResult.status === "fulfilled") {
+          console.log("Admin info:", adminResult.value.data);
+    
+          notification.success({
+            message: "Đăng nhập với quyền Admin thành công!",
+            duration: 3,
+          });
+    
+          navigate("/admin");
+        } else {
         throw new Error("Thông tin đăng nhập không hợp lệ");
+        }
       }
     } catch (error: any) {
       console.error("Login error:", error);
